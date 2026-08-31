@@ -382,14 +382,10 @@
     border-radius: var(--radius-sm);
     padding: 7px 10px; margin: 4px 0;
     font-size: 0.95rem;
-    cursor: grab;
     user-select: none;
   }
   #tab-lineup li.row.checked { border-color: color-mix(in srgb, var(--brand-teal) 45%, transparent); }
   #tab-lineup li.row.off { opacity: 0.55; }
-  #tab-lineup li.row.dragging { opacity: 0.35; cursor: grabbing; }
-  #tab-lineup li.row.drop-above { box-shadow: 0 -3px 0 0 var(--brand-teal); }
-  #tab-lineup li.row.drop-below { box-shadow: 0 3px 0 0 var(--brand-teal); }
   #tab-lineup .rank {
     font-family: var(--font-disp);
     font-weight: 700; font-size: 1.12em;
@@ -1534,6 +1530,10 @@ function load() {
         && s.players.every(p => p && typeof p.name === "string" && typeof p.rank === "number" && (p.g === "m" || p.g === "f"))
         && Array.isArray(s.selected) && typeof s.chem === "object") {
       s.selected = s.selected.filter(n => s.players.some(p => p.name === n));
+      s.players.forEach(p => {
+        const o = ORIGINAL.find(x => x.name === p.name);
+        if (o) p.rank = o.rank;
+      });
       if (!("he" in s)) s.he = null;
       if (!("de" in s)) s.de = null;
       return s;
@@ -1564,9 +1564,7 @@ function renderSquad() {
     state.players.filter(p => p.g === g).sort((a, b) => a.rank - b.rank).forEach(p => {
       const li = document.createElement("li");
       li.className = "row " + (isSel(p.name) ? "checked" : "off");
-      li.draggable = true;
       li.dataset.name = p.name;
-      li.title = "Ziehen, um die Rangfolge zu ändern";
       li.innerHTML = `
         <input type="checkbox" class="avail" data-name="${esc(p.name)}" ${isSel(p.name) ? "checked" : ""}
           aria-label="${esc(p.name)} verfügbar">
@@ -1609,61 +1607,6 @@ for (const id of ["luMenList", "luWomenList"]) {
         renderAll();
       }
     });
-  });
-}
-
-/* drag to reorder ranking: players keep the group's rank NUMBERS, order reassigns them */
-function reorderRanks(g, fromName, toName, before) {
-  const group = state.players.filter(p => p.g === g).sort((a, b) => a.rank - b.rank);
-  const order = group.map(p => p.name).filter(n => n !== fromName);
-  let idx = order.indexOf(toName);
-  if (idx === -1) return;
-  if (!before) idx++;
-  order.splice(idx, 0, fromName);
-  const ranks = group.map(p => p.rank);
-  order.forEach((n, i) => { state.players.find(p => p.name === n).rank = ranks[i]; });
-  save();
-  renderAll();
-  toast("Rangfolge aktualisiert");
-}
-
-let luDragName = null, luDragUl = null;
-for (const id of ["luMenList", "luWomenList"]) {
-  const ul = document.getElementById(id);
-  ul.addEventListener("dragstart", e => {
-    const row = e.target.closest("li.row");
-    if (!row) return;
-    luDragName = row.dataset.name;
-    luDragUl = ul;
-    row.classList.add("dragging");
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", luDragName);
-  });
-  ul.addEventListener("dragend", () => {
-    luDragName = null; luDragUl = null;
-    ul.querySelectorAll(".dragging,.drop-above,.drop-below")
-      .forEach(el => el.classList.remove("dragging", "drop-above", "drop-below"));
-  });
-  ul.addEventListener("dragover", e => {
-    const row = e.target.closest("li.row");
-    if (!row || luDragUl !== ul || row.dataset.name === luDragName) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    const rect = row.getBoundingClientRect();
-    const below = e.clientY > rect.top + rect.height / 2;
-    ul.querySelectorAll(".drop-above,.drop-below")
-      .forEach(el => el.classList.remove("drop-above", "drop-below"));
-    row.classList.add(below ? "drop-below" : "drop-above");
-  });
-  ul.addEventListener("drop", e => {
-    const row = e.target.closest("li.row");
-    if (!row || luDragUl !== ul || !luDragName) return;
-    e.preventDefault();
-    const rect = row.getBoundingClientRect();
-    const below = e.clientY > rect.top + rect.height / 2;
-    const g = id === "luMenList" ? "m" : "f";
-    reorderRanks(g, luDragName, row.dataset.name, !below);
-    luDragName = null; luDragUl = null;
   });
 }
 
