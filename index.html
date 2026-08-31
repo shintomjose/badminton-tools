@@ -366,6 +366,31 @@
     #rkList { grid-template-columns: 1fr; }
   }
 
+  /* ================= TAB: Termine ================= */
+  #tab-termine .rounds { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+  @media (min-width: 980px) { #tab-termine .rounds { grid-template-columns: 1fr 1fr; } }
+  .match-table { border-collapse: collapse; width: 100%; }
+  .match-table th, .match-table td {
+    padding: 9px 10px; border-bottom: 1px solid var(--border);
+    text-align: left; font-variant-numeric: tabular-nums;
+  }
+  .match-table tr:last-child td { border-bottom: 0; }
+  .match-table th {
+    font-family: var(--font-disp);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    font-size: 0.78rem; color: var(--text-muted);
+  }
+  .match-table td.mdate { white-space: nowrap; color: var(--text); }
+  .match-table td.mtime { color: var(--text-muted); white-space: nowrap; }
+  .match-table td.mopp { color: var(--text-strong); font-weight: 500; }
+  .badge-ha {
+    display: inline-block;
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.78em;
+    padding: 1px 9px; border-radius: 999px; letter-spacing: 0.04em;
+  }
+  .badge-ha.h { background: color-mix(in srgb, var(--brand-teal) 22%, transparent); color: var(--teal-ink); }
+  .badge-ha.a { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+
   /* ================= TAB 2: Aufstellung (lineup) ================= */
   #tab-lineup .layout { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
   @media (min-width: 1024px) {
@@ -823,8 +848,9 @@
   <nav class="tabs" role="tablist" aria-label="Bereiche">
     <button role="tab" id="tabbtn-teams" aria-selected="true" aria-controls="tab-teams"><span class="tno">01</span><span class="tlabel">Mannschaften</span></button>
     <button role="tab" id="tabbtn-lineup" aria-selected="false" aria-controls="tab-lineup"><span class="tno">02</span><span class="tlabel">Aufstellung</span></button>
-    <button role="tab" id="tabbtn-anfahrt" aria-selected="false" aria-controls="tab-anfahrt"><span class="tno">03</span><span class="tlabel">Anfahrt</span></button>
-    <button role="tab" id="tabbtn-shop" aria-selected="false" aria-controls="tab-shop"><span class="tno">04</span><span class="tlabel">Shop</span></button>
+    <button role="tab" id="tabbtn-termine" aria-selected="false" aria-controls="tab-termine"><span class="tno">03</span><span class="tlabel">Termine</span></button>
+    <button role="tab" id="tabbtn-anfahrt" aria-selected="false" aria-controls="tab-anfahrt"><span class="tno">04</span><span class="tlabel">Anfahrt</span></button>
+    <button role="tab" id="tabbtn-shop" aria-selected="false" aria-controls="tab-shop"><span class="tno">05</span><span class="tlabel">Shop</span></button>
   </nav>
 </header>
 
@@ -905,7 +931,22 @@
     </div>
   </section>
 
-  <!-- ============ TAB 3: Anfahrt ============ -->
+  <!-- ============ TAB 3: Termine ============ -->
+  <section class="tab-panel" id="tab-termine" role="tabpanel" aria-labelledby="tabbtn-termine" hidden>
+    <p class="tab-sub">Spieltermine SG Heilbronn/Leingarten IV — Bezirksliga „Neckar-Odenwald" 2026/27 · alle Spiele samstags</p>
+    <div class="rounds">
+      <section class="panel">
+        <h2>Vorrunde <span class="hint">— Okt–Nov 2026</span></h2>
+        <table class="match-table" id="mtVor"></table>
+      </section>
+      <section class="panel">
+        <h2>Rückrunde <span class="hint">— Jan–Mär 2027</span></h2>
+        <table class="match-table" id="mtRueck"></table>
+      </section>
+    </div>
+  </section>
+
+  <!-- ============ TAB 4: Anfahrt ============ -->
   <section class="tab-panel" id="tab-anfahrt" role="tabpanel" aria-labelledby="tabbtn-anfahrt" hidden>
     <p class="tab-sub">Vereinsdistanzen Bezirksliga „Neckar-Odenwald" (3-4) 2026/2027 — Zeile oder Marker anklicken für Fahrroute ab Bad Wimpfen</p>
     <iframe id="distFrame" title="Vereinsdistanzen Karte und Tabelle" srcdoc="<!DOCTYPE html>
@@ -1095,7 +1136,7 @@ document.getElementById("distFrame").addEventListener("load", () => {
   applyTheme(document.documentElement.dataset.theme);
 });
 
-const TABS = ["teams", "lineup", "anfahrt", "shop"];
+const TABS = ["teams", "lineup", "termine", "anfahrt", "shop"];
 function showTab(id) {
   if (!TABS.includes(id)) id = "teams";
   TABS.forEach(t => {
@@ -1550,6 +1591,49 @@ document.getElementById("rkCopyBtn").addEventListener("click", async () => {
 });
 
 render();
+})();
+</script>
+
+<script>
+/* ================= TAB: Termine (Spieltermine Aktive IV) ================= */
+(function () {
+/* Bezirksliga „Neckar-Odenwald" 2026/27 — Spiele der SG Heilbronn/Leingarten IV.
+   id = stabiler Schlüssel für spätere Spielerverfügbarkeit pro Spieltag. */
+const MATCHES = [
+  { id: "2026-10-10-1400", round: "vor",   day: "Sa", date: "10.10.2026", time: "14:00", opp: "SG Heilbronn/Leingarten V",  home: false, ort: "(H)" },
+  { id: "2026-10-17-1400", round: "vor",   day: "Sa", date: "17.10.2026", time: "14:00", opp: "SF Zaberfeld",               home: false, ort: "" },
+  { id: "2026-10-17-1800", round: "vor",   day: "Sa", date: "17.10.2026", time: "18:00", opp: "SG Brackenheim/Schwaigern",  home: false, ort: "" },
+  { id: "2026-11-14-1400", round: "vor",   day: "Sa", date: "14.11.2026", time: "14:00", opp: "TSV Pfedelbach",             home: true,  ort: "(H)" },
+  { id: "2026-11-14-1800", round: "vor",   day: "Sa", date: "14.11.2026", time: "18:00", opp: "TV Bad Rappenau",            home: true,  ort: "(H)" },
+  { id: "2026-11-28-1800", round: "vor",   day: "Sa", date: "28.11.2026", time: "18:00", opp: "Spfr. Affaltrach II",        home: true,  ort: "(H)" },
+  { id: "2027-01-23-1400", round: "rueck", day: "Sa", date: "23.01.2027", time: "14:00", opp: "SG Heilbronn/Leingarten V",  home: true,  ort: "(H)" },
+  { id: "2027-02-20-1400", round: "rueck", day: "Sa", date: "20.02.2027", time: "14:00", opp: "SG Brackenheim/Schwaigern",  home: true,  ort: "(H)" },
+  { id: "2027-02-20-1800", round: "rueck", day: "Sa", date: "20.02.2027", time: "18:00", opp: "SF Zaberfeld",               home: true,  ort: "(H)" },
+  { id: "2027-03-06-1400", round: "rueck", day: "Sa", date: "06.03.2027", time: "14:00", opp: "TV Bad Rappenau",            home: false, ort: "" },
+  { id: "2027-03-06-1800", round: "rueck", day: "Sa", date: "06.03.2027", time: "18:00", opp: "TSV Pfedelbach",             home: false, ort: "74629-1" },
+  { id: "2027-03-20-1400", round: "rueck", day: "Sa", date: "20.03.2027", time: "14:00", opp: "Spfr. Affaltrach II",        home: false, ort: "(H)" },
+];
+
+function renderMatches(tableId, round) {
+  const list = MATCHES.filter(m => m.round === round);
+  const rows = list.map((m, i) => {
+    const sameAsPrev = i > 0 && list[i - 1].date === m.date;
+    const span = list.filter(x => x.date === m.date).length;
+    return `
+    <tr data-match="${m.id}"${sameAsPrev ? "" : ' class="date-start"'}>
+      ${sameAsPrev ? "" : `<td class="mdate" rowspan="${span}">${m.day} ${m.date}</td>`}
+      <td class="mtime">${m.time}</td>
+      <td class="mopp">${esc(m.opp)}</td>
+      <td><span class="badge-ha ${m.home ? "h" : "a"}">${m.home ? "Heim" : "Auswärts"}</span></td>
+      <td class="mtime">${esc(m.ort)}</td>
+    </tr>`;
+  }).join("");
+  document.getElementById(tableId).innerHTML = `
+    <thead><tr><th>Datum</th><th>Zeit</th><th>Gegner</th><th></th><th>Ort</th></tr></thead>
+    <tbody>${rows}</tbody>`;
+}
+renderMatches("mtVor", "vor");
+renderMatches("mtRueck", "rueck");
 })();
 </script>
 
