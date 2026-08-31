@@ -9,6 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
   :root {
     --brand-teal: #00FACD;
@@ -390,6 +393,145 @@
   }
   .badge-ha.h { background: color-mix(in srgb, var(--brand-teal) 22%, transparent); color: var(--teal-ink); }
   .badge-ha.a { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+  #tab-termine .avail-scroll { overflow-x: auto; }
+  .avail-table { border-collapse: collapse; width: 100%; }
+  .avail-table th, .avail-table td {
+    padding: 7px 9px; border-bottom: 1px solid var(--border);
+    text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .avail-table th {
+    font-family: var(--font-disp);
+    font-size: 0.76rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .avail-table th:first-child, .avail-table td.avname { text-align: left; }
+  .avail-table td.avname { color: var(--text-strong); font-weight: 500; }
+  .avail-table td.av { cursor: pointer; user-select: none; font-weight: 700; font-size: 1.05em; min-width: 3em; }
+  .avail-table td.av:hover { background: var(--row-hover); }
+  .avail-table td.av.locked { cursor: default; }
+  .avail-table td.av.locked:hover { background: transparent; }
+  .avail-table td.av:focus-visible { outline: none; box-shadow: var(--ring); }
+  .avail-table td.av.y { color: var(--court-green); }
+  .avail-table td.av.n { color: var(--danger); }
+  .avail-table td.av.u { color: var(--text-muted); opacity: 0.55; }
+  .avail-table tr.av-sum td { border-bottom: 0; color: var(--teal-ink); font-weight: 700; }
+  .av-status {
+    float: right;
+    font-family: var(--font-body);
+    font-size: 0.72em; font-weight: 500;
+    text-transform: none; letter-spacing: 0;
+    color: var(--text-muted);
+  }
+  .who-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .who-row label {
+    font-weight: 600; color: var(--text-muted); font-size: 0.9em;
+  }
+  .who-row select {
+    font: inherit;
+    background: var(--surface-2); color: var(--text-strong);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 6px 10px; min-height: 40px;
+    max-width: 100%;
+  }
+  .who-row select:focus-visible { outline: none; box-shadow: var(--ring); }
+  .av-log { list-style: none; margin: 0; padding: 0; font-size: 0.88em; }
+  .av-log li.log-day { padding: 8px 2px 10px; border-bottom: 1px solid var(--border); }
+  .av-log li.log-day:last-child { border-bottom: 0; }
+  .log-date {
+    font-family: var(--font-disp);
+    font-size: 0.95em; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-strong);
+    margin-bottom: 4px;
+  }
+  .log-row { display: flex; align-items: baseline; gap: 8px; padding: 3px 0; flex-wrap: wrap; }
+  .log-mark { font-weight: 700; width: 1.2em; text-align: center; flex: none; }
+  .log-row.y .log-mark { color: var(--court-green); }
+  .log-row.n .log-mark { color: var(--danger); }
+  .log-entry { margin-right: 14px; }
+  .log-entry strong { color: var(--text-strong); font-weight: 600; }
+  .log-entry em {
+    font-style: normal;
+    color: var(--text-muted); font-size: 0.85em;
+    margin-left: 4px;
+  }
+  .log-time { color: var(--teal-ink); font-size: 0.85em; font-weight: 600; }
+  .th-time { color: var(--teal-ink); font-weight: 700; }
+  .av-log-empty { color: var(--text-muted); font-style: italic; }
+
+  /* Besetzungs-Fortschritt */
+  .avail-table tr.av-prog td { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .avail-table tr.av-prog:last-child td { border-bottom: 0; }
+  .avail-table tr.av-prog td:first-child {
+    font-family: var(--font-disp);
+    font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+  .prog-cell.ok { color: var(--court-green); }
+  .prog-cell.miss { color: var(--warn); }
+  .prog { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .prog-label {
+    flex: none; width: 4.2em;
+    font-size: 0.78em; font-weight: 600;
+    color: var(--text-muted);
+  }
+  .prog-bar {
+    flex: 1; height: 8px; border-radius: 4px;
+    background: var(--surface-2); overflow: hidden;
+  }
+  .prog-bar i { display: block; height: 100%; border-radius: 4px; background: var(--warn); transition: width 300ms ease; }
+  .prog.ok .prog-bar i { background: var(--court-green); }
+  .prog-txt {
+    flex: none; font-size: 0.8em; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--warn); white-space: nowrap;
+  }
+  .prog.ok .prog-txt { color: var(--court-green); }
+
+  /* Karten-Ansicht (mobil) */
+  #availCards { display: none; }
+  .av-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+  }
+  .av-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .av-card-date {
+    font-family: var(--font-disp);
+    font-weight: 700; font-size: 1.05em;
+    color: var(--text-strong);
+  }
+  .av-card-opp { color: var(--text); margin: 2px 0 8px; font-weight: 500; }
+  .me-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .me-btn {
+    font: inherit; font-weight: 700;
+    min-height: 46px;
+    background: var(--surface-1); color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  }
+  .me-btn:focus-visible { outline: none; box-shadow: var(--ring); }
+  .me-btn.y.on { background: color-mix(in srgb, var(--court-green) 25%, var(--surface-1)); border-color: var(--court-green); color: var(--court-green); }
+  .me-btn.n.on { background: color-mix(in srgb, var(--danger) 20%, var(--surface-1)); border-color: var(--danger); color: var(--danger); }
+  .av-names { margin-top: 10px; font-size: 0.88em; }
+  .av-names summary { cursor: pointer; color: var(--text-muted); user-select: none; }
+  @media (max-width: 880px) {
+    .avail-scroll { display: none; }
+    #availCards { display: grid; gap: 12px; }
+    .who-row { flex-wrap: wrap; }
+    .who-row select { flex: 1 1 100%; }
+  }
+  #tab-termine .av-add { display: flex; gap: 8px; margin-top: 12px; }
+  #tab-termine .av-add input {
+    font: inherit;
+    background: var(--surface-2); color: var(--text-strong);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 8px 10px; min-height: 44px;
+    flex: 0 1 280px; min-width: 0;
+  }
+  #tab-termine .av-add input:focus-visible { outline: none; box-shadow: var(--ring); }
 
   /* ================= TAB 2: Aufstellung (lineup) ================= */
   #tab-lineup .layout { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
@@ -397,6 +539,29 @@
     #tab-lineup .layout { grid-template-columns: minmax(300px, 380px) 1fr; }
   }
   #tab-lineup ul.rows { list-style: none; margin: 0; padding: 0; }
+  .team-pills { display: flex; align-items: center; gap: 6px; margin-right: 8px; }
+  .pill-label {
+    font-family: var(--font-disp);
+    font-size: 0.85rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-right: 2px;
+  }
+  .pill {
+    font: inherit; font-weight: 700;
+    background: var(--surface-2); color: var(--text-strong);
+    border: 1px solid var(--border); border-radius: 999px;
+    min-width: 40px; min-height: 40px;
+    cursor: pointer;
+    transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  }
+  .pill:hover { border-color: var(--brand-teal); background: var(--row-hover); }
+  .pill:focus-visible { outline: none; box-shadow: var(--ring); }
+  .pill.on {
+    background: var(--brand-teal); color: var(--accent-on);
+    border-color: transparent;
+  }
+
   .seg-tabs {
     display: flex; gap: 2px;
     border-bottom: 2px solid var(--border);
@@ -476,7 +641,7 @@
   #tab-lineup button.del:hover { background: color-mix(in srgb, var(--danger) 15%, transparent); }
   #tab-lineup .add-form {
     display: grid;
-    grid-template-columns: 4.5em minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     gap: 8px; margin-top: 14px;
   }
   #tab-lineup .add-form input, #tab-lineup .add-form select {
@@ -879,6 +1044,14 @@
   <section class="tab-panel" id="tab-lineup" role="tabpanel" aria-labelledby="tabbtn-lineup" hidden>
     <p class="tab-sub">8 Spiele: 2 HD · 1 DD · 3 HE · 1 DE · 1 GD — max. 2 Disziplinen pro Spieler (Mixed zählt als Disziplin)</p>
     <div class="tab-toolbar">
+      <div class="team-pills" role="group" aria-label="Mannschaft wählen">
+        <span class="pill-label">Mannschaft:</span>
+        <button class="pill" data-team="1">1</button>
+        <button class="pill" data-team="2">2</button>
+        <button class="pill" data-team="3">3</button>
+        <button class="pill" data-team="4">4</button>
+        <button class="pill" data-team="5">5</button>
+      </div>
       <button id="luClearBtn" class="btn">Auswahl leeren</button>
       <button id="luResetBtn" class="btn">Kader zurücksetzen</button>
     </div>
@@ -893,7 +1066,6 @@
           <div class="squad-scroll" id="luPaneM" role="tabpanel"></div>
           <div class="squad-scroll" id="luPaneF" role="tabpanel" hidden></div>
           <form id="luAddForm" class="add-form">
-            <input id="luAddRank" type="number" min="1" max="999" placeholder="Rang" required>
             <input id="luAddName" type="text" placeholder="Name" required autocomplete="off">
             <select id="luAddGender" aria-label="Geschlecht">
               <option value="m">Herr</option>
@@ -944,6 +1116,30 @@
         <table class="match-table" id="mtRueck"></table>
       </section>
     </div>
+    <section class="panel">
+      <h2>Verfügbarkeit <span class="hint">— Klick auf Zelle: — → ✓ → ✗ · live geteilt mit dem Team</span> <span id="avStatus" class="av-status">verbinde…</span></h2>
+      <div class="who-row">
+        <label for="avWho">Ich bin:</label>
+        <select id="avWho"><option value="">— Name wählen —</option></select>
+      </div>
+      <div class="seg-tabs" role="tablist" aria-label="Runde">
+        <button id="avTabVor" role="tab" aria-selected="true">Vorrunde</button>
+        <button id="avTabRueck" role="tab" aria-selected="false">Rückrunde</button>
+      </div>
+      <div id="availCards"></div>
+      <div class="avail-scroll">
+        <table class="avail-table" id="availTable"></table>
+      </div>
+      <form id="avAddForm" class="av-add">
+        <input id="avAddName" list="avRoster" placeholder="Spieler hinzufügen" autocomplete="off">
+        <datalist id="avRoster"></datalist>
+        <button type="submit" class="btn primary">+</button>
+      </form>
+    </section>
+    <section class="panel">
+      <h2>Verlauf <span class="hint">— wer hat was geändert</span></h2>
+      <ul class="av-log" id="avLog"><li class="av-log-empty">Noch keine Änderungen</li></ul>
+    </section>
   </section>
 
   <!-- ============ TAB 4: Anfahrt ============ -->
@@ -1549,7 +1745,7 @@ document.getElementById("rkAddForm").addEventListener("submit", e => {
   e.preventDefault();
   const name = document.getElementById("rkAddName").value.trim();
   if (!name) return;
-  const p = { name };
+  const p = { name, rank: players.reduce((mx, q) => Math.max(mx, q.rank || 0), 0) + 1 };
   if (document.getElementById("rkAddA").checked) p.a = 1;
   const note = document.getElementById("rkAddNote").value.trim();
   if (note) p.note = note;
@@ -1634,6 +1830,323 @@ function renderMatches(tableId, round) {
 }
 renderMatches("mtVor", "vor");
 renderMatches("mtRueck", "rueck");
+
+/* ---- Verfügbarkeit pro Spiel — 14:00- und 18:00-Spiele getrennt markierbar ---- */
+const DAYS = MATCHES.map(m => ({ key: m.id, date: m.date, day: m.day, time: m.time, round: m.round }));
+
+/* Mindestbesetzung pro Spiel */
+const MIN_M = 4;
+const MIN_F = 2;
+
+const AV_DEFAULT_PLAYERS = [
+  "Bolt-Bevilacqua, Nicolas",
+  "Rajendraprasad, Anurag",
+  "Chu, Cuong Xuan",
+  "Mathew Jose, Shinto",
+  "Dujic, Lucija",
+  "Schebesch, Carolin",
+  "Croll, Alessia",
+];
+
+/* Firebase: Verfügbarkeit wird live mit allen Teammitgliedern geteilt.
+   Config ist öffentlich unbedenklich — Zugriff regeln die DB-Rules. */
+const FB_CONFIG = {
+  apiKey: "AIzaSyC6ZVUwkthjkgo3HjeaNwRigH-ueK_95E0",
+  authDomain: "badminton-tools-c6b27.firebaseapp.com",
+  databaseURL: "https://badminton-tools-c6b27-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "badminton-tools-c6b27",
+  storageBucket: "badminton-tools-c6b27.firebasestorage.app",
+  messagingSenderId: "446320933164",
+  appId: "1:446320933164:web:468c9ce5a053c5ee1d5489",
+};
+
+let av = { players: [], marks: {} };
+let avDb = null;
+let avSeeded = false;
+
+/* Namen als DB-Schlüssel: verbotene Zeichen ersetzen */
+function avKey(name) { return name.replace(/[.#$/\[\]]/g, "_"); }
+function avState(name, dayKey) { return (av.marks[dayKey] || {})[avKey(name)] || "u"; }
+function avStatus(txt) { document.getElementById("avStatus").textContent = txt; }
+
+/* Ehrlichkeitsprinzip: jeder wählt einmal seinen Namen, Änderungen werden damit protokolliert */
+const WHO_KEY = "termine-whoami";
+function whoami() { return localStorage.getItem(WHO_KEY) || ""; }
+function avSym(st) { return st === "y" ? "✓" : st === "n" ? "✗" : "—"; }
+
+function renderWho() {
+  const sel = document.getElementById("avWho");
+  const cur = whoami();
+  const names = [...av.players];
+  if (cur && !names.includes(cur)) names.push(cur);
+  sel.innerHTML = `<option value="">— Name wählen —</option>` +
+    names.map(n => `<option value="${esc(n)}"${n === cur ? " selected" : ""}>${esc(n)}</option>`).join("");
+}
+document.getElementById("avWho").addEventListener("change", e => {
+  localStorage.setItem(WHO_KEY, e.target.value);
+  renderAvail();
+  if (e.target.value) toast(`Angemeldet als ${e.target.value}`);
+});
+
+function avLogWrite(entry) {
+  avDb.ref("avail/log").push({ t: firebase.database.ServerValue.TIMESTAMP, ...entry }).catch(() => {});
+}
+
+function renderLog(items) {
+  const el = document.getElementById("avLog");
+  if (!items.length) {
+    el.innerHTML = `<li class="av-log-empty">Noch keine Änderungen</li>`;
+    return;
+  }
+  const fmtT = t => t
+    ? new Date(t).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+    : "";
+
+  /* volle Historie: jeder Klick bleibt sichtbar, gruppiert nach Spieltag, neueste zuerst */
+  const adds = items.filter(it => it.action === "add");
+  const changes = items.filter(it => !it.action && it.day && it.player);
+
+  const parts = [];
+  const dates = [];
+  DAYS.forEach(d => { if (!dates.some(x => x.date === d.date)) dates.push({ date: d.date, day: d.day, matches: DAYS.filter(m => m.date === d.date) }); });
+  dates.forEach(dt => {
+    const list = changes.filter(it => dt.matches.some(m => m.key === it.day));
+    if (!list.length) return;
+    const multi = dt.matches.length > 1;
+    parts.push(`<li class="log-day">
+      <div class="log-date">${dt.day} ${dt.date}</div>
+      ${list.map(it => {
+        const m = dt.matches.find(x => x.key === it.day);
+        const cls = it.to === "y" ? " y" : it.to === "n" ? " n" : "";
+        return `<div class="log-row${cls}"><span class="log-mark">${avSym(it.to)}</span>
+          <span class="log-entry"><strong>${esc(it.player)}</strong>${multi && m ? ` <span class="log-time">${m.time}</span>` : ""}
+          ${avSym(it.from)} → ${avSym(it.to)}
+          <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span></div>`;
+      }).join("")}
+    </li>`);
+  });
+  adds.forEach(it => {
+    parts.push(`<li class="log-day">
+      <div class="log-row"><span class="log-mark">+</span>
+        <span class="log-entry"><strong>${esc(it.player)}</strong> zur Liste hinzugefügt
+        <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span></div>
+    </li>`);
+  });
+  el.innerHTML = parts.length ? parts.join("") : `<li class="av-log-empty">Noch keine Änderungen</li>`;
+}
+
+let avRound = localStorage.getItem("termine-round") === "rueck" ? "rueck" : "vor";
+function visDays() { return DAYS.filter(d => d.round === avRound); }
+
+function renderAvail() {
+  const days = visDays();
+  document.getElementById("avTabVor").setAttribute("aria-selected", avRound === "vor");
+  document.getElementById("avTabRueck").setAttribute("aria-selected", avRound === "rueck");
+  const head = `<thead><tr><th>Spieler</th>${days.map(d =>
+    `<th>${d.date.slice(0, 6)}<br><span class="th-time">${d.time}</span></th>`).join("")}</tr></thead>`;
+  const body = av.players.map(name => `<tr>
+    <td class="avname">${esc(name)}</td>
+    ${days.map(d => {
+      const st = avState(name, d.key);
+      const locked = name !== whoami();
+      return `<td class="av ${st}${locked ? " locked" : ""}" data-name="${esc(name)}" data-day="${d.key}"
+        ${locked ? "" : 'role="button" tabindex="0"'} aria-label="${esc(name)} am ${d.date} ${d.time}">${avSym(st)}</td>`;
+    }).join("")}
+  </tr>`).join("");
+  const progCell = (cnt, min) =>
+    `<td class="prog-cell ${cnt >= min ? "ok" : "miss"}">${cnt}/${min}</td>`;
+  const foot = `
+    <tr class="av-prog"><td>Herren (min. ${MIN_M})</td>${days.map(d => progCell(progressFor(d.key).m, MIN_M)).join("")}</tr>
+    <tr class="av-prog"><td>Damen (min. ${MIN_F})</td>${days.map(d => progCell(progressFor(d.key).f, MIN_F)).join("")}</tr>`;
+  const empty = av.players.length ? "" :
+    `<tr><td colspan="${days.length + 1}" style="color:var(--text-muted);font-style:italic">Verbinde mit Datenbank…</td></tr>`;
+  document.getElementById("availTable").innerHTML = head + `<tbody>${empty}${body}${foot}</tbody>`;
+  renderCards();
+}
+
+for (const [id, round] of [["avTabVor", "vor"], ["avTabRueck", "rueck"]]) {
+  document.getElementById(id).addEventListener("click", () => {
+    avRound = round;
+    localStorage.setItem("termine-round", round);
+    renderAvail();
+  });
+}
+
+function progressFor(dayKey) {
+  let m = 0, f = 0;
+  av.players.forEach(p => {
+    if (avState(p, dayKey) !== "y") return;
+    const g = (window.LU_ROSTER_MAP || {})[p];
+    if (g === "m") m++;
+    else if (g === "f") f++;
+  });
+  return { m, f };
+}
+
+function progHtml(label, cnt, min) {
+  const ok = cnt >= min;
+  const missing = min - cnt;
+  return `<div class="prog${ok ? " ok" : ""}">
+    <span class="prog-label">${label}</span>
+    <div class="prog-bar"><i style="width:${Math.min(100, (cnt / min) * 100)}%"></i></div>
+    <span class="prog-txt">${cnt}/${min}${ok ? " ✓" : ` · ${missing} fehl${missing === 1 ? "t" : "en"}`}</span>
+  </div>`;
+}
+
+function renderCards() {
+  const el = document.getElementById("availCards");
+  const by = whoami();
+  const html = [];
+  visDays().forEach(d => {
+    const m = MATCHES.find(x => x.id === d.key);
+    const pr = progressFor(d.key);
+    const mine = by ? avState(by, d.key) : "u";
+    const yes = av.players.filter(p => avState(p, d.key) === "y");
+    const no = av.players.filter(p => avState(p, d.key) === "n");
+    html.push(`<div class="av-card">
+      <div class="av-card-head">
+        <span class="av-card-date">${m.day} ${m.date.slice(0, 6)} · ${m.time}</span>
+        <span class="badge-ha ${m.home ? "h" : "a"}">${m.home ? "Heim" : "Auswärts"}</span>
+      </div>
+      <div class="av-card-opp">${esc(m.opp)}</div>
+      ${progHtml("Herren", pr.m, MIN_M)}
+      ${progHtml("Damen", pr.f, MIN_F)}
+      <div class="me-row">
+        <button type="button" class="me-btn y${mine === "y" ? " on" : ""}" data-day="${d.key}" data-set="y">✓ Dabei</button>
+        <button type="button" class="me-btn n${mine === "n" ? " on" : ""}" data-day="${d.key}" data-set="n">✗ Keine Zeit</button>
+      </div>
+      ${yes.length || no.length ? `<details class="av-names"><summary>${yes.length} ✓ · ${no.length} ✗</summary>
+        ${yes.length ? `<div class="log-row y"><span class="log-mark">✓</span><span>${yes.map(esc).join(", ")}</span></div>` : ""}
+        ${no.length ? `<div class="log-row n"><span class="log-mark">✗</span><span>${no.map(esc).join(", ")}</span></div>` : ""}
+      </details>` : ""}
+    </div>`);
+  });
+  el.innerHTML = html.join("");
+}
+
+document.getElementById("availCards").addEventListener("click", e => {
+  const btn = e.target.closest(".me-btn");
+  if (!btn) return;
+  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
+  const by = whoami();
+  if (!by) {
+    toast("Bitte zuerst oben deinen Namen wählen");
+    document.getElementById("avWho").focus();
+    return;
+  }
+  const day = btn.dataset.day;
+  const cur = avState(by, day);
+  const next = btn.dataset.set === cur ? null : btn.dataset.set;
+  const ref = avDb.ref("avail/marks/" + day + "/" + avKey(by));
+  (next ? ref.set(next) : ref.remove()).catch(() => toast("Speichern fehlgeschlagen"));
+  avLogWrite({ day, player: by, from: cur, to: next || "u", by });
+});
+
+function cycleAv(td) {
+  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
+  const by = whoami();
+  if (!by) {
+    toast("Bitte zuerst oben deinen Namen wählen");
+    document.getElementById("avWho").focus();
+    return;
+  }
+  if (td.dataset.name !== by) {
+    toast("Du kannst nur deine eigene Verfügbarkeit ändern");
+    return;
+  }
+  const cur = avState(td.dataset.name, td.dataset.day);
+  const next = cur === "u" ? "y" : cur === "y" ? "n" : null;
+  const ref = avDb.ref("avail/marks/" + td.dataset.day + "/" + avKey(td.dataset.name));
+  (next ? ref.set(next) : ref.remove()).catch(() => toast("Speichern fehlgeschlagen"));
+  avLogWrite({ day: td.dataset.day, player: td.dataset.name, from: cur, to: next || "u", by });
+}
+
+document.getElementById("availTable").addEventListener("click", e => {
+  const td = e.target.closest("td.av");
+  if (td) cycleAv(td);
+});
+document.getElementById("availTable").addEventListener("keydown", e => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const td = e.target.closest("td.av");
+  if (td) { e.preventDefault(); cycleAv(td); }
+});
+
+document.getElementById("avAddName").addEventListener("focus", () => {
+  const dl = document.getElementById("avRoster");
+  if (dl.children.length || !window.LU_ROSTER) return;
+  window.LU_ROSTER.forEach(n => {
+    const o = document.createElement("option");
+    o.value = n;
+    dl.appendChild(o);
+  });
+});
+document.getElementById("avAddForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const inp = document.getElementById("avAddName");
+  const name = inp.value.trim();
+  if (!name) return;
+  if (av.players.includes(name)) { toast("Spieler schon in der Liste"); return; }
+  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
+  const by = whoami();
+  if (!by) {
+    toast("Bitte zuerst oben deinen Namen wählen");
+    document.getElementById("avWho").focus();
+    return;
+  }
+  avDb.ref("avail/players").transaction(list => {
+    list = Array.isArray(list) ? list : [];
+    if (list.includes(name)) return;
+    list.push(name);
+    return list;
+  }).then(res => {
+    if (res.committed) avLogWrite({ action: "add", player: name, by });
+  }).catch(() => toast("Speichern fehlgeschlagen"));
+  inp.value = "";
+  inp.focus();
+});
+
+/* ---- Firebase-Verbindung ---- */
+(function initAvailSync() {
+  if (!window.firebase || !firebase.initializeApp) {
+    avStatus("○ offline — Firebase nicht geladen");
+    renderAvail();
+    return;
+  }
+  try {
+    firebase.initializeApp(FB_CONFIG);
+  } catch (e) {
+    avStatus("○ Firebase-Fehler");
+    renderAvail();
+    return;
+  }
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user || avDb) return;
+    avDb = firebase.database();
+    avDb.ref(".info/connected").on("value", s => avStatus(s.val() ? "● live" : "○ offline"));
+    avDb.ref("avail").on("value", snap => {
+      const v = snap.val() || {};
+      const players = Array.isArray(v.players) ? v.players.filter(n => typeof n === "string") : [];
+      if (!players.length && !avSeeded) {
+        avSeeded = true;
+        avDb.ref("avail/players").set(AV_DEFAULT_PLAYERS).catch(() => {});
+        return;
+      }
+      av.players = players;
+      av.marks = v.marks || {};
+      renderAvail();
+      renderWho();
+    }, err => { console.error("[avail] listener cancelled:", err); avStatus("○ Zugriff verweigert — DB-Regeln prüfen"); });
+    avDb.ref("avail/log").limitToLast(200).on("value", snap => {
+      const items = [];
+      snap.forEach(ch => { items.push(ch.val()); });
+      renderLog(items.reverse());
+    });
+  });
+  firebase.auth().signInAnonymously().catch(() =>
+    avStatus("○ Login fehlgeschlagen — Anonym-Anmeldung in Firebase aktivieren"));
+})();
+
+renderAvail();
 })();
 </script>
 
@@ -1728,18 +2241,22 @@ const ORIGINAL = [
   { name: "Zhou, Lina",                  rank: 26, g: "f" },
 ];
 
-/* default availability: Aktive IV squad */
-const DEFAULT_SELECTED = [
-  "Bolt-Bevilacqua, Nicolas",
-  "Rajendraprasad, Anurag",
-  "Chu, Cuong Xuan",
-  "Mathew Jose, Shinto",
-  "Dujic, Lucija",
-  "Schebesch, Carolin",
-  "Croll, Alessia",
-];
+window.LU_ROSTER = ORIGINAL.map(p => p.name);
+window.LU_ROSTER_MAP = Object.fromEntries(ORIGINAL.map(p => [p.name, p.g]));
 
 const STORE_KEY = "nuliga-lineup-v4";
+
+/* Standard: Mannschaft 4 geladen und vorausgewählt */
+function defaultState(chem) {
+  const players = ORIGINAL.map(p => ({...p}));
+  const selected = teamMembers(4).filter(n => players.some(p => p.name === n));
+  return {
+    players, selected, team: 4,
+    chem: chem || {},
+    hd: null, dd: null, gd: null,
+    he: null, de: null,
+  };
+}
 
 let state = load();
 
@@ -1756,16 +2273,17 @@ function load() {
       });
       if (!("he" in s)) s.he = null;
       if (!("de" in s)) s.de = null;
+      if (!("team" in s)) {
+        /* Migration: alter Speicherstand ohne Mannschafts-Pill → Mannschaft 4 laden */
+        s.team = 4;
+        s.selected = teamMembers(4).filter(n => s.players.some(p => p.name === n));
+        s.hd = null; s.dd = null; s.gd = null;
+        s.he = null; s.de = null;
+      }
       return s;
     }
   } catch {}
-  return {
-    players: ORIGINAL.map(p => ({...p})),
-    selected: [...DEFAULT_SELECTED],
-    chem: {},
-    hd: null, dd: null, gd: null,
-    he: null, de: null,
-  };
+  return defaultState();
 }
 function save() { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
 
@@ -1844,16 +2362,17 @@ for (const id of ["luPaneM", "luPaneF"]) {
 document.getElementById("luAddForm").addEventListener("submit", e => {
   e.preventDefault();
   const name = document.getElementById("luAddName").value.trim();
-  const rank = +document.getElementById("luAddRank").value;
   const g = document.getElementById("luAddGender").value;
-  if (!name || !rank) return;
+  if (!name) return;
   if (state.players.some(p => p.name === name)) { toast("Spieler existiert bereits"); return; }
+  const rank = state.players.filter(p => p.g === g)
+    .reduce((mx, p) => Math.max(mx, p.rank || 0), 0) + 1;
   state.players.push({ name, rank, g });
   state.selected.push(name);
   save();
   renderAll();
   e.target.reset();
-  document.getElementById("luAddRank").focus();
+  document.getElementById("luAddName").focus();
 });
 
 function pairLabel(p) { return `${esc(p[0].name)} + ${esc(p[1].name)}`; }
@@ -2141,8 +2660,55 @@ for (const [btnId, paneId] of [["luTabM", "luPaneM"], ["luTabF", "luPaneF"]]) {
   });
 }
 
+/* Mannschafts-Pills: Auswahl aus der Teams-Einteilung (Tab 1) übernehmen */
+function teamMembers(n) {
+  let groups = null;
+  try {
+    const s = JSON.parse(localStorage.getItem("bwbv-ranking-v5"));
+    if (s && s.m && Array.isArray(s.m.players) && Array.isArray(s.m.sizes)
+        && s.f && Array.isArray(s.f.players) && Array.isArray(s.f.sizes)) groups = s;
+  } catch {}
+  const names = [];
+  if (groups) {
+    for (const g of ["m", "f"]) {
+      const gr = groups[g];
+      let start = 0;
+      for (let t = 0; t < n - 1; t++) start += Math.max(0, gr.sizes[t] | 0);
+      names.push(...gr.players.slice(start, start + Math.max(0, gr.sizes[n - 1] | 0)).map(p => p.name));
+    }
+  } else {
+    /* keine Teams-Einteilung gespeichert: Rangblöcke (5 Herren / 2 Damen je Team) */
+    for (const [g, size] of [["m", 5], ["f", 2]]) {
+      const grp = ORIGINAL.filter(p => p.g === g).sort((a, b) => a.rank - b.rank);
+      names.push(...grp.slice((n - 1) * size, n * size).map(p => p.name));
+    }
+  }
+  return names;
+}
+
+function renderPills() {
+  document.querySelectorAll(".team-pills .pill").forEach(b =>
+    b.classList.toggle("on", +b.dataset.team === state.team));
+}
+
+document.querySelectorAll(".team-pills .pill").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const n = +btn.dataset.team;
+    const members = teamMembers(n).filter(nm => state.players.some(p => p.name === nm));
+    if (!members.length) { toast(`Mannschaft ${n} ist leer`); return; }
+    state.selected = members;
+    state.team = n;
+    state.hd = null; state.dd = null; state.gd = null;
+    state.he = null; state.de = null;
+    save();
+    renderAll();
+    toast(`Mannschaft ${n}: ${members.length} Spieler übernommen`);
+  });
+});
+
 document.getElementById("luClearBtn").addEventListener("click", () => {
   state.selected = [];
+  state.team = null;
   state.hd = null; state.dd = null; state.gd = null;
   state.he = null; state.de = null;
   save();
@@ -2151,19 +2717,14 @@ document.getElementById("luClearBtn").addEventListener("click", () => {
 });
 
 document.getElementById("luResetBtn").addEventListener("click", () => {
-  state = {
-    players: ORIGINAL.map(p => ({...p})),
-    selected: [...DEFAULT_SELECTED],
-    chem: state.chem,
-    hd: null, dd: null, gd: null,
-    he: null, de: null,
-  };
+  state = defaultState(state.chem);
   save();
   renderAll();
   toast("Kader zurückgesetzt (Chemie-Sterne bleiben)");
 });
 
 function renderAll() {
+  renderPills();
   const men = availMen(), women = availWomen();
   if (Array.isArray(state.he)) {
     state.he = state.he.filter(n => men.some(p => p.name === n)).slice(0, 3);
