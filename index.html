@@ -480,6 +480,22 @@
   .log-time { color: var(--teal-ink); font-size: 0.85em; font-weight: 600; }
   .th-time { color: var(--teal-ink); font-weight: 700; }
   .av-log-empty { color: var(--text-muted); font-style: italic; }
+  .log-clear {
+    float: right;
+    font-family: var(--font-body); text-transform: none; letter-spacing: 0;
+    color: var(--danger);
+  }
+  .log-clear:hover, .log-clear.armed { background: color-mix(in srgb, var(--danger) 15%, transparent); }
+  .log-del {
+    font: inherit; margin-left: auto; flex: none;
+    background: transparent;
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--danger); font-weight: 700;
+    padding: 0 8px; font-size: 0.8em; line-height: 1.6;
+    cursor: pointer;
+  }
+  .log-del:hover, .log-del.armed { background: color-mix(in srgb, var(--danger) 15%, transparent); }
+  .log-del.armed { white-space: nowrap; }
 
   /* Besetzungs-Fortschritt */
   .avail-table tr.av-prog td { font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -1169,7 +1185,8 @@
           </form>
         </div>
       </div>
-      <h2>Verlauf <span class="hint">— wer hat was geändert</span></h2>
+      <h2>Verlauf <span class="hint">— wer hat was geändert</span>
+        <button type="button" id="avLogClear" class="btn small log-clear">Alle löschen</button></h2>
       <ul class="av-log" id="avLog"><li class="av-log-empty">Noch keine Änderungen</li></ul>
     </section>
   </section>
@@ -1435,6 +1452,24 @@ function applyPinLocks() {
   document.querySelectorAll("[data-pin-protect]").forEach(el =>
     el.classList.toggle("pin-locked", !pinUnlocked()));
 }
+/* ---- Firebase: gemeinsame App-Initialisierung + anonymer Login ----
+   Config ist öffentlich unbedenklich — Zugriff regeln die DB-Rules. */
+const FB_CONFIG = {
+  apiKey: "AIzaSyC6ZVUwkthjkgo3HjeaNwRigH-ueK_95E0",
+  authDomain: "badminton-tools-c6b27.firebaseapp.com",
+  databaseURL: "https://badminton-tools-c6b27-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "badminton-tools-c6b27",
+  storageBucket: "badminton-tools-c6b27.firebasestorage.app",
+  messagingSenderId: "446320933164",
+  appId: "1:446320933164:web:468c9ce5a053c5ee1d5489",
+};
+window.fbReady = new Promise(resolve => {
+  if (!window.firebase || !firebase.initializeApp) { resolve(null); return; }
+  try { firebase.initializeApp(FB_CONFIG); } catch (e) { resolve(null); return; }
+  firebase.auth().onAuthStateChanged(u => { if (u) resolve(firebase.database()); });
+  firebase.auth().signInAnonymously().catch(() => resolve(null));
+});
+
 document.addEventListener("submit", async e => {
   const form = e.target.closest("form.pin-gate-form");
   if (!form) return;
@@ -1553,7 +1588,7 @@ const MAX_TEAMS = 5;
 const STORE_KEY = "bwbv-ranking-v5";
 const OLD_KEY_V4 = "bwbv-ranking-v4";
 
-let groups, activeG = "m", players, teamSizes;
+let groups, activeG = "m", players, teamSizes, rkDb = null;
 load();
 
 function originalOf(g) { return g === "m" ? ORIGINAL_M : ORIGINAL_F; }
@@ -1602,7 +1637,29 @@ function setGroup(g, skipRender) {
 }
 function save() {
   localStorage.setItem(STORE_KEY, JSON.stringify(groups));
+  if (rkDb) rkDb.ref("teams").set(groups).catch(() => toast("Cloud-Speichern fehlgeschlagen"));
 }
+
+/* geteilte Teams-Einteilung: Firebase ist die Quelle, localStorage nur Offline-Cache */
+if (window.fbReady) window.fbReady.then(db => {
+  if (!db) return;
+  rkDb = db;
+  db.ref("teams").on("value", snap => {
+    const v = snap.val();
+    if (!v) {
+      /* noch nichts in der Cloud: eigene (lokale/Standard-)Einteilung hochladen */
+      db.ref("teams").set(groups).catch(() => {});
+      return;
+    }
+    if (!(validGroup(v.m) && validGroup(v.f))) return;
+    if (JSON.stringify(v) === JSON.stringify(groups)) return;
+    groups = { m: v.m, f: v.f };
+    localStorage.setItem(STORE_KEY, JSON.stringify(groups));
+    setGroup(activeG, true);
+    render();
+    if (window.luRefreshTeamSelection) window.luRefreshTeamSelection();
+  });
+});
 
 function teamStarts() {
   const s = [];
@@ -1931,18 +1988,6 @@ const AV_DEFAULT_PLAYERS = [
   "Croll, Alessia",
 ];
 
-/* Firebase: Verfügbarkeit wird live mit allen Teammitgliedern geteilt.
-   Config ist öffentlich unbedenklich — Zugriff regeln die DB-Rules. */
-const FB_CONFIG = {
-  apiKey: "AIzaSyC6ZVUwkthjkgo3HjeaNwRigH-ueK_95E0",
-  authDomain: "badminton-tools-c6b27.firebaseapp.com",
-  databaseURL: "https://badminton-tools-c6b27-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "badminton-tools-c6b27",
-  storageBucket: "badminton-tools-c6b27.firebasestorage.app",
-  messagingSenderId: "446320933164",
-  appId: "1:446320933164:web:468c9ce5a053c5ee1d5489",
-};
-
 let av = { players: [], marks: {} };
 let avDb = null;
 let avSeeded = false;
@@ -2004,7 +2049,8 @@ function renderLog(items) {
         return `<div class="log-row${cls}"><span class="log-mark">${avSym(it.to)}</span>
           <span class="log-entry"><strong>${esc(it.player)}</strong>${multi && m ? ` <span class="log-time">${m.time}</span>` : ""}
           ${avSym(it.from)} → ${avSym(it.to)}
-          <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span></div>`;
+          <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span>
+          <button type="button" class="log-del" data-logdel="${esc(it._k)}" aria-label="Eintrag löschen">×</button></div>`;
       }).join("")}
     </li>`);
   });
@@ -2012,7 +2058,8 @@ function renderLog(items) {
     parts.push(`<li class="log-day">
       <div class="log-row"><span class="log-mark">+</span>
         <span class="log-entry"><strong>${esc(it.player)}</strong> zur Liste hinzugefügt
-        <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span></div>
+        <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span>
+        <button type="button" class="log-del" data-logdel="${esc(it._k)}" aria-label="Eintrag löschen">×</button></div>
     </li>`);
   });
   el.innerHTML = parts.length ? parts.join("") : `<li class="av-log-empty">Noch keine Änderungen</li>`;
@@ -2154,6 +2201,43 @@ document.getElementById("availTable").addEventListener("keydown", e => {
   if (td) { e.preventDefault(); cycleAv(td); }
 });
 
+/* Löschen mit Zwei-Klick-Bestätigung: erster Klick bewaffnet, zweiter führt aus */
+function armThenRun(btn, label, fn) {
+  if (btn.dataset.armed) {
+    delete btn.dataset.armed;
+    clearTimeout(btn._armT);
+    fn();
+    return;
+  }
+  btn.dataset.armed = "1";
+  const old = btn.textContent;
+  btn.textContent = label;
+  btn.classList.add("armed");
+  btn._armT = setTimeout(() => {
+    delete btn.dataset.armed;
+    btn.textContent = old;
+    btn.classList.remove("armed");
+  }, 4000);
+}
+
+document.getElementById("avLog").addEventListener("click", e => {
+  const b = e.target.closest("button[data-logdel]");
+  if (!b) return;
+  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
+  armThenRun(b, "Sicher?", () =>
+    avDb.ref("avail/log/" + b.dataset.logdel).remove()
+      .then(() => toast("Eintrag gelöscht"))
+      .catch(() => toast("Löschen fehlgeschlagen")));
+});
+
+document.getElementById("avLogClear").addEventListener("click", e => {
+  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
+  armThenRun(e.currentTarget, "Wirklich ALLE löschen?", () =>
+    avDb.ref("avail/log").remove()
+      .then(() => toast("Verlauf komplett gelöscht"))
+      .catch(() => toast("Löschen fehlgeschlagen")));
+});
+
 document.getElementById("avAddName").addEventListener("focus", () => {
   const dl = document.getElementById("avRoster");
   if (dl.children.length || !window.LU_ROSTER) return;
@@ -2189,44 +2273,33 @@ document.getElementById("avAddForm").addEventListener("submit", e => {
 });
 
 /* ---- Firebase-Verbindung ---- */
-(function initAvailSync() {
-  if (!window.firebase || !firebase.initializeApp) {
-    avStatus("○ offline — Firebase nicht geladen");
+(async function initAvailSync() {
+  const db = window.fbReady ? await window.fbReady : null;
+  if (!db) {
+    avStatus("○ offline — keine Verbindung");
     renderAvail();
     return;
   }
-  try {
-    firebase.initializeApp(FB_CONFIG);
-  } catch (e) {
-    avStatus("○ Firebase-Fehler");
+  avDb = db;
+  avDb.ref(".info/connected").on("value", s => avStatus(s.val() ? "● live" : "○ offline"));
+  avDb.ref("avail").on("value", snap => {
+    const v = snap.val() || {};
+    const players = Array.isArray(v.players) ? v.players.filter(n => typeof n === "string") : [];
+    if (!players.length && !avSeeded) {
+      avSeeded = true;
+      avDb.ref("avail/players").set(AV_DEFAULT_PLAYERS).catch(() => {});
+      return;
+    }
+    av.players = players;
+    av.marks = v.marks || {};
     renderAvail();
-    return;
-  }
-  firebase.auth().onAuthStateChanged(user => {
-    if (!user || avDb) return;
-    avDb = firebase.database();
-    avDb.ref(".info/connected").on("value", s => avStatus(s.val() ? "● live" : "○ offline"));
-    avDb.ref("avail").on("value", snap => {
-      const v = snap.val() || {};
-      const players = Array.isArray(v.players) ? v.players.filter(n => typeof n === "string") : [];
-      if (!players.length && !avSeeded) {
-        avSeeded = true;
-        avDb.ref("avail/players").set(AV_DEFAULT_PLAYERS).catch(() => {});
-        return;
-      }
-      av.players = players;
-      av.marks = v.marks || {};
-      renderAvail();
-      renderWho();
-    }, err => { console.error("[avail] listener cancelled:", err); avStatus("○ Zugriff verweigert — DB-Regeln prüfen"); });
-    avDb.ref("avail/log").limitToLast(200).on("value", snap => {
-      const items = [];
-      snap.forEach(ch => { items.push(ch.val()); });
-      renderLog(items.reverse());
-    });
+    renderWho();
+  }, err => { console.error("[avail] listener cancelled:", err); avStatus("○ Zugriff verweigert — DB-Regeln prüfen"); });
+  avDb.ref("avail/log").limitToLast(200).on("value", snap => {
+    const items = [];
+    snap.forEach(ch => { items.push({ _k: ch.key, ...ch.val() }); });
+    renderLog(items.reverse());
   });
-  firebase.auth().signInAnonymously().catch(() =>
-    avStatus("○ Login fehlgeschlagen — Anonym-Anmeldung in Firebase aktivieren"));
 })();
 
 renderAvail();
@@ -2776,6 +2849,16 @@ function renderPills() {
   document.querySelectorAll(".team-pills .pill").forEach(b =>
     b.classList.toggle("on", +b.dataset.team === state.team));
 }
+
+/* wird vom Teams-Tab aufgerufen, wenn die geteilte Einteilung aus der Cloud ankommt */
+window.luRefreshTeamSelection = function () {
+  if (!state.team) return;
+  const members = teamMembers(state.team).filter(n => state.players.some(p => p.name === n));
+  if (JSON.stringify(members) === JSON.stringify(state.selected)) return;
+  state.selected = members;
+  save();
+  renderAll();
+};
 
 document.querySelectorAll(".team-pills .pill").forEach(btn => {
   btn.addEventListener("click", () => {
