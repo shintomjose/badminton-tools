@@ -1141,7 +1141,7 @@ const ORIGINAL = [
   {name:"Narendran, Vasud", a:1},
   {name:"Hehn, Roland"},
   {name:"Engmann, Ralf Max"},
-];
+].map((p, i) => ({ ...p, rank: i + 1 }));
 
 const TEAM_SIZE = 5;
 const MAX_TEAMS = 5;
@@ -1159,6 +1159,12 @@ function load() {
         && saved.sizes.length === MAX_TEAMS
         && saved.players.every(p => p && typeof p.name === "string")) {
       players = saved.players;
+      players.forEach(p => {
+        if (typeof p.rank !== "number") {
+          const o = ORIGINAL.find(x => x.name === p.name);
+          if (o) p.rank = o.rank;
+        }
+      });
       teamSizes = saved.sizes.map(n => Math.max(0, n | 0));
       return;
     }
@@ -1195,7 +1201,7 @@ function playerRow(p, i, subNo, subTitle) {
   li.dataset.index = i;
   li.title = p.note || "";
   li.innerHTML = `
-    <span class="rank">${i + 1}</span>
+    <span class="rank" title="Vereinsrangliste">${p.rank ?? "–"}</span>
     <span class="sub-chip" title="${subTitle}">${subNo}</span>
     <span class="who">
       <span class="name">${esc(p.name)}${p.a ? '<span class="badge-a">A</span>' : ""}</span>
@@ -1399,7 +1405,7 @@ document.getElementById("rkCopyBtn").addEventListener("click", async () => {
   const lines = players.map((p, i) => {
     const t = teamOfIndex(i);
     const subNo = t !== null ? i - starts[t] + 1 : i - cutoff + 1;
-    const parts = [i + 1, t !== null ? `M${t + 1}` : "WL", subNo, p.name, p.a ? "A" : "", p.note || ""];
+    const parts = [p.rank ?? "", t !== null ? `M${t + 1}` : "WL", subNo, p.name, p.a ? "A" : "", p.note || ""];
     return parts.join("\t");
   });
   const text = "Rang\tMannschaft\tPos\tName\tA\tStatus\n" + lines.join("\n");
