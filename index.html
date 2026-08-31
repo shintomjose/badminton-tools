@@ -413,6 +413,12 @@
   .squad-scroll::-webkit-scrollbar { width: 8px; }
   .squad-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
   .squad-scroll[hidden] { display: none; }
+  .squad-scroll ul.pinned {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--surface-1);
+    border-bottom: 2px solid var(--brand-teal);
+    padding-bottom: 4px; margin-bottom: 4px;
+  }
 
   #tab-lineup li.row {
     display: grid;
@@ -830,6 +836,10 @@
       <button id="rkCopyBtn" class="btn primary">Liste kopieren</button>
       <button id="rkResetBtn" class="btn">Zurücksetzen</button>
     </div>
+    <div class="seg-tabs" role="tablist" aria-label="Rangliste">
+      <button id="rkTabM" role="tab" aria-selected="true">Herren</button>
+      <button id="rkTabF" role="tab" aria-selected="false">Damen</button>
+    </div>
     <form id="rkAddForm" class="add-form">
       <input id="rkAddName" type="text" placeholder="Name, Vorname" required autocomplete="off">
       <label class="chk"><input id="rkAddA" type="checkbox"> A</label>
@@ -854,12 +864,8 @@
             <button id="luTabM" role="tab" aria-selected="true" aria-controls="luPaneM">Herren <span class="seg-count" id="luCountM"></span></button>
             <button id="luTabF" role="tab" aria-selected="false" aria-controls="luPaneF">Damen <span class="seg-count" id="luCountF"></span></button>
           </div>
-          <div class="squad-scroll" id="luPaneM" role="tabpanel">
-            <ul class="rows" id="luMenList"></ul>
-          </div>
-          <div class="squad-scroll" id="luPaneF" role="tabpanel" hidden>
-            <ul class="rows" id="luWomenList"></ul>
-          </div>
+          <div class="squad-scroll" id="luPaneM" role="tabpanel"></div>
+          <div class="squad-scroll" id="luPaneF" role="tabpanel" hidden></div>
           <form id="luAddForm" class="add-form">
             <input id="luAddRank" type="number" min="1" max="999" placeholder="Rang" required>
             <input id="luAddName" type="text" placeholder="Name" required autocomplete="off">
@@ -1132,7 +1138,36 @@ function toast(msg, undo) {
 <script>
 /* ================= TAB 1: Mannschaften (ranking) ================= */
 (function () {
-const ORIGINAL = [
+const ORIGINAL_F = [
+  {name:"Albrecht, Sabrina"},
+  {name:"Poppe, Janina"},
+  {name:"Lenard, Vivien"},
+  {name:"Seeling, Carolin"},
+  {name:"Gräßle, Charlotte"},
+  {name:"Wenninger, Carolin"},
+  {name:"Gamalov, Helen Mari"},
+  {name:"Schuba, Maya"},
+  {name:"Altin, Elifnaz", a:1},
+  {name:"Dujic, Lucija", a:1, note:"Jugendfreigabe"},
+  {name:"Schebesch, Carolin"},
+  {name:"Croll, Alessia", note:"Jugendfreigabe"},
+  {name:"Pflugfelder, Susanne"},
+  {name:"Nagel, Jarupan"},
+  {name:"Heichel-Ott, Erika"},
+  {name:"Mally, Elke"},
+  {name:"Petersen, Josy"},
+  {name:"Amalraj, Gnana", a:1},
+  {name:"Gräßle, Theresa"},
+  {name:"Hannikeri, Sarah", a:1, note:"Jugendfreigabe"},
+  {name:"Ruck, Martina"},
+  {name:"Gräßle, Luise"},
+  {name:"Vöhringer, Hannah"},
+  {name:"Schmidt, Annabell"},
+  {name:"Zhao, Chengchen", a:1},
+  {name:"Zhou, Lina", a:1},
+].map((p, i) => ({ ...p, rank: i + 1 }));
+
+const ORIGINAL_M = [
   {name:"Huber, Ronald"},
   {name:"Schuba, Leon"},
   {name:"Garalbatin, Rares-Stefan", a:1},
@@ -1194,37 +1229,59 @@ const ORIGINAL = [
   {name:"Engmann, Ralf Max"},
 ].map((p, i) => ({ ...p, rank: i + 1 }));
 
-const TEAM_SIZE = 5;
 const MAX_TEAMS = 5;
-const STORE_KEY = "bwbv-ranking-v4";
+const STORE_KEY = "bwbv-ranking-v5";
+const OLD_KEY_V4 = "bwbv-ranking-v4";
 
-let players, teamSizes;
+let groups, activeG = "m", players, teamSizes;
 load();
 
-function defaultSizes() { return Array(MAX_TEAMS).fill(TEAM_SIZE); }
-
+function originalOf(g) { return g === "m" ? ORIGINAL_M : ORIGINAL_F; }
+function defaultSizes(g) { return Array(MAX_TEAMS).fill(g === "m" ? 5 : 2); }
+function freshGroup(g) {
+  return { players: originalOf(g).map(p => ({...p})), sizes: defaultSizes(g) };
+}
+function validGroup(x) {
+  return x && Array.isArray(x.players) && Array.isArray(x.sizes)
+    && x.sizes.length === MAX_TEAMS
+    && x.players.every(p => p && typeof p.name === "string");
+}
 function load() {
+  groups = null;
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_KEY));
-    if (saved && Array.isArray(saved.players) && Array.isArray(saved.sizes)
-        && saved.sizes.length === MAX_TEAMS
-        && saved.players.every(p => p && typeof p.name === "string")) {
-      players = saved.players;
-      players.forEach(p => {
-        if (typeof p.rank !== "number") {
-          const o = ORIGINAL.find(x => x.name === p.name);
-          if (o) p.rank = o.rank;
-        }
-      });
-      teamSizes = saved.sizes.map(n => Math.max(0, n | 0));
-      return;
-    }
+    if (saved && validGroup(saved.m) && validGroup(saved.f)) groups = { m: saved.m, f: saved.f };
   } catch {}
-  players = ORIGINAL.map(p => ({...p}));
-  teamSizes = defaultSizes();
+  if (!groups) {
+    try {
+      const old = JSON.parse(localStorage.getItem(OLD_KEY_V4));
+      if (validGroup(old)) groups = { m: old, f: freshGroup("f") };
+    } catch {}
+  }
+  if (!groups) groups = { m: freshGroup("m"), f: freshGroup("f") };
+  for (const g of ["m", "f"]) {
+    const src = originalOf(g);
+    groups[g].players.forEach(p => {
+      if (typeof p.rank !== "number") {
+        const o = src.find(x => x.name === p.name);
+        if (o) p.rank = o.rank;
+      }
+    });
+    groups[g].sizes = groups[g].sizes.map(n => Math.max(0, n | 0));
+  }
+  setGroup(activeG, true);
+}
+function setGroup(g, skipRender) {
+  activeG = g;
+  players = groups[g].players;
+  teamSizes = groups[g].sizes;
+  const tm = document.getElementById("rkTabM"), tf = document.getElementById("rkTabF");
+  tm.setAttribute("aria-selected", g === "m");
+  tf.setAttribute("aria-selected", g === "f");
+  if (!skipRender) render();
 }
 function save() {
-  localStorage.setItem(STORE_KEY, JSON.stringify({ players, sizes: teamSizes }));
+  localStorage.setItem(STORE_KEY, JSON.stringify(groups));
 }
 
 function teamStarts() {
@@ -1421,7 +1478,7 @@ list.addEventListener("click", e => {
   if (del) {
     const i = +del.dataset.del;
     const team = teamOfIndex(i);
-    lastDeleted = { player: players[i], index: i, team };
+    lastDeleted = { player: players[i], index: i, team, g: activeG };
     players.splice(i, 1);
     if (team !== null) teamSizes[team]--;
     save();
@@ -1429,10 +1486,11 @@ list.addEventListener("click", e => {
     toast(`${lastDeleted.player.name} gelöscht`, {
       label: "Rückgängig",
       action() {
+        const gr = groups[lastDeleted.g];
         if (lastDeleted.team !== null) {
-          teamSizes[lastDeleted.team]++;
+          gr.sizes[lastDeleted.team]++;
         }
-        players.splice(Math.min(lastDeleted.index, players.length), 0, lastDeleted.player);
+        gr.players.splice(Math.min(lastDeleted.index, gr.players.length), 0, lastDeleted.player);
         lastDeleted = null;
         save();
         render();
@@ -1463,12 +1521,15 @@ document.getElementById("rkAddForm").addEventListener("submit", e => {
 });
 
 document.getElementById("rkResetBtn").addEventListener("click", () => {
-  players = ORIGINAL.map(p => ({...p}));
-  teamSizes = defaultSizes();
+  groups[activeG] = freshGroup(activeG);
+  setGroup(activeG, true);
   save();
   render();
-  toast("Ursprüngliche Liste wiederhergestellt");
+  toast(`Ursprüngliche ${activeG === "m" ? "Herren" : "Damen"}-Liste wiederhergestellt`);
 });
+
+document.getElementById("rkTabM").addEventListener("click", () => setGroup("m"));
+document.getElementById("rkTabF").addEventListener("click", () => setGroup("f"));
 
 document.getElementById("rkCopyBtn").addEventListener("click", async () => {
   const starts = teamStarts();
@@ -1633,14 +1694,14 @@ function availMen()   { return state.players.filter(p => p.g === "m" && isSel(p.
 function availWomen() { return state.players.filter(p => p.g === "f" && isSel(p.name)).sort((a, b) => a.rank - b.rank); }
 
 function renderSquad() {
-  for (const [id, g] of [["luMenList", "m"], ["luWomenList", "f"]]) {
-    const group = state.players.filter(p => p.g === g);
+  for (const [paneId, g] of [["luPaneM", "m"], ["luPaneF", "f"]]) {
+    const group = state.players.filter(p => p.g === g).sort((a, b) => a.rank - b.rank);
     const selCount = group.filter(p => isSel(p.name)).length;
     document.getElementById(g === "m" ? "luCountM" : "luCountF").textContent =
       `${selCount}/${group.length}`;
-    const ul = document.getElementById(id);
-    ul.innerHTML = "";
-    state.players.filter(p => p.g === g).sort((a, b) => a.rank - b.rank).forEach(p => {
+    const pane = document.getElementById(paneId);
+    pane.innerHTML = "";
+    const mkRow = p => {
       const li = document.createElement("li");
       li.className = "row " + (isSel(p.name) ? "checked" : "off");
       li.dataset.name = p.name;
@@ -1650,12 +1711,19 @@ function renderSquad() {
         <span class="rank">${p.rank}</span>
         <span class="name">${esc(p.name)}</span>
         <button class="del" data-del="${esc(p.name)}" aria-label="${esc(p.name)} löschen">×</button>`;
-      ul.appendChild(li);
-    });
+      return li;
+    };
+    const selUl = document.createElement("ul");
+    selUl.className = "rows pinned";
+    const restUl = document.createElement("ul");
+    restUl.className = "rows";
+    group.forEach(p => (isSel(p.name) ? selUl : restUl).appendChild(mkRow(p)));
+    if (selUl.children.length) pane.appendChild(selUl);
+    pane.appendChild(restUl);
   }
 }
 
-for (const id of ["luMenList", "luWomenList"]) {
+for (const id of ["luPaneM", "luPaneF"]) {
   const ul = document.getElementById(id);
   ul.addEventListener("change", e => {
     const cb = e.target.closest("input.avail");
