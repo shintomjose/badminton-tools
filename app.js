@@ -79,6 +79,7 @@ const EN = {
   "Benachrichtigungen an — solange die App läuft": "Notifications on — while the app is running",
   "Benachrichtigungen im Browser blockiert — in den Website-Einstellungen erlauben": "Notifications blocked in the browser — allow them in the site settings",
   "Keine Berechtigung erteilt": "Permission not granted",
+  "Auf diesem Gerät nur in der installierten App möglich — Seite über „Zum Home-Bildschirm“ hinzufügen": "Only available in the installed app on this device — add the page via “Add to Home Screen”",
   "{0} hat {1} zur Liste hinzugefügt": "{0} added {1} to the list",
   "… und {0} weitere Änderungen": "… and {0} more changes",
   "Rang\tMannschaft\tPos\tName\tA\tStatus": "Rank\tTeam\tPos\tName\tA\tStatus",
@@ -1056,12 +1057,15 @@ function notifEnabled() {
   return localStorage.getItem(NOTIF_KEY) === "1" && window.Notification && Notification.permission === "granted";
 }
 function renderNotifBtn() {
-  if (!window.Notification) return;
   notifBtn.hidden = false;
   notifBtn.textContent = notifEnabled() ? t("🔔 an") : t("🔔 aus");
   notifBtn.classList.toggle("primary", notifEnabled());
 }
 notifBtn.addEventListener("click", async () => {
+  if (!window.Notification) {
+    toast(t("Auf diesem Gerät nur in der installierten App möglich — Seite über „Zum Home-Bildschirm“ hinzufügen"));
+    return;
+  }
   if (notifEnabled()) {
     localStorage.setItem(NOTIF_KEY, "0");
     renderNotifBtn();
