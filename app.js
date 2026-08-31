@@ -474,21 +474,28 @@ function save() {
 if (window.fbReady) window.fbReady.then(db => {
   if (!db) return;
   rkDb = db;
-  db.ref("teams").on("value", snap => {
-    const v = snap.val();
-    if (!v) {
-      /* noch nichts in der Cloud: eigene (lokale/Standard-)Einteilung hochladen */
-      db.ref("teams").set(groups).catch(() => {});
-      return;
-    }
-    if (!(validGroup(v.m) && validGroup(v.f))) return;
-    if (JSON.stringify(v) === JSON.stringify(groups)) return;
-    groups = { m: v.m, f: v.f };
-    localStorage.setItem(STORE_KEY, JSON.stringify(groups));
-    setGroup(activeG, true);
-    render();
-    if (window.luRefreshTeamSelection) window.luRefreshTeamSelection();
-  });
+  let tries = 0;
+  (function attachTeams() {
+    db.ref("teams").on("value", snap => {
+      tries = 0;
+      const v = snap.val();
+      if (!v) {
+        /* noch nichts in der Cloud: eigene (lokale/Standard-)Einteilung hochladen */
+        db.ref("teams").set(groups).catch(() => {});
+        return;
+      }
+      if (!(validGroup(v.m) && validGroup(v.f))) return;
+      if (JSON.stringify(v) === JSON.stringify(groups)) return;
+      groups = { m: v.m, f: v.f };
+      localStorage.setItem(STORE_KEY, JSON.stringify(groups));
+      setGroup(activeG, true);
+      render();
+      if (window.luRefreshTeamSelection) window.luRefreshTeamSelection();
+    }, err => {
+      console.error("[teams] listener cancelled:", err);
+      if (++tries <= 5) setTimeout(attachTeams, 1000 * tries);
+    });
+  })();
 });
 
 function teamStarts() {
@@ -1112,24 +1119,43 @@ document.getElementById("avAddForm").addEventListener("submit", e => {
   }
   avDb = db;
   avDb.ref(".info/connected").on("value", s => avStatus(s.val() ? "● live" : "○ offline"));
-  avDb.ref("avail").on("value", snap => {
-    const v = snap.val() || {};
-    const players = Array.isArray(v.players) ? v.players.filter(n => typeof n === "string") : [];
-    if (!players.length && !avSeeded) {
-      avSeeded = true;
-      avDb.ref("avail/players").set(AV_DEFAULT_PLAYERS).catch(() => {});
-      return;
-    }
-    av.players = players;
-    av.marks = v.marks || {};
-    renderAvail();
-    renderWho();
-  }, err => { console.error("[avail] listener cancelled:", err); avStatus(t("○ Zugriff verweigert — DB-Regeln prüfen")); });
-  avDb.ref("avail/log").limitToLast(200).on("value", snap => {
-    const items = [];
-    snap.forEach(ch => { items.push({ _k: ch.key, ...ch.val() }); });
-    renderLog(items.reverse());
-  });
+
+  /* Ein abgebrochener Listener (z. B. Token-Race beim Start) bleibt sonst für immer tot
+     und die Tabelle friert ein, während der Verlauf weiter aktualisiert — daher Neuversuch. */
+  let availTries = 0;
+  (function attachAvail() {
+    avDb.ref("avail").on("value", snap => {
+      availTries = 0;
+      const v = snap.val() || {};
+      const players = Array.isArray(v.players) ? v.players.filter(n => typeof n === "string") : [];
+      if (!players.length && !avSeeded) {
+        avSeeded = true;
+        avDb.ref("avail/players").set(AV_DEFAULT_PLAYERS).catch(() => {});
+        return;
+      }
+      av.players = players;
+      av.marks = v.marks || {};
+      renderAvail();
+      renderWho();
+    }, err => {
+      console.error("[avail] listener cancelled:", err);
+      if (++availTries <= 5) setTimeout(attachAvail, 1000 * availTries);
+      else avStatus(t("○ Zugriff verweigert — DB-Regeln prüfen"));
+    });
+  })();
+
+  let logTries = 0;
+  (function attachLog() {
+    avDb.ref("avail/log").limitToLast(200).on("value", snap => {
+      logTries = 0;
+      const items = [];
+      snap.forEach(ch => { items.push({ _k: ch.key, ...ch.val() }); });
+      renderLog(items.reverse());
+    }, err => {
+      console.error("[avail/log] listener cancelled:", err);
+      if (++logTries <= 5) setTimeout(attachLog, 1000 * logTries);
+    });
+  })();
 })();
 
 renderAvail();
