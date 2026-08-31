@@ -1059,7 +1059,7 @@ function notifEnabled() {
 function renderNotifBtn() {
   notifBtn.hidden = false;
   notifBtn.textContent = notifEnabled() ? t("🔔 an") : t("🔔 aus");
-  notifBtn.classList.toggle("primary", notifEnabled());
+  notifBtn.classList.toggle("on", notifEnabled());
 }
 notifBtn.addEventListener("click", async () => {
   if (!window.Notification) {

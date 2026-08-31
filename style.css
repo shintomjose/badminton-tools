@@ -82,7 +82,7 @@
     color: var(--text-strong);
     margin: 0; line-height: 1.05;
   }
-  #themeBtn, #langBtn {
+  #themeBtn, #langBtn, #notifBtn {
     font-weight: 700;
     font: inherit;
     background: var(--surface-1);
@@ -92,8 +92,8 @@
     padding: 8px 14px; min-height: 42px;
     cursor: pointer;
   }
-  #themeBtn:hover, #langBtn:hover { background: var(--row-hover); }
-  #themeBtn:focus-visible, #langBtn:focus-visible { outline: none; box-shadow: var(--ring); }
+  #themeBtn:hover, #langBtn:hover, #notifBtn:hover { background: var(--row-hover); }
+  #themeBtn:focus-visible, #langBtn:focus-visible, #notifBtn:focus-visible { outline: none; box-shadow: var(--ring); }
   .tabs {
     flex-basis: 100%;
     display: flex; gap: 2px;
@@ -1022,3 +1022,5 @@
     .toast { bottom: 104px; max-width: 92vw; white-space: normal; }
     #tab-anfahrt iframe { height: calc(100vh - 250px); }
   }
+
+  #notifBtn.on { background: var(--brand-teal); color: var(--accent-on); border-color: transparent; }
