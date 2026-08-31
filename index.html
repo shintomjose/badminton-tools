@@ -1083,65 +1083,69 @@ function toast(msg, undo) {
 (function () {
 const ORIGINAL = [
   {name:"Huber, Ronald"},
+  {name:"Schuba, Leon"},
   {name:"Garalbatin, Rares-Stefan", a:1},
+  {name:"Gramm, Lukas"},
   {name:"von Ey, Mathias"},
-  {name:"Kovalov, Dmytro", a:1},
-  {name:"Gramm, Lukas", note:"1. ab 01.02."},
-  {name:"Schuba, Leon", note:"1. ab 14.12."},
+  {name:"Ezeoke, Jeff"},
   {name:"Beutel, Christian"},
-  {name:"Ahmed Ansari, Aftab", a:1},
-  {name:"Ezeoke, Jeff", note:"Jugendfreigabe"},
-  {name:"Wang, Dongwei", a:1, note:"2. ab 14.12."},
+  {name:"Herrmann, Tobias"},
+  {name:"Zimmermann, Sven", note:"Jugendfreigabe"},
   {name:"Demir, Ergin"},
-  {name:"Herrmann, Tobias", note:"2. ab 14.12."},
-  {name:"Schebesch, Marc", note:"3. ab 14.12."},
-  {name:"Scheuermann, Michael", note:"2. ab 14.12."},
+  {name:"Paulachan, Eby", a:1},
   {name:"Kovar, Peter"},
+  {name:"Scheuermann, Michael"},
   {name:"Rudolph, Kevin"},
   {name:"Gebauer, Rainer"},
-  {name:"Mayer, Tom"},
+  {name:"Gummadi, Naveen Kumar", a:1},
+  {name:"Buck, Max"},
+  {name:"Eppinger, Nick"},
+  {name:"Schebesch, Marc"},
   {name:"Alavala, Rohit Sai Kumar", a:1},
-  {name:"Eppinger, Nick", note:"4. ab 14.12."},
   {name:"Umminger, Markus"},
-  {name:"Bolt-Bevilacqua, Nicolas", note:"3. ab 08.03."},
+  {name:"Bolt-Bevilacqua, Nicolas"},
+  {name:"Rajendraprasad, Anurag", a:1},
+  {name:"Chu, Cuong Xuan", a:1},
+  {name:"Mathew Jose, Shinto", a:1},
+  {name:"Banik, Udayan"},
   {name:"Oechsle, Marc"},
-  {name:"Mathew Jose, Shinto", a:1, note:"4. ab 01.02."},
   {name:"Vogt, Alexander"},
-  {name:"Gummadi, Naveen Kumar", a:1, note:"4. ab 22.02."},
-  {name:"Li, Haowen", a:1},
-  {name:"Chen, Shukun", a:1, note:"abgemeldet 10.06.2026", gone:1},
-  {name:"Mauz, Tilo"},
-  {name:"Zornik, Ewald"},
-  {name:"Wagner, Klaus"},
-  {name:"Cherian, Sanju", a:1},
-  {name:"Oovattil, Shine"},
-  {name:"Ngadi, Adrian", a:1},
+  {name:"Mayer, Tom"},
   {name:"Eppinger, Fabian"},
   {name:"Bisping, Tim"},
   {name:"Stemper, Rouven"},
+  {name:"Li, Haowen", a:1},
   {name:"Koppenhöfer, Markus"},
   {name:"Pelzl, Oskar"},
   {name:"Doopadahalli, Varun", a:1},
   {name:"Guda Vadla, Sai Kumar Reddy", a:1},
   {name:"Regorz, Martin"},
   {name:"Küster, Christian"},
-  {name:"Küster, Matthias", note:"Jugendfreigabe, 4. ab 14.12."},
+  {name:"Küster, Matthias"},
   {name:"Küster, Thomas"},
   {name:"Prabhala, Shreyash Mohit", a:1, note:"Jugendfreigabe"},
+  {name:"Mauz, Tilo"},
   {name:"Goch, Gregor"},
+  {name:"Krieger, Michael"},
+  {name:"Wagner, Klaus"},
   {name:"Haidar, Florian"},
   {name:"Keller, Christoph"},
+  {name:"Ngadi, Adrian", a:1},
+  {name:"Soni, Pranjal", a:1, note:"Jugendfreigabe"},
+  {name:"Narendran, Vyarn Ravi", note:"Jugendfreigabe"},
+  {name:"Zornik, Ewald"},
+  {name:"Cherian, Sanju", a:1},
   {name:"Glück, Wolfgang"},
   {name:"Hockenholz, Simon"},
   {name:"Schuster, Ralf"},
   {name:"Narendran, Vasud", a:1},
   {name:"Hehn, Roland"},
+  {name:"Engmann, Ralf Max"},
 ];
 
 const TEAM_SIZE = 5;
 const MAX_TEAMS = 5;
-const STORE_KEY = "bwbv-ranking-v3";
-const OLD_STORE_KEY_V2 = "bwbv-ranking-v2";
+const STORE_KEY = "bwbv-ranking-v4";
 
 let players, teamSizes;
 load();
@@ -1156,14 +1160,6 @@ function load() {
         && saved.players.every(p => p && typeof p.name === "string")) {
       players = saved.players;
       teamSizes = saved.sizes.map(n => Math.max(0, Math.min(TEAM_SIZE, n | 0)));
-      return;
-    }
-  } catch {}
-  try {
-    const old = JSON.parse(localStorage.getItem(OLD_STORE_KEY_V2));
-    if (Array.isArray(old) && old.length && old.every(p => p && typeof p.name === "string")) {
-      players = old;
-      teamSizes = defaultSizes();
       return;
     }
   } catch {}
@@ -1423,16 +1419,16 @@ render();
 /* ================= TAB 2: Aufstellung (lineup) ================= */
 (function () {
 const ORIGINAL = [
-  { name: "Anurag",  rank: 15, g: "m" },
-  { name: "Chu",     rank: 16, g: "m" },
-  { name: "Shinto",  rank: 17, g: "m" },
-  { name: "Nicolas", rank: 18, g: "m" },
-  { name: "Lucija",  rank: 9,  g: "f" },
-  { name: "Alessia", rank: 10, g: "f" },
+  { name: "Nicolas", rank: 22, g: "m" },
+  { name: "Anurag",  rank: 23, g: "m" },
+  { name: "Chu",     rank: 24, g: "m" },
+  { name: "Shinto",  rank: 25, g: "m" },
+  { name: "Lucija",  rank: 10, g: "f" },
   { name: "Carolin", rank: 11, g: "f" },
+  { name: "Alessia", rank: 12, g: "f" },
 ];
 
-const STORE_KEY = "nuliga-lineup-v2";
+const STORE_KEY = "nuliga-lineup-v3";
 
 let state = load();
 
