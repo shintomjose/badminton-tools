@@ -850,6 +850,7 @@ function avLogWrite(entry) {
 
 function renderLog(items) {
   const el = document.getElementById("avLog");
+  document.getElementById("avLogClear").hidden = !items.length;
   if (!items.length) {
     el.innerHTML = `<li class="av-log-empty">Noch keine Änderungen</li>`;
     return;
