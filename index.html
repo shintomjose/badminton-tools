@@ -224,6 +224,28 @@
     * { transition: none !important; }
   }
 
+  [data-pin-protect] .pin-gate { display: none; }
+  [data-pin-protect].pin-locked > :not(.pin-gate) { display: none !important; }
+  [data-pin-protect].pin-locked .pin-gate { display: flex; justify-content: center; padding: 36px 12px; }
+  .pin-box {
+    text-align: center;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 26px 30px;
+    max-width: 340px;
+  }
+  .pin-box p { color: var(--text-muted); margin: 8px 0 0; font-size: 0.9em; }
+  .pin-box form { display: flex; gap: 8px; margin-top: 14px; justify-content: center; }
+  .pin-box input {
+    font: inherit; text-align: center; letter-spacing: 0.3em;
+    width: 7em; min-width: 0;
+    background: var(--surface-2); color: var(--text-strong);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 8px; min-height: 44px;
+  }
+  .pin-box input:focus-visible { outline: none; box-shadow: var(--ring); }
+
   .toast {
     position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
     background: var(--surface-2); color: var(--text-strong);
@@ -1136,14 +1158,34 @@
         <button type="submit" class="btn primary">+</button>
       </form>
     </section>
-    <section class="panel">
+    <section class="panel" data-pin-protect>
+      <div class="pin-gate">
+        <div class="pin-box">
+          <h2>🔒 Verlauf geschützt</h2>
+          <p>PIN eingeben, um den Verlauf zu sehen.</p>
+          <form class="pin-gate-form">
+            <input type="password" inputmode="numeric" maxlength="12" placeholder="PIN" aria-label="PIN">
+            <button class="btn primary" type="submit">Entsperren</button>
+          </form>
+        </div>
+      </div>
       <h2>Verlauf <span class="hint">— wer hat was geändert</span></h2>
       <ul class="av-log" id="avLog"><li class="av-log-empty">Noch keine Änderungen</li></ul>
     </section>
   </section>
 
   <!-- ============ TAB 4: Anfahrt ============ -->
-  <section class="tab-panel" id="tab-anfahrt" role="tabpanel" aria-labelledby="tabbtn-anfahrt" hidden>
+  <section class="tab-panel" id="tab-anfahrt" role="tabpanel" aria-labelledby="tabbtn-anfahrt" data-pin-protect hidden>
+    <div class="pin-gate">
+      <div class="pin-box">
+        <h2>🔒 Geschützter Bereich</h2>
+        <p>PIN eingeben, um fortzufahren.</p>
+        <form class="pin-gate-form">
+          <input type="password" inputmode="numeric" maxlength="12" placeholder="PIN" aria-label="PIN">
+          <button class="btn primary" type="submit">Entsperren</button>
+        </form>
+      </div>
+    </div>
     <p class="tab-sub">Vereinsdistanzen Bezirksliga „Neckar-Odenwald" (3-4) 2026/2027 — Zeile oder Marker anklicken für Fahrroute ab Bad Wimpfen</p>
     <iframe id="distFrame" title="Vereinsdistanzen Karte und Tabelle" srcdoc="<!DOCTYPE html>
 <html lang=&quot;de&quot;><head><meta charset=&quot;utf-8&quot;><meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;>
@@ -1255,7 +1297,17 @@ map.fitBounds(allBounds,{padding:[40,40]});
   </section>
 
   <!-- ============ TAB 4: Shop ============ -->
-  <section class="tab-panel" id="tab-shop" role="tabpanel" aria-labelledby="tabbtn-shop" hidden>
+  <section class="tab-panel" id="tab-shop" role="tabpanel" aria-labelledby="tabbtn-shop" data-pin-protect hidden>
+    <div class="pin-gate">
+      <div class="pin-box">
+        <h2>🔒 Geschützter Bereich</h2>
+        <p>PIN eingeben, um fortzufahren.</p>
+        <form class="pin-gate-form">
+          <input type="password" inputmode="numeric" maxlength="12" placeholder="PIN" aria-label="PIN">
+          <button class="btn primary" type="submit">Entsperren</button>
+        </form>
+      </div>
+    </div>
     <p class="tab-sub">VICTOR Vereinsangebot — UVP durchgestrichen, Vereinspreis in Teal · Warenkorb wird lokal gespeichert</p>
     <div class="shop-controls">
       <input id="shopSearch" type="search" placeholder="Suchen: Name, Artikelnummer, Farbe …" autocomplete="off">
@@ -1370,6 +1422,37 @@ function toast(msg, undo) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove("show"), undo ? 6000 : 2200);
 }
+
+/* ---- PIN-Schutz für Anfahrt, Shop und Verlauf ---- */
+const PIN_HASH = "67be10d98e9ab6d770578f47763baa3bec8e6b3ce68f323cafe00a65ffa43f0d";
+const PIN_KEY = "pin-unlock-v1";
+async function sha256Hex(s) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+function pinUnlocked() { return localStorage.getItem(PIN_KEY) === PIN_HASH; }
+function applyPinLocks() {
+  document.querySelectorAll("[data-pin-protect]").forEach(el =>
+    el.classList.toggle("pin-locked", !pinUnlocked()));
+}
+document.addEventListener("submit", async e => {
+  const form = e.target.closest("form.pin-gate-form");
+  if (!form) return;
+  e.preventDefault();
+  const inp = form.querySelector("input");
+  let h = "";
+  try { h = await sha256Hex(inp.value.trim()); } catch {}
+  if (h === PIN_HASH) {
+    localStorage.setItem(PIN_KEY, h);
+    applyPinLocks();
+    toast("Entsperrt");
+  } else {
+    inp.value = "";
+    toast("Falscher PIN");
+    inp.focus();
+  }
+});
+applyPinLocks();
 </script>
 
 <script>
@@ -2276,9 +2359,12 @@ function load() {
       if (!("team" in s)) {
         /* Migration: alter Speicherstand ohne Mannschafts-Pill → Mannschaft 4 laden */
         s.team = 4;
-        s.selected = teamMembers(4).filter(n => s.players.some(p => p.name === n));
         s.hd = null; s.dd = null; s.gd = null;
         s.he = null; s.de = null;
+      }
+      if (s.team) {
+        /* Teams-Einteilung (Tab 1) ist die Quelle: Auswahl bei jedem Laden neu übernehmen */
+        s.selected = teamMembers(s.team).filter(n => s.players.some(p => p.name === n));
       }
       return s;
     }
