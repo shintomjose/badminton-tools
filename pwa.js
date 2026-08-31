@@ -13,11 +13,11 @@
   }
 
   addTag("link", { rel: "manifest", href: "manifest.webmanifest" });
-  addTag("meta", { name: "theme-color", content: "#0C1210" });
+  addTag("meta", { name: "theme-color", content: "#EFF3F0" });
   addTag("link", { rel: "apple-touch-icon", href: "icons/apple-touch-icon.png" });
   addTag("meta", { name: "mobile-web-app-capable", content: "yes" });
   addTag("meta", { name: "apple-mobile-web-app-capable", content: "yes" });
-  addTag("meta", { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" });
+  addTag("meta", { name: "apple-mobile-web-app-status-bar-style", content: "default" });
   addTag("meta", { name: "apple-mobile-web-app-title", content: "Badminton" });
 
   /* ---- Offline-Anzeige ---- */

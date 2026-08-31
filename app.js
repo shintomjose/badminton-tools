@@ -217,6 +217,8 @@ const TAB_KEY = "bwbv-tools-tab";
 function applyTheme(t) {
   document.documentElement.dataset.theme = t;
   localStorage.setItem(THEME_KEY, t);
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.content = t === "dark" ? "#0C1210" : "#EFF3F0";
   const f = document.getElementById("distFrame");
   try {
     if (f && f.contentDocument) f.contentDocument.documentElement.dataset.theme = t;
