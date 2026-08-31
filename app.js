@@ -163,6 +163,7 @@ const STATIC_EN_HTML = [
   ["#tab-termine .rounds .panel:nth-child(2) h2", "Second half <span class=\"hint\">— Jan–Mar 2027</span>"],
 ];
 const STATIC_EN_ATTR = [
+  ["#rkAddToggle", "title", "Add player"],
   ["#rkAddName", "placeholder", "Last name, first name"],
   ["#rkAddNote", "placeholder", "Status / note (optional)"],
   ["#luAddName", "placeholder", "Name"],
@@ -219,7 +220,7 @@ function applyTheme(t) {
   document.documentElement.dataset.theme = t;
   localStorage.setItem(THEME_KEY, t);
   const tc = document.querySelector('meta[name="theme-color"]');
-  if (tc) tc.content = t === "dark" ? "#0C1210" : "#EFF3F0";
+  if (tc) tc.content = t === "dark" ? "#0F1512" : "#F3F6F3";
   const f = document.getElementById("distFrame");
   try {
     if (f && f.contentDocument) f.contentDocument.documentElement.dataset.theme = t;
@@ -728,6 +729,16 @@ list.addEventListener("click", e => {
   moveItem(i, i + +btn.dataset.move);
 });
 
+/* Formular erst nach Klick auf + zeigen */
+document.getElementById("rkAddToggle").addEventListener("click", e => {
+  const form = document.getElementById("rkAddForm");
+  const open = form.hidden;
+  form.hidden = !open;
+  e.currentTarget.setAttribute("aria-expanded", String(open));
+  e.currentTarget.textContent = open ? "×" : "+";
+  if (open) document.getElementById("rkAddName").focus();
+});
+
 document.getElementById("rkAddForm").addEventListener("submit", e => {
   e.preventDefault();
   const name = document.getElementById("rkAddName").value.trim();
@@ -806,11 +817,10 @@ function renderMatches(tableId, round) {
       <td class="mtime">${m.time}</td>
       <td class="mopp">${esc(m.opp)}</td>
       <td><span class="badge-ha ${m.home ? "h" : "a"}">${t(m.home ? "Heim" : "Auswärts")}</span></td>
-      <td class="mtime">${esc(m.ort)}</td>
     </tr>`;
   }).join("");
   document.getElementById(tableId).innerHTML = `
-    <thead><tr><th>${t("Datum")}</th><th>${t("Zeit")}</th><th>${t("Gegner")}</th><th></th><th>${t("Ort")}</th></tr></thead>
+    <thead><tr><th>${t("Datum")}</th><th>${t("Zeit")}</th><th>${t("Gegner")}</th><th></th></tr></thead>
     <tbody>${rows}</tbody>`;
 }
 renderMatches("mtVor", "vor");

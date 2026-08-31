@@ -13,7 +13,7 @@
   }
 
   addTag("link", { rel: "manifest", href: "manifest.webmanifest" });
-  addTag("meta", { name: "theme-color", content: "#EFF3F0" });
+  addTag("meta", { name: "theme-color", content: "#F3F6F3" });
   addTag("link", { rel: "apple-touch-icon", href: "icons/apple-touch-icon.png" });
   addTag("meta", { name: "mobile-web-app-capable", content: "yes" });
   addTag("meta", { name: "apple-mobile-web-app-capable", content: "yes" });
@@ -31,9 +31,14 @@
     }
     #pwaUpdate {
       position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
-      background: #00FACD; color: #04221C; font: 600 13px/1 system-ui, sans-serif;
+      background: var(--brand-teal, #0C8F6C); color: var(--accent-on, #fff);
+      font: 600 13px/1 system-ui, sans-serif;
       padding: 10px 16px; border: 0; border-radius: 999px; z-index: 9999;
       cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    }
+    /* über der mobilen Bottom-Navigation schweben */
+    @media (max-width: 720px) {
+      #pwaOffline, #pwaUpdate { bottom: calc(96px + env(safe-area-inset-bottom)); }
     }
   `;
   document.head.appendChild(style);

@@ -42,12 +42,13 @@
     <div class="tab-toolbar">
       <button id="rkCopyBtn" class="btn primary">Liste kopieren</button>
       <button id="rkResetBtn" class="btn">Zurücksetzen</button>
+      <button id="rkAddToggle" class="btn icon-add" aria-expanded="false" aria-controls="rkAddForm" title="Spieler hinzufügen">+</button>
     </div>
     <div class="seg-tabs" role="tablist" aria-label="Rangliste">
       <button id="rkTabM" role="tab" aria-selected="true">Herren</button>
       <button id="rkTabF" role="tab" aria-selected="false">Damen</button>
     </div>
-    <form id="rkAddForm" class="add-form">
+    <form id="rkAddForm" class="add-form" hidden>
       <input id="rkAddName" type="text" placeholder="Name, Vorname" required autocomplete="off">
       <label class="chk"><input id="rkAddA" type="checkbox"> A</label>
       <input id="rkAddNote" type="text" placeholder="Status / Notiz (optional)" autocomplete="off">
