@@ -92,6 +92,14 @@ window.fbReady = new Promise(resolve => {
   firebase.auth().signInAnonymously().catch(() => resolve(null));
 });
 
+/* PIN prüft sich selbst, sobald 4 Zeichen eingegeben sind */
+document.addEventListener("input", e => {
+  const inp = e.target.closest("form.pin-gate-form input");
+  if (!inp || inp.value.trim().length < 4) return;
+  if (inp.form.requestSubmit) inp.form.requestSubmit();
+  else inp.form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+});
+
 document.addEventListener("submit", async e => {
   const form = e.target.closest("form.pin-gate-form");
   if (!form) return;
