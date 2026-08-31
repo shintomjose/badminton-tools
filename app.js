@@ -130,6 +130,8 @@ const STATIC_EN = [
   ["#luAddGender option[value=m]", "Male"],
   ["#luAddGender option[value=f]", "Female"],
   ["#tab-termine .tab-sub", "Match dates SG Heilbronn/Leingarten IV — Bezirksliga „Neckar-Odenwald“ 2026/27 · all matches on Saturdays"],
+  ["#avViewCards", "Cards"],
+  ["#avViewTable", "Table"],
   ["#avTabVor", "First half"],
   ["#avTabRueck", "Second half"],
   ["label[for=avWho]", "I am:"],
@@ -957,6 +959,22 @@ for (const [id, round] of [["avTabVor", "vor"], ["avTabRueck", "rueck"]]) {
     renderAvail();
   });
 }
+
+/* mobil: Karten- oder kompakte Tabellen-Ansicht (nur Sichtbarkeit, Daten identisch) */
+let avView = localStorage.getItem("termine-view") === "table" ? "table" : "cards";
+function applyAvView() {
+  document.getElementById("avViewCards").setAttribute("aria-selected", String(avView === "cards"));
+  document.getElementById("avViewTable").setAttribute("aria-selected", String(avView === "table"));
+  document.getElementById("tab-termine").classList.toggle("av-table-mode", avView === "table");
+}
+for (const [id, view] of [["avViewCards", "cards"], ["avViewTable", "table"]]) {
+  document.getElementById(id).addEventListener("click", () => {
+    avView = view;
+    localStorage.setItem("termine-view", view);
+    applyAvView();
+  });
+}
+applyAvView();
 
 function progressFor(dayKey) {
   let m = 0, f = 0;

@@ -558,11 +558,26 @@
   .me-btn.n.on { background: color-mix(in srgb, var(--danger) 20%, var(--surface-1)); border-color: var(--danger); color: var(--danger); }
   .av-names { margin-top: 10px; font-size: 0.88em; }
   .av-names summary { cursor: pointer; color: var(--text-muted); user-select: none; }
+  .av-view { display: none; }
   @media (max-width: 880px) {
     .avail-scroll { display: none; }
     #availCards { display: grid; gap: 12px; }
     .who-row { flex-wrap: wrap; }
     .who-row select { flex: 1 1 100%; }
+    .av-view { display: flex; }
+    /* kompakte Voll-Tabelle als Alternative zu den Karten */
+    .av-table-mode .avail-scroll { display: block; }
+    .av-table-mode #availCards { display: none; }
+    .av-table-mode .avail-table th, .av-table-mode .avail-table td {
+      padding: 5px 4px; font-size: 0.74rem;
+    }
+    .av-table-mode .avail-table td.av { min-width: 2.2em; font-size: 0.95em; }
+    .av-table-mode .avail-table th:first-child,
+    .av-table-mode .avail-table td:first-child {
+      position: sticky; left: 0; z-index: 1;
+      background: var(--surface-1);
+      max-width: 104px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
   }
   @media (max-width: 480px) {
     .match-table th, .match-table td { padding: 6px 4px; font-size: 0.8em; }
