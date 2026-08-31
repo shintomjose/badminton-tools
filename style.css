@@ -82,7 +82,8 @@
     color: var(--text-strong);
     margin: 0; line-height: 1.05;
   }
-  #themeBtn {
+  #themeBtn, #langBtn {
+    font-weight: 700;
     font: inherit;
     background: var(--surface-1);
     color: var(--text-strong);
@@ -91,8 +92,8 @@
     padding: 8px 14px; min-height: 42px;
     cursor: pointer;
   }
-  #themeBtn:hover { background: var(--row-hover); }
-  #themeBtn:focus-visible { outline: none; box-shadow: var(--ring); }
+  #themeBtn:hover, #langBtn:hover { background: var(--row-hover); }
+  #themeBtn:focus-visible, #langBtn:focus-visible { outline: none; box-shadow: var(--ring); }
   .tabs {
     flex-basis: 100%;
     display: flex; gap: 2px;

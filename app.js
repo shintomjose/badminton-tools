@@ -1,5 +1,207 @@
 window.VICTOR_IMGS={"202546":{"t":"img/p001.jpg","f":"img/p002.jpg","w":"img/p003.jpg"},"202414":{"t":"img/p004.jpg","f":"img/p005.jpg","w":"img/p006.jpg"},"202286":{"t":"img/p007.jpg","f":"img/p008.jpg","w":"img/p009.jpg"},"202547":{"t":"img/p010.jpg","f":"img/p011.jpg","w":"img/p012.jpg"},"202694":{"t":"img/p013.jpg","f":"img/p014.jpg","w":"img/p015.jpg"},"200285":{"t":"img/p016.jpg","f":"img/p017.jpg","w":"img/p018.jpg"},"202335":{"t":"img/p019.jpg","f":"img/p020.jpg","w":"img/p021.jpg"},"202886":{"t":"img/p022.jpg","f":"img/p023.jpg","w":"img/p024.jpg"},"202884":{"t":"img/p022.jpg","f":"img/p023.jpg","w":"img/p025.jpg"},"202885":{"t":"img/p022.jpg","f":"img/p023.jpg","w":"img/p026.jpg"},"202420":{"t":"img/p027.jpg","f":"img/p028.jpg","w":"img/p029.jpg"},"202173":{"t":"img/p030.jpg","f":"img/p031.jpg","w":"img/p032.jpg"},"202174":{"t":"img/p033.jpg","f":"img/p034.jpg","w":"img/p035.jpg"},"202548":{"t":"img/p036.jpg","f":"img/p037.jpg","w":"img/p038.jpg"},"202549":{"t":"img/p039.jpg","f":"img/p040.jpg","w":"img/p041.jpg"},"202550":{"t":"img/p042.jpg","f":"img/p043.jpg","w":"img/p044.jpg"},"201660":{"t":"img/p045.jpg","f":"img/p046.jpg","w":"img/p047.jpg"},"202551":{"t":"img/p048.jpg","f":"img/p049.jpg","w":"img/p050.jpg"},"201657":{"t":"img/p051.jpg","f":"img/p052.jpg","w":"img/p053.jpg"},"303700":{"t":"img/p054.jpg","f":"img/p055.jpg","w":"img/p056.jpg"},"202380":{"t":"img/p057.jpg","f":"img/p058.jpg"},"202289":{"t":"img/p059.jpg","f":"img/p060.jpg","w":"img/p061.jpg"},"202552":{"t":"img/p062.jpg","f":"img/p063.jpg","w":"img/p064.jpg"},"202887":{"t":"img/p065.jpg","f":"img/p066.jpg","w":"img/p067.jpg"},"202888":{"t":"img/p068.jpg","f":"img/p069.jpg","w":"img/p070.jpg"},"202889":{"t":"img/p071.jpg","f":"img/p072.jpg","w":"img/p073.jpg"},"202553":{"t":"img/p074.jpg","f":"img/p075.jpg"},"202502":{"t":"img/p076.jpg","f":"img/p077.jpg","w":"img/p078.jpg"},"302527":{"t":"img/p079.jpg","f":"img/p080.jpg","w":"img/p081.jpg"},"202645":{"t":"img/p082.jpg","f":"img/p083.jpg"},"302600":{"t":"img/p084.jpg","f":"img/p085.jpg","w":"img/p086.jpg"},"202695":{"t":"img/p087.jpg","f":"img/p088.jpg","w":"img/p089.jpg"},"302181":{"t":"img/p090.jpg","f":"img/p091.jpg","w":"img/p092.jpg"},"202515":{"t":"img/p093.jpg","f":"img/p094.jpg","w":"img/p095.jpg"},"202715":{"t":"img/p096.jpg","f":"img/p097.jpg","w":"img/p098.jpg"},"202741":{"t":"img/p099.jpg","f":"img/p100.jpg"},"202678":{"t":"img/p101.jpg","f":"img/p102.jpg","w":"img/p103.jpg"},"202527":{"t":"img/p104.jpg","f":"img/p105.jpg","w":"img/p106.jpg"},"202106":{"t":"img/p107.jpg","f":"img/p108.jpg","w":"img/p109.jpg"},"202814":{"t":"img/p110.jpg","f":"img/p111.jpg","w":"img/p112.jpg"},"202825":{"t":"img/p113.jpg","f":"img/p114.jpg","w":"img/p115.jpg"},"202831":{"t":"img/p116.jpg","f":"img/p117.jpg","w":"img/p118.jpg"},"202842":{"t":"img/p119.jpg","f":"img/p120.jpg","w":"img/p121.jpg"},"202848":{"t":"img/p122.jpg","f":"img/p123.jpg","w":"img/p124.jpg"},"202859":{"t":"img/p125.jpg","f":"img/p126.jpg","w":"img/p127.jpg"},"202865":{"t":"img/p128.jpg","f":"img/p129.jpg","w":"img/p130.jpg"},"202876":{"t":"img/p131.jpg","f":"img/p132.jpg"},"202571":{"t":"img/p133.jpg","f":"img/p134.jpg","w":"img/p135.jpg"},"202582":{"t":"img/p136.jpg","f":"img/p137.jpg","w":"img/p138.jpg"},"202588":{"t":"img/p139.jpg","f":"img/p140.jpg","w":"img/p141.jpg"},"202599":{"t":"img/p142.jpg","f":"img/p143.jpg","w":"img/p144.jpg"},"202554":{"t":"img/p145.jpg","f":"img/p146.jpg","w":"img/p147.jpg"},"202565":{"t":"img/p148.jpg","f":"img/p149.jpg","w":"img/p150.jpg"},"202605":{"t":"img/p151.jpg","f":"img/p152.jpg","w":"img/p153.jpg"},"202616":{"t":"img/p154.jpg","f":"img/p155.jpg","w":"img/p156.jpg"},"202770":{"t":"img/p157.jpg","f":"img/p158.jpg"},"202788":{"t":"img/p159.jpg","f":"img/p160.jpg","w":"img/p161.jpg"},"202776":{"t":"img/p162.jpg","f":"img/p163.jpg","w":"img/p164.jpg"},"202794":{"t":"img/p165.jpg","f":"img/p166.jpg","w":"img/p167.jpg"},"202764":{"t":"img/p168.jpg","f":"img/p169.jpg","w":"img/p170.jpg"},"202782":{"t":"img/p171.jpg","f":"img/p172.jpg","w":"img/p173.jpg"},"202013":{"t":"img/p174.jpg","f":"img/p175.jpg","w":"img/p176.jpg"},"148599":{"t":"img/p177.jpg","f":"img/p178.jpg","w":"img/p179.jpg"},"148694":{"t":"img/p180.jpg","f":"img/p181.jpg"},"200172":{"t":"img/p182.jpg","f":"img/p183.jpg","w":"img/p184.jpg"},"200160":{"t":"img/p185.jpg","f":"img/p186.jpg","w":"img/p187.jpg"},"200166":{"t":"img/p188.jpg","f":"img/p189.jpg","w":"img/p190.jpg"},"200154":{"t":"img/p191.jpg","f":"img/p192.jpg","w":"img/p141.jpg"},"202964":{"t":"img/p193.jpg","f":"img/p194.jpg","w":"img/p195.jpg"},"202958":{"t":"img/p196.jpg","f":"img/p197.jpg","w":"img/p198.jpg"},"202800":{"t":"img/p199.jpg","f":"img/p200.jpg","w":"img/p201.jpg"},"202630":{"t":"img/p202.jpg","f":"img/p203.jpg","w":"img/p204.jpg"},"136900":{"t":"img/p205.jpg","f":"img/p206.jpg","w":"img/p207.jpg"},"202806":{"t":"img/p208.jpg","f":"img/p209.jpg","w":"img/p210.jpg"},"200146":{"t":"img/p211.jpg","f":"img/p212.jpg","w":"img/p213.jpg"},"202935":{"t":"img/p214.jpg","f":"img/p215.jpg","w":"img/p216.jpg"},"202267":{"t":"img/p217.jpg","f":"img/p218.jpg","w":"img/p219.jpg"},"202256":{"t":"img/p220.jpg","f":"img/p221.jpg","w":"img/p222.jpg"},"201629":{"t":"img/p223.jpg","f":"img/p224.jpg"},"202381":{"t":"img/p225.jpg","f":"img/p226.jpg","w":"img/p227.jpg"},"202382":{"t":"img/p225.jpg","f":"img/p226.jpg","w":"img/p228.jpg"},"173900":{"t":"img/p229.jpg","f":"img/p230.jpg"},"173910":{"t":"img/p231.jpg","f":"img/p232.jpg","w":"img/p233.jpg"},"202194":{"t":"img/p234.jpg","f":"img/p235.jpg","w":"img/p236.jpg"},"202195":{"t":"img/p234.jpg","f":"img/p235.jpg","w":"img/p237.jpg"},"202418":{"t":"img/p238.jpg","f":"img/p239.jpg","w":"img/p240.jpg"},"202419":{"t":"img/p238.jpg","f":"img/p239.jpg","w":"img/p241.jpg"},"176400":{"t":"img/p242.jpg","f":"img/p243.jpg","w":"img/p244.jpg"},"173436":{"t":"img/p245.jpg","f":"img/p246.jpg","w":"img/p247.jpg"},"173443":{"t":"img/p245.jpg","f":"img/p246.jpg","w":"img/p248.jpg"},"171500":{"t":"img/p249.jpg","f":"img/p250.jpg","w":"img/p251.jpg"},"171300":{"t":"img/p252.jpg","f":"img/p253.jpg","w":"img/p254.jpg"},"171301":{"t":"img/p255.jpg","f":"img/p256.jpg","w":"img/p257.jpg"},"171789":{"t":"img/p258.jpg","f":"img/p259.jpg","w":"img/p260.jpg"},"171711":{"t":"img/p261.jpg","f":"img/p262.jpg","w":"img/p141.jpg"},"171802":{"t":"img/p263.jpg","f":"img/p264.jpg","w":"img/p265.jpg"},"171993":{"t":"img/p266.jpg","f":"img/p267.jpg","w":"img/p268.jpg"},"202759":{"t":"img/p269.jpg","f":"img/p270.jpg","w":"img/p271.jpg"},"202760":{"t":"img/p272.jpg","f":"img/p273.jpg","w":"img/p274.jpg"},"202761":{"t":"img/p275.jpg","f":"img/p276.jpg","w":"img/p277.jpg"},"202762":{"t":"img/p278.jpg","f":"img/p279.jpg","w":"img/p280.jpg"},"202890":{"t":"img/p281.jpg","f":"img/p282.jpg","w":"img/p283.jpg"},"202763":{"t":"img/p284.jpg","f":"img/p285.jpg","w":"img/p286.jpg"},"202622":{"t":"img/p287.jpg","f":"img/p288.jpg","w":"img/p289.jpg"},"202623":{"t":"img/p290.jpg","f":"img/p291.jpg","w":"img/p292.jpg"},"202624":{"t":"img/p293.jpg","f":"img/p294.jpg","w":"img/p295.jpg"},"202625":{"t":"img/p296.jpg","f":"img/p297.jpg","w":"img/p298.jpg"},"302485":{"t":"img/p299.jpg","f":"img/p300.jpg","w":"img/p301.jpg"},"302486":{"t":"img/p302.jpg","f":"img/p303.jpg","w":"img/p304.jpg"},"302256":{"t":"img/p305.jpg","f":"img/p306.jpg","w":"img/p307.jpg"},"202343":{"t":"img/p308.jpg","f":"img/p309.jpg","w":"img/p310.jpg"},"177310":{"t":"img/p311.jpg","f":"img/p312.jpg","w":"img/p313.jpg"},"177410":{"t":"img/p314.jpg","f":"img/p315.jpg","w":"img/p141.jpg"},"171600":{"t":"img/p316.jpg","f":"img/p317.jpg","w":"img/p318.jpg"}};
 
+/* ================= i18n: Deutsch (Standard) / English ================= */
+const LANG_KEY = "bwbv-lang";
+const LANG = localStorage.getItem(LANG_KEY) === "en" ? "en" : "de";
+document.documentElement.lang = LANG;
+const DATE_LOCALE = LANG === "en" ? "en-GB" : "de-DE";
+
+/* dynamische Strings: deutscher Text ist der Schlüssel */
+const EN = {
+  "Cloud-Speichern fehlgeschlagen": "Cloud save failed",
+  "Position in Mannschaft": "Position in team",
+  "Position auf Warteliste": "Position on waitlist",
+  "leer — Spieler hierher ziehen": "empty — drag players here",
+  "Warteliste": "Waitlist",
+  "Rückgängig": "Undo",
+  "Liste in Zwischenablage kopiert": "List copied to clipboard",
+  "Kopieren fehlgeschlagen": "Copy failed",
+  "Herren": "Men",
+  "Damen": "Women",
+  "Heim": "Home",
+  "Auswärts": "Away",
+  "Eintrag löschen": "Delete entry",
+  "Sicher?": "Sure?",
+  "Wirklich ALLE löschen?": "Really delete ALL?",
+  "Eintrag gelöscht": "Entry deleted",
+  "Verlauf komplett gelöscht": "History cleared",
+  "Löschen fehlgeschlagen": "Delete failed",
+  "Keine Verbindung zur Datenbank": "No database connection",
+  "Bitte zuerst oben deinen Namen wählen": "Please pick your name above first",
+  "Du kannst nur deine eigene Verfügbarkeit ändern": "You can only change your own availability",
+  "Speichern fehlgeschlagen": "Save failed",
+  "Spieler schon in der Liste": "Player already in the list",
+  "Spieler existiert bereits": "Player already exists",
+  "○ offline — keine Verbindung": "○ offline — no connection",
+  "○ Zugriff verweigert — DB-Regeln prüfen": "○ access denied — check DB rules",
+  "Verbinde mit Datenbank…": "Connecting to database…",
+  "zur Liste hinzugefügt": "added to the list",
+  "✓ verfügbar": "✓ available",
+  "✓ Dabei": "✓ I'm in",
+  "✗ Keine Zeit": "✗ Can't play",
+  "Vorrunde": "First half",
+  "Rückrunde": "Second half",
+  "Datum": "Date", "Zeit": "Time", "Gegner": "Opponent", "Ort": "Venue", "Spieler": "Player",
+  "— Spieler wählen": "— pick players",
+  "— keine Dame verfügbar": "— no woman available",
+  "— noch nicht gewählt": "— not chosen yet",
+  "Einzel-Herren (3):": "Men's singles (3):",
+  "Dameneinzel:": "Women's singles:",
+  "Beste Chemie": "Best chemistry",
+  "⚖ Rangsummen gleich — Kapitän entscheidet die Reihenfolge.": "⚖ Equal rank sums — captain decides the order.",
+  "Mindestens 4 Herren anhaken — dann erscheinen die 3 möglichen Doppel-Kombinationen.": "Check at least 4 men — the 3 possible doubles combinations will appear.",
+  "Mindestens 2 Damen anhaken.": "Check at least 2 women.",
+  "Herren und Damen anhaken.": "Check men and women.",
+  "Erst Herrendoppel-Option und Damendoppel wählen — dann zeigt sich, wer fürs Mixed frei ist.": "Pick the men's doubles option and the women's doubles first — then you'll see who is free for mixed.",
+  "Niemand hat mehr eine Disziplin frei — mehr Spieler anhaken oder andere Doppel wählen.": "Nobody has a free event slot — check more players or pick different doubles.",
+  "Aufstellung": "Lineup",
+  "Aufstellung kopiert": "Lineup copied",
+  "Auswahl geleert — neue Mannschaft anhaken": "Selection cleared — check a new team",
+  "Kader zurückgesetzt (Chemie-Sterne bleiben)": "Squad reset (chemistry stars kept)",
+  "Warenkorb geleert": "Cart cleared",
+  "Warenkorb leer": "Cart is empty",
+  "Bestellung in Zwischenablage kopiert": "Order copied to clipboard",
+  "Alle": "All",
+  "Schläger": "Rackets", "Schuhe": "Shoes", "Textilien": "Apparel",
+  "Griffbänder": "Grips", "Sporttaschen": "Bags", "Accessoires": "Accessories",
+  "In den Korb": "Add to cart",
+  "Im Korb ({0})": "In cart ({0})",
+  "Preise & Shops": "Prices & shops",
+  "Keine Artikel gefunden — Suche oder Kategorie anpassen.": "No items found — adjust search or category.",
+  "Warenkorb leer — Artikel im Shop hinzufügen.": "Cart is empty — add items in the shop.",
+  "HD1": "MD1", "HD2": "MD2", "DD": "WD", "HE1": "MS1", "HE2": "MS2", "HE3": "MS3", "DE": "WS", "GD": "XD",
+  "Sa": "Sat",
+  "Falscher PIN": "Wrong PIN",
+  "Entsperrt": "Unlocked",
+  "Rang\tMannschaft\tPos\tName\tA\tStatus": "Rank\tTeam\tPos\tName\tA\tStatus",
+  /* Vorlagen mit {0}/{1} */
+  "{0} gelöscht": "{0} deleted",
+  "{0} löschen": "Delete {0}",
+  "{0} nach oben": "{0} up",
+  "{0} nach unten": "{0} down",
+  "{0} hinzugefügt (Ende der Warteliste)": "{0} added (end of waitlist)",
+  "Mannschaft {0}": "Team {0}",
+  "{0} Spieler": "{0} players",
+  "Ursprüngliche {0}-Liste wiederhergestellt": "Restored the original {0} ranking",
+  "Angemeldet als {0}": "Signed in as {0}",
+  "Herren (min. {0})": "Men (min. {0})",
+  "Damen (min. {0})": "Women (min. {0})",
+  "· {0} fehlt": "· {0} missing",
+  "· {0} fehlen": "· {0} missing",
+  "{0} verfügbar": "{0} available",
+  "Rang {0}": "Rank {0}",
+  "Mannschaft {0} ist leer": "Team {0} is empty",
+  "Mannschaft {0}: {1} Spieler übernommen": "Team {0}: {1} players selected",
+};
+function t(s) { return LANG === "en" && EN[s] !== undefined ? EN[s] : s; }
+function tt(tpl) {
+  let s = t(tpl);
+  for (let i = 1; i < arguments.length; i++) s = s.replace("{" + (i - 1) + "}", arguments[i]);
+  return s;
+}
+
+/* statische Seiten-Texte (nur bei Englisch ersetzt) */
+const STATIC_EN = [
+  ["#tabbtn-teams .tlabel", "Teams"],
+  ["#tabbtn-lineup .tlabel", "Lineup"],
+  ["#tabbtn-termine .tlabel", "Matches"],
+  ["#tabbtn-anfahrt .tlabel", "Directions"],
+  ["#tabbtn-shop .tlabel", "Shop"],
+  [".brand-eyebrow", "TSG - Heilbronn · Season 2026/27"],
+  ["#tab-teams .tab-sub", "BWBV ranking — drag players to change position · 5 teams · rest on waitlist · shared live"],
+  ["#rkCopyBtn", "Copy list"],
+  ["#rkResetBtn", "Reset"],
+  ["#rkTabM", "Men"],
+  ["#rkTabF", "Women"],
+  ["#tab-lineup .tab-sub", "8 matches: 2 MD · 1 WD · 3 MS · 1 WS · 1 XD — max. 2 events per player (mixed counts as an event)"],
+  [".pill-label", "Team:"],
+  ["#luClearBtn", "Clear selection"],
+  ["#luResetBtn", "Reset squad"],
+  ["#tab-lineup .col-left h2", "Squad <span class=\"hint\">— check = available on match day</span>", "html"],
+  ["#luAddGender option[value=m]", "Male"],
+  ["#luAddGender option[value=f]", "Female"],
+  ["#tab-termine .tab-sub", "Match dates SG Heilbronn/Leingarten IV — Bezirksliga „Neckar-Odenwald“ 2026/27 · all matches on Saturdays"],
+  ["#avTabVor", "First half"],
+  ["#avTabRueck", "Second half"],
+  ["label[for=avWho]", "I am:"],
+  ["#avWho option", "— pick your name —"],
+  ["#avLogClear", "Delete all"],
+  [".av-log-empty", "No changes yet"],
+  ["#avStatus", "connecting…"],
+  ["#tab-anfahrt .tab-sub", "Club distances Bezirksliga „Neckar-Odenwald“ (3-4) 2026/2027 — click a row or marker for the driving route"],
+  ["#tab-shop .tab-sub", "VICTOR club offer — RRP struck through, club price in teal · cart is stored locally"],
+  ["#shopSort option[value=cat]", "Category"],
+  ["#shopSort option[value=priceAsc]", "Price ascending"],
+  ["#shopSort option[value=priceDesc]", "Price descending"],
+  ["#shopSort option[value=discount]", "Biggest saving (€)"],
+  ["#shopSort option[value=name]", "Name A–Z"],
+  ["#cartPanel .cart-head h2", "Cart"],
+  ["#cartClose", "Close ✕"],
+  ["#cartClear", "Clear"],
+  ["#cartCopy", "Copy order"],
+  ["#lbClose", "✕ Close"],
+  ["#lbSrcPdf", "Catalogue image"],
+  ["#lbSrcWeb", "Web image"],
+  ["#lbHint", "Click image to zoom · Esc closes"],
+];
+const STATIC_EN_HTML = [
+  ["#tab-lineup .col-right .panel:nth-child(1) h2", "Singles <span class=\"hint\">— captain picks who plays · order fixed by ranking</span>"],
+  ["#tab-lineup .col-right .panel:nth-child(2) h2", "Men's doubles <span class=\"hint\">— pick an option · MD1 = lower rank sum · ⭐ = chemistry</span>"],
+  ["#tab-lineup .col-right .panel:nth-child(3) h2", "Women's doubles <span class=\"hint\">— pick a pair</span>"],
+  ["#tab-lineup .col-right .panel:nth-child(4) h2", "Mixed <span class=\"hint\">— only players with a free event slot</span>"],
+  ["#tab-lineup .col-right .panel:nth-child(5) h2", "Lineup"],
+  ["#tab-termine .rounds .panel:nth-child(1) h2", "First half <span class=\"hint\">— Oct–Nov 2026</span>"],
+  ["#tab-termine .rounds .panel:nth-child(2) h2", "Second half <span class=\"hint\">— Jan–Mar 2027</span>"],
+];
+const STATIC_EN_ATTR = [
+  ["#rkAddName", "placeholder", "Last name, first name"],
+  ["#rkAddNote", "placeholder", "Status / note (optional)"],
+  ["#luAddName", "placeholder", "Name"],
+  ["#avAddName", "placeholder", "Add player"],
+  ["#shopSearch", "placeholder", "Search: name, article no., colour …"],
+];
+function applyStaticEn() {
+  if (LANG !== "en") return;
+  document.title = "Badminton Tools — TSG - Heilbronn";
+  STATIC_EN.forEach(([sel, txt]) => {
+    const el = document.querySelector(sel);
+    if (el) el.textContent = txt;
+  });
+  STATIC_EN_HTML.forEach(([sel, html]) => {
+    const el = document.querySelector(sel);
+    if (el) el.innerHTML = html;
+  });
+  STATIC_EN_ATTR.forEach(([sel, attr, val]) => {
+    const el = document.querySelector(sel);
+    if (el) el.setAttribute(attr, val);
+  });
+  document.querySelector("#rkAddForm button[type=submit]").textContent = "+ Player";
+  document.querySelectorAll(".pin-box").forEach(box => {
+    const h = box.querySelector("h2"), p = box.querySelector("p");
+    if (h && h.textContent.includes("Verlauf")) { h.textContent = "🔒 History locked"; p.textContent = "Enter PIN to view the history."; }
+    else if (h) { h.textContent = "🔒 Protected area"; p.textContent = "Enter PIN to continue."; }
+  });
+  const verlaufH2 = document.querySelector("#tab-termine [data-pin-protect] > h2");
+  if (verlaufH2) {
+    verlaufH2.childNodes[0].textContent = "History ";
+    verlaufH2.querySelector(".hint").textContent = "— who changed what";
+  }
+  const availH2 = document.querySelector("#tab-termine .panel:nth-child(3) h2");
+  if (availH2 && availH2.querySelector(".hint"))
+    availH2.innerHTML = availH2.innerHTML
+      .replace("Verfügbarkeit", "Availability")
+      .replace("— Klick auf Zelle: — → ✓ → ✗ · live geteilt mit dem Team", "— tap a cell: — → ✓ → ✗ · shared live with the team")
+      .replace(">verbinde…<", ">connecting…<");
+}
+applyStaticEn();
+
+const langBtn = document.getElementById("langBtn");
+langBtn.textContent = LANG === "de" ? "EN" : "DE";
+langBtn.addEventListener("click", () => {
+  localStorage.setItem(LANG_KEY, LANG === "de" ? "en" : "de");
+  location.reload();
+});
+
 /* ================= shared: theme, tabs, toast ================= */
 const THEME_KEY = "bwbv-ranking-theme";
 const TAB_KEY = "bwbv-tools-tab";
@@ -110,10 +312,10 @@ document.addEventListener("submit", async e => {
   if (h === PIN_HASH) {
     localStorage.setItem(PIN_KEY, h);
     applyPinLocks();
-    toast("Entsperrt");
+    toast(t("Entsperrt"));
   } else {
     inp.value = "";
-    toast("Falscher PIN");
+    toast(t("Falscher PIN"));
     inp.focus();
   }
 });
@@ -265,7 +467,7 @@ function setGroup(g, skipRender) {
 }
 function save() {
   localStorage.setItem(STORE_KEY, JSON.stringify(groups));
-  if (rkDb) rkDb.ref("teams").set(groups).catch(() => toast("Cloud-Speichern fehlgeschlagen"));
+  if (rkDb) rkDb.ref("teams").set(groups).catch(() => toast(t("Cloud-Speichern fehlgeschlagen")));
 }
 
 /* geteilte Teams-Einteilung: Firebase ist die Quelle, localStorage nur Offline-Cache */
@@ -321,9 +523,9 @@ function playerRow(p, i, subNo, subTitle) {
       ${p.note ? `<span class="note${p.gone ? " gone" : ""}">${esc(p.note)}</span>` : ""}
     </span>
     <span class="nudge">
-      <button data-move="-1" data-i="${i}" aria-label="${esc(p.name)} nach oben" ${i === 0 ? "disabled" : ""}>▲</button>
-      <button data-move="1" data-i="${i}" aria-label="${esc(p.name)} nach unten" ${i === players.length - 1 ? "disabled" : ""}>▼</button>
-      <button class="del" data-del="${i}" aria-label="${esc(p.name)} löschen">×</button>
+      <button data-move="-1" data-i="${i}" aria-label="${tt("{0} nach oben", esc(p.name))}" ${i === 0 ? "disabled" : ""}>▲</button>
+      <button data-move="1" data-i="${i}" aria-label="${tt("{0} nach unten", esc(p.name))}" ${i === players.length - 1 ? "disabled" : ""}>▼</button>
+      <button class="del" data-del="${i}" aria-label="${tt("{0} löschen", esc(p.name))}">×</button>
     </span>`;
   return li;
 }
@@ -338,20 +540,20 @@ function render(highlightName) {
     const card = document.createElement("section");
     card.className = "team-card";
     card.dataset.team = t;
-    card.innerHTML = `<div class="team-header">Mannschaft ${t + 1}
-      <span class="range">${size} Spieler</span></div>`;
+    card.innerHTML = `<div class="team-header">${tt("Mannschaft {0}", t + 1)}
+      <span class="range">${tt("{0} Spieler", size)}</span></div>`;
     const rows = document.createElement("ul");
     rows.className = "rows";
     for (let k = 0; k < size; k++) {
       const i = from + k;
-      const li = playerRow(players[i], i, k + 1, "Position in Mannschaft");
+      const li = playerRow(players[i], i, k + 1, tt("Position in Mannschaft"));
       if (players[i].name === highlightName) li.classList.add("moved");
       rows.appendChild(li);
     }
     if (size === 0) {
       const empty = document.createElement("li");
       empty.className = "empty-slot";
-      empty.textContent = "leer — Spieler hierher ziehen";
+      empty.textContent = t("leer — Spieler hierher ziehen");
       rows.appendChild(empty);
     }
     card.appendChild(rows);
@@ -362,12 +564,12 @@ function render(highlightName) {
     const card = document.createElement("section");
     card.className = "team-card waitlist";
     card.dataset.team = "wl";
-    card.innerHTML = `<div class="team-header">Warteliste
-      <span class="range">${players.length - cutoff} Spieler</span></div>`;
+    card.innerHTML = `<div class="team-header">${tt("Warteliste")}
+      <span class="range">${tt("{0} Spieler", players.length - cutoff)}</span></div>`;
     const rows = document.createElement("ul");
     rows.className = "rows";
     for (let i = cutoff; i < players.length; i++) {
-      const li = playerRow(players[i], i, i - cutoff + 1, "Position auf Warteliste");
+      const li = playerRow(players[i], i, i - cutoff + 1, t("Position auf Warteliste"));
       if (players[i].name === highlightName) li.classList.add("moved");
       rows.appendChild(li);
     }
@@ -488,8 +690,8 @@ list.addEventListener("click", e => {
     if (team !== null) teamSizes[team]--;
     save();
     render();
-    toast(`${lastDeleted.player.name} gelöscht`, {
-      label: "Rückgängig",
+    toast(tt("{0} gelöscht", lastDeleted.player.name), {
+      label: t("Rückgängig"),
       action() {
         const gr = groups[lastDeleted.g];
         if (lastDeleted.team !== null) {
@@ -522,7 +724,7 @@ document.getElementById("rkAddForm").addEventListener("submit", e => {
   render(p.name);
   e.target.reset();
   document.getElementById("rkAddName").focus();
-  toast(`${p.name} hinzugefügt (Ende der Warteliste)`);
+  toast(tt("{0} hinzugefügt (Ende der Warteliste)", p.name));
 });
 
 document.getElementById("rkResetBtn").addEventListener("click", () => {
@@ -530,7 +732,7 @@ document.getElementById("rkResetBtn").addEventListener("click", () => {
   setGroup(activeG, true);
   save();
   render();
-  toast(`Ursprüngliche ${activeG === "m" ? "Herren" : "Damen"}-Liste wiederhergestellt`);
+  toast(tt("Ursprüngliche {0}-Liste wiederhergestellt", t(activeG === "m" ? "Herren" : "Damen")));
 });
 
 document.getElementById("rkTabM").addEventListener("click", () => setGroup("m"));
@@ -545,12 +747,12 @@ document.getElementById("rkCopyBtn").addEventListener("click", async () => {
     const parts = [p.rank ?? "", t !== null ? `M${t + 1}` : "WL", subNo, p.name, p.a ? "A" : "", p.note || ""];
     return parts.join("\t");
   });
-  const text = "Rang\tMannschaft\tPos\tName\tA\tStatus\n" + lines.join("\n");
+  const text = t("Rang\tMannschaft\tPos\tName\tA\tStatus") + "\n" + lines.join("\n");
   try {
     await navigator.clipboard.writeText(text);
-    toast("Liste in Zwischenablage kopiert");
+    toast(t("Liste in Zwischenablage kopiert"));
   } catch {
-    toast("Kopieren fehlgeschlagen");
+    toast(t("Kopieren fehlgeschlagen"));
   }
 });
 
@@ -583,15 +785,15 @@ function renderMatches(tableId, round) {
     const span = list.filter(x => x.date === m.date).length;
     return `
     <tr data-match="${m.id}"${sameAsPrev ? "" : ' class="date-start"'}>
-      ${sameAsPrev ? "" : `<td class="mdate" rowspan="${span}">${m.day} ${m.date}</td>`}
+      ${sameAsPrev ? "" : `<td class="mdate" rowspan="${span}">${t(m.day)} ${m.date}</td>`}
       <td class="mtime">${m.time}</td>
       <td class="mopp">${esc(m.opp)}</td>
-      <td><span class="badge-ha ${m.home ? "h" : "a"}">${m.home ? "Heim" : "Auswärts"}</span></td>
+      <td><span class="badge-ha ${m.home ? "h" : "a"}">${t(m.home ? "Heim" : "Auswärts")}</span></td>
       <td class="mtime">${esc(m.ort)}</td>
     </tr>`;
   }).join("");
   document.getElementById(tableId).innerHTML = `
-    <thead><tr><th>Datum</th><th>Zeit</th><th>Gegner</th><th></th><th>Ort</th></tr></thead>
+    <thead><tr><th>${t("Datum")}</th><th>${t("Zeit")}</th><th>${t("Gegner")}</th><th></th><th>${t("Ort")}</th></tr></thead>
     <tbody>${rows}</tbody>`;
 }
 renderMatches("mtVor", "vor");
@@ -633,13 +835,13 @@ function renderWho() {
   const cur = whoami();
   const names = [...av.players];
   if (cur && !names.includes(cur)) names.push(cur);
-  sel.innerHTML = `<option value="">— Name wählen —</option>` +
+  sel.innerHTML = `<option value="">${t("— Name wählen —")}</option>` +
     names.map(n => `<option value="${esc(n)}"${n === cur ? " selected" : ""}>${esc(n)}</option>`).join("");
 }
 document.getElementById("avWho").addEventListener("change", e => {
   localStorage.setItem(WHO_KEY, e.target.value);
   renderAvail();
-  if (e.target.value) toast(`Angemeldet als ${e.target.value}`);
+  if (e.target.value) toast(tt("Angemeldet als {0}", e.target.value));
 });
 
 function avLogWrite(entry) {
@@ -653,7 +855,7 @@ function renderLog(items) {
     return;
   }
   const fmtT = t => t
-    ? new Date(t).toLocaleString("de-DE", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+    ? new Date(t).toLocaleString(DATE_LOCALE, { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
     : "";
 
   /* volle Historie: jeder Klick bleibt sichtbar, gruppiert nach Spieltag, neueste zuerst */
@@ -668,7 +870,7 @@ function renderLog(items) {
     if (!list.length) return;
     const multi = dt.matches.length > 1;
     parts.push(`<li class="log-day">
-      <div class="log-date">${dt.day} ${dt.date}</div>
+      <div class="log-date">${t(dt.day)} ${dt.date}</div>
       ${list.map(it => {
         const m = dt.matches.find(x => x.key === it.day);
         const cls = it.to === "y" ? " y" : it.to === "n" ? " n" : "";
@@ -676,16 +878,16 @@ function renderLog(items) {
           <span class="log-entry"><strong>${esc(it.player)}</strong>${multi && m ? ` <span class="log-time">${m.time}</span>` : ""}
           ${avSym(it.from)} → ${avSym(it.to)}
           <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span>
-          <button type="button" class="log-del" data-logdel="${esc(it._k)}" aria-label="Eintrag löschen">×</button></div>`;
+          <button type="button" class="log-del" data-logdel="${esc(it._k)}" aria-label="${t("Eintrag löschen")}">×</button></div>`;
       }).join("")}
     </li>`);
   });
   adds.forEach(it => {
     parts.push(`<li class="log-day">
       <div class="log-row"><span class="log-mark">+</span>
-        <span class="log-entry"><strong>${esc(it.player)}</strong> zur Liste hinzugefügt
+        <span class="log-entry"><strong>${esc(it.player)}</strong> ${t("zur Liste hinzugefügt")}
         <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span>
-        <button type="button" class="log-del" data-logdel="${esc(it._k)}" aria-label="Eintrag löschen">×</button></div>
+        <button type="button" class="log-del" data-logdel="${esc(it._k)}" aria-label="${t("Eintrag löschen")}">×</button></div>
     </li>`);
   });
   el.innerHTML = parts.length ? parts.join("") : `<li class="av-log-empty">Noch keine Änderungen</li>`;
@@ -698,7 +900,7 @@ function renderAvail() {
   const days = visDays();
   document.getElementById("avTabVor").setAttribute("aria-selected", avRound === "vor");
   document.getElementById("avTabRueck").setAttribute("aria-selected", avRound === "rueck");
-  const head = `<thead><tr><th>Spieler</th>${days.map(d =>
+  const head = `<thead><tr><th>${t("Spieler")}</th>${days.map(d =>
     `<th>${d.date.slice(0, 6)}<br><span class="th-time">${d.time}</span></th>`).join("")}</tr></thead>`;
   const body = av.players.map(name => `<tr>
     <td class="avname">${esc(name)}</td>
@@ -712,10 +914,10 @@ function renderAvail() {
   const progCell = (cnt, min) =>
     `<td class="prog-cell ${cnt >= min ? "ok" : "miss"}">${cnt}/${min}</td>`;
   const foot = `
-    <tr class="av-prog"><td>Herren (min. ${MIN_M})</td>${days.map(d => progCell(progressFor(d.key).m, MIN_M)).join("")}</tr>
-    <tr class="av-prog"><td>Damen (min. ${MIN_F})</td>${days.map(d => progCell(progressFor(d.key).f, MIN_F)).join("")}</tr>`;
+    <tr class="av-prog"><td>${tt("Herren (min. {0})", MIN_M)}</td>${days.map(d => progCell(progressFor(d.key).m, MIN_M)).join("")}</tr>
+    <tr class="av-prog"><td>${tt("Damen (min. {0})", MIN_F)}</td>${days.map(d => progCell(progressFor(d.key).f, MIN_F)).join("")}</tr>`;
   const empty = av.players.length ? "" :
-    `<tr><td colspan="${days.length + 1}" style="color:var(--text-muted);font-style:italic">Verbinde mit Datenbank…</td></tr>`;
+    `<tr><td colspan="${days.length + 1}" style="color:var(--text-muted);font-style:italic">${t("Verbinde mit Datenbank…")}</td></tr>`;
   document.getElementById("availTable").innerHTML = head + `<tbody>${empty}${body}${foot}</tbody>`;
   renderCards();
 }
@@ -745,7 +947,7 @@ function progHtml(label, cnt, min) {
   return `<div class="prog${ok ? " ok" : ""}">
     <span class="prog-label">${label}</span>
     <div class="prog-bar"><i style="width:${Math.min(100, (cnt / min) * 100)}%"></i></div>
-    <span class="prog-txt">${cnt}/${min}${ok ? " ✓" : ` · ${missing} fehl${missing === 1 ? "t" : "en"}`}</span>
+    <span class="prog-txt">${cnt}/${min}${ok ? " ✓" : " " + (missing === 1 ? tt("· {0} fehlt", missing) : tt("· {0} fehlen", missing))}</span>
   </div>`;
 }
 
@@ -761,15 +963,15 @@ function renderCards() {
     const no = av.players.filter(p => avState(p, d.key) === "n");
     html.push(`<div class="av-card">
       <div class="av-card-head">
-        <span class="av-card-date">${m.day} ${m.date.slice(0, 6)} · ${m.time}</span>
+        <span class="av-card-date">${t(m.day)} ${m.date.slice(0, 6)} · ${m.time}</span>
         <span class="badge-ha ${m.home ? "h" : "a"}">${m.home ? "Heim" : "Auswärts"}</span>
       </div>
       <div class="av-card-opp">${esc(m.opp)}</div>
-      ${progHtml("Herren", pr.m, MIN_M)}
-      ${progHtml("Damen", pr.f, MIN_F)}
+      ${progHtml(t("Herren"), pr.m, MIN_M)}
+      ${progHtml(t("Damen"), pr.f, MIN_F)}
       <div class="me-row">
-        <button type="button" class="me-btn y${mine === "y" ? " on" : ""}" data-day="${d.key}" data-set="y">✓ Dabei</button>
-        <button type="button" class="me-btn n${mine === "n" ? " on" : ""}" data-day="${d.key}" data-set="n">✗ Keine Zeit</button>
+        <button type="button" class="me-btn y${mine === "y" ? " on" : ""}" data-day="${d.key}" data-set="y">${t("✓ Dabei")}</button>
+        <button type="button" class="me-btn n${mine === "n" ? " on" : ""}" data-day="${d.key}" data-set="n">${t("✗ Keine Zeit")}</button>
       </div>
       ${yes.length || no.length ? `<details class="av-names"><summary>${yes.length} ✓ · ${no.length} ✗</summary>
         ${yes.length ? `<div class="log-row y"><span class="log-mark">✓</span><span>${yes.map(esc).join(", ")}</span></div>` : ""}
@@ -783,10 +985,10 @@ function renderCards() {
 document.getElementById("availCards").addEventListener("click", e => {
   const btn = e.target.closest(".me-btn");
   if (!btn) return;
-  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
+  if (!avDb) { toast(t("Keine Verbindung zur Datenbank")); return; }
   const by = whoami();
   if (!by) {
-    toast("Bitte zuerst oben deinen Namen wählen");
+    toast(t("Bitte zuerst oben deinen Namen wählen"));
     document.getElementById("avWho").focus();
     return;
   }
@@ -794,26 +996,26 @@ document.getElementById("availCards").addEventListener("click", e => {
   const cur = avState(by, day);
   const next = btn.dataset.set === cur ? null : btn.dataset.set;
   const ref = avDb.ref("avail/marks/" + day + "/" + avKey(by));
-  (next ? ref.set(next) : ref.remove()).catch(() => toast("Speichern fehlgeschlagen"));
+  (next ? ref.set(next) : ref.remove()).catch(() => toast(t("Speichern fehlgeschlagen")));
   avLogWrite({ day, player: by, from: cur, to: next || "u", by });
 });
 
 function cycleAv(td) {
-  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
+  if (!avDb) { toast(t("Keine Verbindung zur Datenbank")); return; }
   const by = whoami();
   if (!by) {
-    toast("Bitte zuerst oben deinen Namen wählen");
+    toast(t("Bitte zuerst oben deinen Namen wählen"));
     document.getElementById("avWho").focus();
     return;
   }
   if (td.dataset.name !== by) {
-    toast("Du kannst nur deine eigene Verfügbarkeit ändern");
+    toast(t("Du kannst nur deine eigene Verfügbarkeit ändern"));
     return;
   }
   const cur = avState(td.dataset.name, td.dataset.day);
   const next = cur === "u" ? "y" : cur === "y" ? "n" : null;
   const ref = avDb.ref("avail/marks/" + td.dataset.day + "/" + avKey(td.dataset.name));
-  (next ? ref.set(next) : ref.remove()).catch(() => toast("Speichern fehlgeschlagen"));
+  (next ? ref.set(next) : ref.remove()).catch(() => toast(t("Speichern fehlgeschlagen")));
   avLogWrite({ day: td.dataset.day, player: td.dataset.name, from: cur, to: next || "u", by });
 }
 
@@ -850,19 +1052,19 @@ function armThenRun(btn, label, fn) {
 document.getElementById("avLog").addEventListener("click", e => {
   const b = e.target.closest("button[data-logdel]");
   if (!b) return;
-  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
-  armThenRun(b, "Sicher?", () =>
+  if (!avDb) { toast(t("Keine Verbindung zur Datenbank")); return; }
+  armThenRun(b, t("Sicher?"), () =>
     avDb.ref("avail/log/" + b.dataset.logdel).remove()
-      .then(() => toast("Eintrag gelöscht"))
-      .catch(() => toast("Löschen fehlgeschlagen")));
+      .then(() => toast(t("Eintrag gelöscht")))
+      .catch(() => toast(t("Löschen fehlgeschlagen"))));
 });
 
 document.getElementById("avLogClear").addEventListener("click", e => {
-  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
-  armThenRun(e.currentTarget, "Wirklich ALLE löschen?", () =>
+  if (!avDb) { toast(t("Keine Verbindung zur Datenbank")); return; }
+  armThenRun(e.currentTarget, t("Wirklich ALLE löschen?"), () =>
     avDb.ref("avail/log").remove()
-      .then(() => toast("Verlauf komplett gelöscht"))
-      .catch(() => toast("Löschen fehlgeschlagen")));
+      .then(() => toast(t("Verlauf komplett gelöscht")))
+      .catch(() => toast(t("Löschen fehlgeschlagen"))));
 });
 
 document.getElementById("avAddName").addEventListener("focus", () => {
@@ -879,11 +1081,11 @@ document.getElementById("avAddForm").addEventListener("submit", e => {
   const inp = document.getElementById("avAddName");
   const name = inp.value.trim();
   if (!name) return;
-  if (av.players.includes(name)) { toast("Spieler schon in der Liste"); return; }
-  if (!avDb) { toast("Keine Verbindung zur Datenbank"); return; }
+  if (av.players.includes(name)) { toast(t("Spieler schon in der Liste")); return; }
+  if (!avDb) { toast(t("Keine Verbindung zur Datenbank")); return; }
   const by = whoami();
   if (!by) {
-    toast("Bitte zuerst oben deinen Namen wählen");
+    toast(t("Bitte zuerst oben deinen Namen wählen"));
     document.getElementById("avWho").focus();
     return;
   }
@@ -894,7 +1096,7 @@ document.getElementById("avAddForm").addEventListener("submit", e => {
     return list;
   }).then(res => {
     if (res.committed) avLogWrite({ action: "add", player: name, by });
-  }).catch(() => toast("Speichern fehlgeschlagen"));
+  }).catch(() => toast(t("Speichern fehlgeschlagen")));
   inp.value = "";
   inp.focus();
 });
@@ -903,7 +1105,7 @@ document.getElementById("avAddForm").addEventListener("submit", e => {
 (async function initAvailSync() {
   const db = window.fbReady ? await window.fbReady : null;
   if (!db) {
-    avStatus("○ offline — keine Verbindung");
+    avStatus(t("○ offline — keine Verbindung"));
     renderAvail();
     return;
   }
@@ -921,7 +1123,7 @@ document.getElementById("avAddForm").addEventListener("submit", e => {
     av.marks = v.marks || {};
     renderAvail();
     renderWho();
-  }, err => { console.error("[avail] listener cancelled:", err); avStatus("○ Zugriff verweigert — DB-Regeln prüfen"); });
+  }, err => { console.error("[avail] listener cancelled:", err); avStatus(t("○ Zugriff verweigert — DB-Regeln prüfen")); });
   avDb.ref("avail/log").limitToLast(200).on("value", snap => {
     const items = [];
     snap.forEach(ch => { items.push({ _k: ch.key, ...ch.val() }); });
@@ -1093,10 +1295,10 @@ function renderSquad() {
       li.dataset.name = p.name;
       li.innerHTML = `
         <input type="checkbox" class="avail" data-name="${esc(p.name)}" ${isSel(p.name) ? "checked" : ""}
-          aria-label="${esc(p.name)} verfügbar">
+          aria-label="${tt("{0} verfügbar", esc(p.name))}">
         <span class="rank">${p.rank}</span>
         <span class="name">${esc(p.name)}</span>
-        <button class="del" data-del="${esc(p.name)}" aria-label="${esc(p.name)} löschen">×</button>`;
+        <button class="del" data-del="${esc(p.name)}" aria-label="${tt("{0} löschen", esc(p.name))}">×</button>`;
       return li;
     };
     const selUl = document.createElement("ul");
@@ -1131,8 +1333,8 @@ for (const id of ["luPaneM", "luPaneF"]) {
     state.selected = state.selected.filter(n => n !== name);
     save();
     renderAll();
-    toast(`${name} gelöscht`, {
-      label: "Rückgängig",
+    toast(tt("{0} gelöscht", name), {
+      label: t("Rückgängig"),
       action() {
         state.players.push(removed);
         if (wasSel) state.selected.push(removed.name);
@@ -1148,7 +1350,7 @@ document.getElementById("luAddForm").addEventListener("submit", e => {
   const name = document.getElementById("luAddName").value.trim();
   const g = document.getElementById("luAddGender").value;
   if (!name) return;
-  if (state.players.some(p => p.name === name)) { toast("Spieler existiert bereits"); return; }
+  if (state.players.some(p => p.name === name)) { toast(t("Spieler existiert bereits")); return; }
   const rank = state.players.filter(p => p.g === g)
     .reduce((mx, p) => Math.max(mx, p.rank || 0), 0) + 1;
   state.players.push({ name, rank, g });
@@ -1251,16 +1453,16 @@ function renderSingles(men, women) {
   const rows = [];
   ["HE1", "HE2", "HE3"].forEach((pos, i) => {
     rows.push(he[i]
-      ? `<tr><td class="pos">${pos}</td><td class="pname">${esc(he[i].name)}</td><td class="prank">Rang ${he[i].rank}</td></tr>`
-      : `<tr><td class="pos">${pos}</td><td class="pname" style="color:var(--warn)">— Spieler wählen</td><td></td></tr>`);
+      ? `<tr><td class="pos">${t(pos)}</td><td class="pname">${esc(he[i].name)}</td><td class="prank">${tt("Rang {0}", he[i].rank)}</td></tr>`
+      : `<tr><td class="pos">${t(pos)}</td><td class="pname" style="color:var(--warn)">${t("— Spieler wählen")}</td><td></td></tr>`);
   });
   rows.push(de
-    ? `<tr><td class="pos">DE</td><td class="pname">${esc(de.name)}</td><td class="prank">Rang ${de.rank}</td></tr>`
-    : `<tr><td class="pos">DE</td><td class="pname" style="color:var(--warn)">— keine Dame verfügbar</td><td></td></tr>`);
+    ? `<tr><td class="pos">${t("DE")}</td><td class="pname">${esc(de.name)}</td><td class="prank">${tt("Rang {0}", de.rank)}</td></tr>`
+    : `<tr><td class="pos">${t("DE")}</td><td class="pname" style="color:var(--warn)">${t("— keine Dame verfügbar")}</td><td></td></tr>`);
 
   el.innerHTML = `
-    <div class="pick-group"><span class="pick-label">Einzel-Herren (3):</span>${menPick || "—"}</div>
-    <div class="pick-group"><span class="pick-label">Dameneinzel:</span>${womenPick || "—"}</div>
+    <div class="pick-group"><span class="pick-label">${t("Einzel-Herren (3):")}</span>${menPick || "—"}</div>
+    <div class="pick-group"><span class="pick-label">${t("Dameneinzel:")}</span>${womenPick || "—"}</div>
     <table class="fixed">${rows.join("")}</table>`;
 }
 
@@ -1287,7 +1489,7 @@ function renderHd(men) {
   const el = document.getElementById("luHdOut");
   const opts = hdOptions(men);
   if (!opts.length) {
-    el.innerHTML = `<div class="empty-note">Mindestens 4 Herren anhaken — dann erscheinen die 3 möglichen Doppel-Kombinationen.</div>`;
+    el.innerHTML = `<div class="empty-note">${t("Mindestens 4 Herren anhaken — dann erscheinen die 3 möglichen Doppel-Kombinationen.")}</div>`;
     return;
   }
   const bestChem = Math.max(...opts.map(o => o.chem));
@@ -1295,19 +1497,19 @@ function renderHd(men) {
     <div class="option${state.hd === o.idx ? " selected" : ""}" data-hd="${o.idx}">
       <div class="option-head">
         <label><input type="radio" name="luHd" value="${o.idx}" ${state.hd === o.idx ? "checked" : ""}> Option ${o.idx + 1}</label>
-        ${bestChem > 0 && o.chem === bestChem ? `<span class="badge-best">Beste Chemie</span>` : ""}
+        ${bestChem > 0 && o.chem === bestChem ? `<span class="badge-best">${t("Beste Chemie")}</span>` : ""}
       </div>
       <div class="pair">
-        <span class="slot">HD1</span><span class="names">${pairLabel(o.p1)}</span>
+        <span class="slot">${t("HD1")}</span><span class="names">${pairLabel(o.p1)}</span>
         <span class="sum">${o.p1[0].rank}+${o.p1[1].rank} = ${pairSum(o.p1)}</span>
         ${starsHtml(o.p1)}
       </div>
       <div class="pair">
-        <span class="slot">HD2</span><span class="names">${pairLabel(o.p2)}</span>
+        <span class="slot">${t("HD2")}</span><span class="names">${pairLabel(o.p2)}</span>
         <span class="sum">${o.p2[0].rank}+${o.p2[1].rank} = ${pairSum(o.p2)}</span>
         ${starsHtml(o.p2)}
       </div>
-      ${o.tie ? `<div class="tie">⚖ Rangsummen gleich — Kapitän entscheidet die Reihenfolge.</div>` : ""}
+      ${o.tie ? `<div class="tie">${t("⚖ Rangsummen gleich — Kapitän entscheidet die Reihenfolge.")}</div>` : ""}
     </div>`).join("") + `</div>`;
 }
 
@@ -1315,7 +1517,7 @@ function renderDd(women) {
   const el = document.getElementById("luDdOut");
   const opts = ddOptions(women);
   if (!opts.length) {
-    el.innerHTML = `<div class="empty-note">Mindestens 2 Damen anhaken.</div>`;
+    el.innerHTML = `<div class="empty-note">${t("Mindestens 2 Damen anhaken.")}</div>`;
     return;
   }
   el.innerHTML = `<div class="options">` + opts.map(p => {
@@ -1326,7 +1528,7 @@ function renderDd(women) {
         <label><input type="radio" name="luDd" value="${esc(key)}" ${state.dd === key ? "checked" : ""}> DD</label>
       </div>
       <div class="pair">
-        <span class="slot">DD</span><span class="names">${pairLabel(p)}</span>
+        <span class="slot">${t("DD")}</span><span class="names">${pairLabel(p)}</span>
         <span class="sum">${p[0].rank}+${p[1].rank} = ${pairSum(p)}</span>
         ${starsHtml(p)}
       </div>
@@ -1339,11 +1541,11 @@ function renderGd(men, women) {
   const hdOpt = currentHd(men);
   const ddPair = currentDd(women);
   if (!men.length || !women.length) {
-    el.innerHTML = `<div class="empty-note">Herren und Damen anhaken.</div>`;
+    el.innerHTML = `<div class="empty-note">${t("Herren und Damen anhaken.")}</div>`;
     return;
   }
   if (!hdOpt || !ddPair) {
-    el.innerHTML = `<div class="empty-note">Erst Herrendoppel-Option und Damendoppel wählen — dann zeigt sich, wer fürs Mixed frei ist.</div>`;
+    el.innerHTML = `<div class="empty-note">${t("Erst Herrendoppel-Option und Damendoppel wählen — dann zeigt sich, wer fürs Mixed frei ist.")}</div>`;
     return;
   }
   const freeMen = men.filter(p => disciplineCount(p.name, men, women, hdOpt, ddPair) < 2);
@@ -1351,7 +1553,7 @@ function renderGd(men, women) {
   const combos = [];
   freeMen.forEach(m => freeWomen.forEach(w => combos.push([m, w])));
   if (!combos.length) {
-    el.innerHTML = `<div class="empty-note">Niemand hat mehr eine Disziplin frei — mehr Spieler anhaken oder andere Doppel wählen.</div>`;
+    el.innerHTML = `<div class="empty-note">${t("Niemand hat mehr eine Disziplin frei — mehr Spieler anhaken oder andere Doppel wählen.")}</div>`;
     return;
   }
   el.innerHTML = `<div class="options">` + combos.map(p => {
@@ -1362,7 +1564,7 @@ function renderGd(men, women) {
         <label><input type="radio" name="luGd" value="${esc(key)}" ${state.gd === key ? "checked" : ""}> GD</label>
       </div>
       <div class="pair">
-        <span class="slot">GD</span><span class="names">${pairLabel(p)}</span>
+        <span class="slot">${t("GD")}</span><span class="names">${pairLabel(p)}</span>
         <span class="sum">Rang ${p[0].rank} / ${p[1].rank}</span>
         ${starsHtml(p)}
       </div>
@@ -1385,10 +1587,10 @@ function sheetRows(men, women) {
     ["HD1", hdOpt ? `${hdOpt.p1[0].name} + ${hdOpt.p1[1].name}` : null, hdOpt ? `Σ ${pairSum(hdOpt.p1)}${hdOpt.tie ? " ⚖" : ""}` : ""],
     ["HD2", hdOpt ? `${hdOpt.p2[0].name} + ${hdOpt.p2[1].name}` : null, hdOpt ? `Σ ${pairSum(hdOpt.p2)}${hdOpt.tie ? " ⚖" : ""}` : ""],
     ["DD",  ddPair ? `${ddPair[0].name} + ${ddPair[1].name}` : null, ddPair ? `Σ ${pairSum(ddPair)}` : ""],
-    ["HE1", he[0] ? he[0].name : null, he[0] ? `Rang ${he[0].rank}` : ""],
-    ["HE2", he[1] ? he[1].name : null, he[1] ? `Rang ${he[1].rank}` : ""],
-    ["HE3", he[2] ? he[2].name : null, he[2] ? `Rang ${he[2].rank}` : ""],
-    ["DE",  de ? de.name : null, de ? `Rang ${de.rank}` : ""],
+    ["HE1", he[0] ? he[0].name : null, he[0] ? tt("Rang {0}", he[0].rank) : ""],
+    ["HE2", he[1] ? he[1].name : null, he[1] ? tt("Rang {0}", he[1].rank) : ""],
+    ["HE3", he[2] ? he[2].name : null, he[2] ? tt("Rang {0}", he[2].rank) : ""],
+    ["DE",  de ? de.name : null, de ? tt("Rang {0}", de.rank) : ""],
     ["GD",  gdPair ? `${gdPair[0].name} + ${gdPair[1].name}` : null, ""],
   ];
 }
@@ -1396,7 +1598,7 @@ function sheetRows(men, women) {
 function renderSheet(men, women) {
   const el = document.getElementById("luSheetOut");
   const rows = sheetRows(men, women).map(([pos, val, extra]) =>
-    `<tr><td class="pos" style="font-weight:700;color:var(--teal-ink)">${pos}</td>
+    `<tr><td class="pos" style="font-weight:700;color:var(--teal-ink)">${t(pos)}</td>
      ${val ? `<td class="pname" style="color:var(--text-strong);font-weight:500">${esc(val)}</td>`
            : `<td class="missing">— noch nicht gewählt</td>`}
      <td class="prank" style="color:var(--text-muted);text-align:right">${extra}</td></tr>`
@@ -1424,14 +1626,14 @@ document.getElementById("luRight").addEventListener("click", e => {
 
 document.getElementById("luCopyBtn").addEventListener("click", async () => {
   const men = availMen(), women = availWomen();
-  const lines = ["Aufstellung"].concat(
+  const lines = [t("Aufstellung")].concat(
     sheetRows(men, women).map(([pos, val, extra]) =>
-      `${pos}: ${val || "—"}${extra ? ` (${extra})` : ""}`)
+      `${t(pos)}: ${val || "—"}${extra ? ` (${extra})` : ""}`)
   );
   try {
     await navigator.clipboard.writeText(lines.join("\n"));
-    toast("Aufstellung kopiert");
-  } catch { toast("Kopieren fehlgeschlagen"); }
+    toast(t("Aufstellung kopiert"));
+  } catch { toast(t("Kopieren fehlgeschlagen")); }
 });
 
 for (const [btnId, paneId] of [["luTabM", "luPaneM"], ["luTabF", "luPaneF"]]) {
@@ -1489,14 +1691,14 @@ document.querySelectorAll(".team-pills .pill").forEach(btn => {
   btn.addEventListener("click", () => {
     const n = +btn.dataset.team;
     const members = teamMembers(n).filter(nm => state.players.some(p => p.name === nm));
-    if (!members.length) { toast(`Mannschaft ${n} ist leer`); return; }
+    if (!members.length) { toast(tt("Mannschaft {0} ist leer", n)); return; }
     state.selected = members;
     state.team = n;
     state.hd = null; state.dd = null; state.gd = null;
     state.he = null; state.de = null;
     save();
     renderAll();
-    toast(`Mannschaft ${n}: ${members.length} Spieler übernommen`);
+    toast(tt("Mannschaft {0}: {1} Spieler übernommen", n, members.length));
   });
 });
 
@@ -1507,14 +1709,14 @@ document.getElementById("luClearBtn").addEventListener("click", () => {
   state.he = null; state.de = null;
   save();
   renderAll();
-  toast("Auswahl geleert — neue Mannschaft anhaken");
+  toast(t("Auswahl geleert — neue Mannschaft anhaken"));
 });
 
 document.getElementById("luResetBtn").addEventListener("click", () => {
   state = defaultState(state.chem);
   save();
   renderAll();
-  toast("Kader zurückgesetzt (Chemie-Sterne bleiben)");
+  toast(t("Kader zurückgesetzt (Chemie-Sterne bleiben)"));
 });
 
 function renderAll() {
@@ -1703,7 +1905,7 @@ function renderCats() {
   el.innerHTML = CATS.map(c => {
     const cnt = c === "Alle" ? ITEMS.length : ITEMS.filter(i => i.c === c).length;
     return `<button class="${cat === c ? "on" : ""}" data-cat="${c}">
-      ${c !== "Alle" ? ICON[c] + " " : ""}${c} <span class="cnt">${cnt}</span></button>`;
+      ${c !== "Alle" ? ICON[c] + " " : ""}${t(c)} <span class="cnt">${cnt}</span></button>`;
   }).join("");
 }
 document.getElementById("shopCats").addEventListener("click", e => {
@@ -1738,7 +1940,7 @@ function renderGrid() {
   const el = document.getElementById("shopGrid");
   const list = filtered();
   if (!list.length) {
-    el.innerHTML = `<div class="empty-note shop-empty">Keine Artikel gefunden — Suche oder Kategorie anpassen.</div>`;
+    el.innerHTML = `<div class="empty-note shop-empty">${t("Keine Artikel gefunden — Suche oder Kategorie anpassen.")}</div>`;
     return;
   }
   el.innerHTML = list.map(i => {
@@ -1758,14 +1960,14 @@ function renderGrid() {
         <span class="uvp">${eur(i.u)}</span>
         <span class="vp">${eur(i.p)}</span>
       </div>
-      <button class="shops-btn" data-shops="${i.id}">🔗 Preise &amp; Shops</button>
+      <button class="shops-btn" data-shops="${i.id}">🔗 ${t("Preise & Shops")}</button>
       <div class="buy">
         <span class="qty">
           <button data-dec="${i.id}" aria-label="Menge verringern">−</button>
           <span class="q">${q || 1}</span>
           <button data-inc="${i.id}" aria-label="Menge erhöhen">+</button>
         </span>
-        <button class="add${q ? " in" : ""}" data-add="${i.id}">${q ? "Im Korb (" + q + ")" : "In den Korb"}</button>
+        <button class="add${q ? " in" : ""}" data-add="${i.id}">${q ? tt("Im Korb ({0})", q) : t("In den Korb")}</button>
       </div>
     </article>`;
   }).join("");
@@ -1905,7 +2107,7 @@ function renderCart() {
         <button class="rm" data-crm="${item.id}" aria-label="${esc(item.n)} entfernen">×</button>
       </div>
     </div>`).join("")
-    : `<div class="empty-note" style="margin-top:12px">Warenkorb leer — Artikel im Shop hinzufügen.</div>`;
+    : `<div class="empty-note" style="margin-top:12px">${t("Warenkorb leer — Artikel im Shop hinzufügen.")}</div>`;
 
   document.getElementById("cartUvp").textContent = eur(sumU);
   document.getElementById("cartSave").textContent = "−" + eur(sumU - sumP);
@@ -1943,11 +2145,11 @@ document.getElementById("cartClear").addEventListener("click", () => {
   saveCart();
   renderGrid();
   renderCart();
-  toast("Warenkorb geleert");
+  toast(t("Warenkorb geleert"));
 });
 document.getElementById("cartCopy").addEventListener("click", async () => {
   const entries = cartEntries();
-  if (!entries.length) { toast("Warenkorb leer"); return; }
+  if (!entries.length) { toast(t("Warenkorb leer")); return; }
   const sumU = entries.reduce((a, x) => a + x.item.u * x.q, 0);
   const sumP = entries.reduce((a, x) => a + x.item.p * x.q, 0);
   const lines = ["VICTOR Bestellung", ""];
@@ -1957,8 +2159,8 @@ document.getElementById("cartCopy").addEventListener("click", async () => {
   lines.push("", `Summe UVP: ${eur(sumU)}`, `Vereinspreis gesamt: ${eur(sumP)}`, `Ersparnis: ${eur(sumU - sumP)}`);
   try {
     await navigator.clipboard.writeText(lines.join("\n"));
-    toast("Bestellung in Zwischenablage kopiert");
-  } catch { toast("Kopieren fehlgeschlagen"); }
+    toast(t("Bestellung in Zwischenablage kopiert"));
+  } catch { toast(t("Kopieren fehlgeschlagen")); }
 });
 
 /* hide cart FAB when leaving shop tab */
