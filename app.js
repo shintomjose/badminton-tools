@@ -226,8 +226,7 @@ document.getElementById("themeBtn").addEventListener("click", () => {
   applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
 });
 const savedTheme = localStorage.getItem(THEME_KEY);
-if (savedTheme) applyTheme(savedTheme);
-else if (matchMedia("(prefers-color-scheme: light)").matches) applyTheme("light");
+applyTheme(savedTheme || "light");
 
 document.getElementById("distFrame").addEventListener("load", () => {
   applyTheme(document.documentElement.dataset.theme);
