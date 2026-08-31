@@ -781,7 +781,7 @@
 <main>
   <!-- ============ TAB 1: Mannschaften ============ -->
   <section class="tab-panel" id="tab-teams" role="tabpanel" aria-labelledby="tabbtn-teams">
-    <p class="tab-sub">BWBV Rangliste — Spieler ziehen, um Rang zu ändern · 5 Mannschaften à max. 5 Spieler · Rest Warteliste · lokal gespeichert</p>
+    <p class="tab-sub">BWBV Rangliste — Spieler ziehen, um Rang zu ändern · 5 Mannschaften · Rest Warteliste · lokal gespeichert</p>
     <div class="tab-toolbar">
       <button id="rkCopyBtn" class="btn primary">Liste kopieren</button>
       <button id="rkResetBtn" class="btn">Zurücksetzen</button>
@@ -1159,7 +1159,7 @@ function load() {
         && saved.sizes.length === MAX_TEAMS
         && saved.players.every(p => p && typeof p.name === "string")) {
       players = saved.players;
-      teamSizes = saved.sizes.map(n => Math.max(0, Math.min(TEAM_SIZE, n | 0)));
+      teamSizes = saved.sizes.map(n => Math.max(0, n | 0));
       return;
     }
   } catch {}
@@ -1220,7 +1220,7 @@ function render(highlightName) {
     card.className = "team-card";
     card.dataset.team = t;
     card.innerHTML = `<div class="team-header">Mannschaft ${t + 1}
-      <span class="range">${size}/${TEAM_SIZE} Spieler</span></div>`;
+      <span class="range">${size} Spieler</span></div>`;
     const rows = document.createElement("ul");
     rows.className = "rows";
     for (let k = 0; k < size; k++) {
@@ -1263,7 +1263,7 @@ function movePlayer(from, pos, targetTeam) {
   if (from < pos) pos--;
   if (srcTeam !== targetTeam) {
     if (srcTeam !== null) teamSizes[srcTeam]--;
-    if (targetTeam !== null && teamSizes[targetTeam] < TEAM_SIZE) teamSizes[targetTeam]++;
+    if (targetTeam !== null) teamSizes[targetTeam]++;
   }
   pos = Math.max(0, Math.min(pos, players.length));
   players.splice(pos, 0, p);
@@ -1352,7 +1352,7 @@ list.addEventListener("click", e => {
     toast(`${lastDeleted.player.name} gelöscht`, {
       label: "Rückgängig",
       action() {
-        if (lastDeleted.team !== null && teamSizes[lastDeleted.team] < TEAM_SIZE) {
+        if (lastDeleted.team !== null) {
           teamSizes[lastDeleted.team]++;
         }
         players.splice(Math.min(lastDeleted.index, players.length), 0, lastDeleted.player);
