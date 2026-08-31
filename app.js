@@ -73,6 +73,14 @@ const EN = {
   "Sa": "Sat",
   "Falscher PIN": "Wrong PIN",
   "Entsperrt": "Unlocked",
+  "🔔 an": "🔔 on",
+  "🔔 aus": "🔔 off",
+  "Benachrichtigungen aus": "Notifications off",
+  "Benachrichtigungen an — solange die App läuft": "Notifications on — while the app is running",
+  "Benachrichtigungen im Browser blockiert — in den Website-Einstellungen erlauben": "Notifications blocked in the browser — allow them in the site settings",
+  "Keine Berechtigung erteilt": "Permission not granted",
+  "{0} hat {1} zur Liste hinzugefügt": "{0} added {1} to the list",
+  "… und {0} weitere Änderungen": "… and {0} more changes",
   "Rang\tMannschaft\tPos\tName\tA\tStatus": "Rank\tTeam\tPos\tName\tA\tStatus",
   /* Vorlagen mit {0}/{1} */
   "{0} gelöscht": "{0} deleted",
@@ -1037,6 +1045,70 @@ document.getElementById("availTable").addEventListener("keydown", e => {
   if (td) { e.preventDefault(); cycleAv(td); }
 });
 
+/* ---- Benachrichtigungen (nur dieses Gerät, Opt-in) ----
+   Feuert nur, solange Seite/PWA läuft — echte Push-Server gibt es hier nicht. */
+const NOTIF_KEY = "termine-notify";
+const NOTIF_LAST_KEY = "termine-notify-last";
+const notifBtn = document.getElementById("notifBtn");
+
+function notifEnabled() {
+  return localStorage.getItem(NOTIF_KEY) === "1" && window.Notification && Notification.permission === "granted";
+}
+function renderNotifBtn() {
+  if (!window.Notification) return;
+  notifBtn.hidden = false;
+  notifBtn.textContent = notifEnabled() ? t("🔔 an") : t("🔔 aus");
+  notifBtn.classList.toggle("primary", notifEnabled());
+}
+notifBtn.addEventListener("click", async () => {
+  if (notifEnabled()) {
+    localStorage.setItem(NOTIF_KEY, "0");
+    renderNotifBtn();
+    toast(t("Benachrichtigungen aus"));
+    return;
+  }
+  if (Notification.permission === "denied") {
+    toast(t("Benachrichtigungen im Browser blockiert — in den Website-Einstellungen erlauben"));
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") { toast(t("Keine Berechtigung erteilt")); return; }
+  localStorage.setItem(NOTIF_KEY, "1");
+  renderNotifBtn();
+  toast(t("Benachrichtigungen an — solange die App läuft"));
+});
+renderNotifBtn();
+
+function showNotif(body) {
+  const title = "Badminton Tools";
+  if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready
+      .then(reg => reg.showNotification(title, { body, icon: "icons/icon-192.png", tag: "avail-" + Date.now() }))
+      .catch(() => { try { new Notification(title, { body }); } catch {} });
+  } else {
+    try { new Notification(title, { body }); } catch {}
+  }
+}
+
+function notifyNewEntries(items) {
+  /* items: neueste zuerst, mit _k (Push-Keys sind chronologisch sortierbar) */
+  if (!items.length) return;
+  const newest = items[0]._k;
+  const last = localStorage.getItem(NOTIF_LAST_KEY);
+  localStorage.setItem(NOTIF_LAST_KEY, newest);
+  if (!last || !notifEnabled()) return;
+  const me = whoami();
+  const fresh = items.filter(it => it._k > last && it.by && it.by !== me);
+  fresh.slice(0, 3).forEach(it => {
+    const dayShort = it.day ? it.day.slice(8, 10) + "." + it.day.slice(5, 7) + ". " + (it.day.slice(11, 13) ? it.day.slice(11, 13) + ":" + it.day.slice(13) : "") : "";
+    const body = it.action === "add"
+      ? tt("{0} hat {1} zur Liste hinzugefügt", it.by, it.player)
+      : `${it.player} ${dayShort}: ${avSym(it.from)} → ${avSym(it.to)} (${it.by})`;
+    showNotif(body);
+  });
+  if (fresh.length > 3) showNotif(tt("… und {0} weitere Änderungen", fresh.length - 3));
+}
+
 /* Löschen mit Zwei-Klick-Bestätigung: erster Klick bewaffnet, zweiter führt aus */
 function armThenRun(btn, label, fn) {
   const disarm = () => {
@@ -1150,7 +1222,9 @@ document.getElementById("avAddForm").addEventListener("submit", e => {
       logTries = 0;
       const items = [];
       snap.forEach(ch => { items.push({ _k: ch.key, ...ch.val() }); });
-      renderLog(items.reverse());
+      items.reverse();
+      renderLog(items);
+      notifyNewEntries(items);
     }, err => {
       console.error("[avail/log] listener cancelled:", err);
       if (++logTries <= 5) setTimeout(attachLog, 1000 * logTries);

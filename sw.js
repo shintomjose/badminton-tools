@@ -65,6 +65,17 @@ self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
 
+/* Tipp auf eine Verfügbarkeits-Benachrichtigung: App fokussieren bzw. öffnen */
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const c of list) if ("focus" in c) return c.focus();
+      return self.clients.openWindow("./#termine");
+    })
+  );
+});
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
