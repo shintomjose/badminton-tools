@@ -26,6 +26,7 @@ Object.assign(EN, {
     "Sign in with your Google account. Only your account may read or write these matches — enforced by the Firestore rules, not by the PIN.",
   "Mit Google anmelden": "Sign in with Google",
   "Anmeldung fehlgeschlagen": "Sign-in failed",
+  "Anmeldung hier nicht möglich — Seite einmal im Browser öffnen und dort anmelden": "Sign-in not possible here — open the page in the browser once and sign in there",
   "Abmeldung fehlgeschlagen": "Sign-out failed",
   "Abmelden": "Sign out",
   "Einrichtung nötig": "Setup required",
@@ -245,15 +246,40 @@ const MT = (function () {
     return u ? u.uid : null;
   }
 
+  /* Complete a pending redirect sign-in (no-op when there is none). Without this,
+     a signInWithRedirect round-trip can return to the app and go nowhere. */
+  try {
+    firebase.auth().getRedirectResult().catch(e => {
+      if (e && e.code !== "auth/no-auth-event") toastError(e, "Anmeldung fehlgeschlagen");
+    });
+  } catch (e) {}
+
+  function inStandalonePwa() {
+    try {
+      return window.matchMedia("(display-mode: standalone)").matches
+        || window.navigator.standalone === true;
+    } catch (e) { return false; }
+  }
+
   async function signIn() {
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: "select_account" });
       try {
+        /* Popup is the reliable flow everywhere: with authDomain on firebaseapp.com
+           (a third-party origin for this page), the redirect flow silently loses the
+           session on browsers with storage partitioning (mobile Safari/Chrome). */
         await firebase.auth().signInWithPopup(provider);
       } catch (popupErr) {
-        // Blocked popups / in-app browsers → full page redirect instead.
-        console.warn("[MT] Popup-Anmeldung fehlgeschlagen, versuche Redirect:", popupErr && popupErr.code);
+        const code = popupErr && popupErr.code;
+        if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
+          return; // user backed out — not an error, and no redirect fallback
+        }
+        console.warn("[MT] Popup-Anmeldung fehlgeschlagen, versuche Redirect:", code);
+        if (inStandalonePwa()) {
+          /* In an installed PWA both flows are unreliable — say so instead of looping. */
+          toast(t("Anmeldung hier nicht möglich — Seite einmal im Browser öffnen und dort anmelden"));
+        }
         await firebase.auth().signInWithRedirect(provider);
       }
     } catch (e) {
