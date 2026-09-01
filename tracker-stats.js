@@ -27,6 +27,8 @@
       "Dieses Jahr": "This year",
       "Letzte 12 Wochen": "Last 12 weeks",
       "Gesamt": "All time",
+      "Training": "Training",   /* identical in EN, but mapped explicitly so the
+                                   type toggle never relies on key/value coincidence */
       "Turnier": "Tournament",
       "Einzel": "Singles",
       "Doppel": "Doubles",

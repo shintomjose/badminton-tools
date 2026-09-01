@@ -540,28 +540,37 @@ Object.assign(EN, {
 
   function hasRecord(rec) { return !!(rec.w + rec.l + rec.sw + rec.sl); }
 
+  /* App-wide convention: wins green, losses red, separator neutral.
+     Numbers only — the surrounding words come from t()/tt() templates, whose
+     literal parts are controlled constants and need no escaping. Zero values
+     stay coloured on purpose: consistency beats a special case. */
+  function winNum(n) { return '<span class="mt-w">' + (Number(n) || 0) + "</span>"; }
+  function lossNum(n) { return '<span class="mt-l">' + (Number(n) || 0) + "</span>"; }
+  function wlPair(w, l) { return winNum(w) + "–" + lossNum(l); }
+
   /* "3 Spiele · 2–1 · Sätze 5–3" — the W–L parts appear only once the isMe
-     player has actually played something that day. */
-  function metaTail(rec) {
-    const parts = [matchCountLabel(rec.n)];
-    if (rec.w + rec.l) parts.push(rec.w + "–" + rec.l);
-    if (rec.sw + rec.sl) parts.push(tt("Sätze {0}–{1}", rec.sw, rec.sl));
+     player has actually played something that day. Returns HTML. */
+  function metaTailHtml(rec) {
+    const parts = [esc(matchCountLabel(rec.n))];
+    if (rec.w + rec.l) parts.push(wlPair(rec.w, rec.l));
+    if (rec.sw + rec.sl) parts.push(tt("Sätze {0}–{1}", winNum(rec.sw), lossNum(rec.sl)));
     return parts.join(" · ");
   }
 
-  /* Card heading — date and today's match count are the two things worth
-     seeing at a glance, in both modes. */
+  /* Card heading — date and today's record are the two things worth seeing at
+     a glance, in both modes. */
   function sessionHeadHtml() {
-    const meta = shortDate() + " · " + metaTail(todayRecord());
+    const meta = esc(shortDate()) + " · " + metaTailHtml(todayRecord());
     if (!isTournament()) {
-      return "<h2>" + esc(t("Heute")) + '</h2><p class="mt-sess-meta">' + esc(meta) + "</p>";
+      return "<h2>" + esc(t("Heute")) + '</h2><p class="mt-sess-meta">' + meta + "</p>";
     }
     const cat = trnCategory();
     return '<div class="mt-trn-head">' +
       "<h2>" + esc(trnName() || t("Turnier")) + "</h2>" +
       '<button type="button" class="btn small" data-act="trnedit">' + esc(t("Turnier bearbeiten")) + "</button>" +
     "</div>" +
-    '<p class="mt-sess-meta">' + esc(cat ? cat + " · " + meta : meta) + "</p>";
+    /* the category is user input and stays escaped */
+    '<p class="mt-sess-meta">' + (cat ? esc(cat) + " · " : "") + meta + "</p>";
   }
 
   /* Day-wise totals — a courtside glance, not the history tab. */
@@ -585,9 +594,9 @@ Object.assign(EN, {
           '<span class="mt-day-n">' + esc(matchCountLabel(r.n)) + "</span>" +
           (played
             ? '<span class="mt-day-wl" title="' + esc(tt("Spiele {0}–{1}", r.w, r.l)) + '">' +
-                r.w + "–" + r.l + "</span>" +
+                wlPair(r.w, r.l) + "</span>" +
               '<span class="mt-day-sets" title="' + esc(tt("Sätze {0}–{1}", r.sw, r.sl)) + '">' +
-                esc(tt("S {0}–{1}", r.sw, r.sl)) + "</span>"
+                tt("S {0}–{1}", winNum(r.sw), lossNum(r.sl)) + "</span>"
             : "") +
           pctHtml(r.w, r.w + r.l) +
         "</span>" +
@@ -672,8 +681,10 @@ Object.assign(EN, {
     const cells = side => games.map(g =>
       '<span class="mt-sg-val">' + esc(String(side === "A" ? (g.a || 0) : (g.b || 0))) + "</span>").join("");
     const disc = m.discipline === "doubles" ? t("Doppel") : t("Einzel");
+    /* Only an actual winner earns the green pill — a finished match without one
+       (retired, abandoned) stays neutral. */
     const statusHtml = m.status === "finished"
-      ? '<span class="mt-badge done">' + esc(matchWinnerText(m)) + "</span>"
+      ? '<span class="mt-badge' + (winner ? " done" : "") + '">' + esc(matchWinnerText(m)) + "</span>"
       : '<span class="mt-badge open">' + esc(t("offen")) + "</span>";
     /* tournament extras only exist on tournament matches — null for training */
     const trn = m.tournament || {};

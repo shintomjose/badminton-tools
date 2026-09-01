@@ -65,6 +65,7 @@
     "abgebrochen": "retired",
     "Sieg": "Win",
     "Niederlage": "Loss",
+    "{0} Siege, {1} Niederlagen": "{0} wins, {1} losses",
     "S–N": "W–L",
     "Spiele": "Matches",
   };
@@ -416,11 +417,23 @@
     return '<span class="' + cls + '"' + title + '>' + E(TT("{0} % ({1})", pct, rec.n)) + "</span>";
   }
 
+  /* App-wide convention: wins green, losses red, separator neutral.
+     The title carries the same information without relying on colour. */
+  function wlHtml(rec) {
+    return (
+      '<span class="mtp-stat-wl" title="' + E(TT("{0} Siege, {1} Niederlagen", rec.w, rec.l)) + '">' +
+        '<span class="mtp-w">' + rec.w + "</span>" +
+        '<span class="mtp-wl-sep" aria-hidden="true">–</span>' +
+        '<span class="mtp-l">' + rec.l + "</span>" +
+      "</span>"
+    );
+  }
+
   function statRowHtml(label, rec) {
     return (
       '<div class="mtp-stat-row">' +
         '<span class="mtp-stat-label">' + E(label) + "</span>" +
-        '<span class="mtp-stat-wl">' + rec.w + "–" + rec.l + "</span>" +
+        wlHtml(rec) +
         pctHtml(rec) +
       "</div>"
     );
@@ -497,10 +510,19 @@
 
     var lines = ["A", "B"].map(function (s) {
       var win = counted && match.winnerSide === s;
+      /* Only the profiled player's own defeat is marked red. Marking the other
+         side's loss too would paint a red ✕ on every win of theirs. */
+      var myLoss = counted && !win && mySide === s;
       var cls = "mtp-side" + (win ? " mtp-side-win" : "") + (mySide === s ? " mtp-side-mine" : "");
+      var markCls = "mtp-mark" + (win ? " mtp-mark-win" : (myLoss ? " mtp-mark-loss" : ""));
+      var glyph = win ? "✓" : (myLoss ? "✕" : "");
+      var srText = win ? T("Sieg") : (myLoss ? T("Niederlage") : "");
       return (
         '<div class="' + cls + '">' +
-          '<span class="mtp-mark" aria-hidden="true">' + (win ? "✓" : "") + "</span>" +
+          '<span class="' + markCls + '">' +
+            '<span aria-hidden="true">' + glyph + "</span>" +
+            (srText ? '<span class="mtp-sr">' + E(srText) + "</span>" : "") +
+          "</span>" +
           '<span class="mtp-side-names">' + sideHtml(s === "A" ? match.sideA : match.sideB, playerId) + "</span>" +
           '<span class="mtp-pts">' + scoresHtml(match, s) + "</span>" +
         "</div>"

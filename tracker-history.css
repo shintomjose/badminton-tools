@@ -111,7 +111,12 @@ button.mth-reset { flex: 0 0 auto; }
   flex: 0 1 auto;
 }
 .mth-dot { color: var(--border); }
-.mth-wl { color: var(--text-strong); font-weight: 700; }
+/* tracker-wide convention: wins green, losses red, separators neutral */
+.mth-wl, .mth-sets { font-weight: 700; white-space: nowrap; }
+.mth-sets { color: var(--text-muted); }
+.mth-w { color: var(--court-green); }
+.mth-l { color: var(--danger); }
+.mth-sep { color: var(--text-muted); font-weight: 400; padding: 0 1px; }
 .mth-pct { color: var(--teal-ink); font-weight: 700; }
 .mth-pct.mth-thin { color: var(--text-muted); font-weight: 500; font-style: italic; }
 .mth-notme { color: var(--warn); }
@@ -169,12 +174,15 @@ button.mth-reset { flex: 0 0 auto; }
   padding-left: 8px;
 }
 .mth-side:last-child { text-align: right; align-items: flex-end; }
-.mth-side.win { border-left-color: var(--brand-teal); }
-.mth-side:last-child.win {
+.mth-side.win { border-left-color: var(--court-green); }
+.mth-side.lost { border-left-color: var(--danger); }
+.mth-side:last-child.win,
+.mth-side:last-child.lost {
   border-left-color: transparent;
-  border-right: 3px solid var(--brand-teal);
   padding-left: 0; padding-right: 8px;
 }
+.mth-side:last-child.win { border-right: 3px solid var(--court-green); }
+.mth-side:last-child.lost { border-right: 3px solid var(--danger); }
 .mth-vssep {
   font-family: var(--font-disp);
   font-size: 0.78rem; font-weight: 600;
@@ -197,8 +205,12 @@ button.mth-reset { flex: 0 0 auto; }
 .mth-name:hover { color: var(--teal-ink); border-bottom-color: var(--brand-teal); }
 .mth-name:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 4px; }
 .mth-name-plain { cursor: default; border-bottom: none; color: var(--text-muted); }
-.mth-side.win .mth-name { color: var(--text-strong); font-weight: 700; }
-.mth-win { color: var(--brand-teal); font-weight: 700; font-size: 0.9em; }
+.mth-side.win .mth-name { color: var(--court-green); font-weight: 700; }
+.mth-side.win .mth-name:hover { color: var(--court-green); border-bottom-color: var(--court-green); }
+.mth-side.lost .mth-name { color: var(--danger); }
+.mth-side.lost .mth-name:hover { color: var(--danger); border-bottom-color: var(--danger); }
+.mth-win { color: var(--court-green); font-weight: 700; font-size: 0.9em; }
+.mth-loss { color: var(--danger); font-weight: 700; font-size: 0.9em; }
 
 .mth-scores {
   font-family: var(--font-disp);

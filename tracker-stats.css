@@ -136,9 +136,13 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+/* App-wide tracker convention: wins green, losses red, separator neutral.
+   Applies to every W–L pair (totals tiles, partner/opponent rows,
+   day/week/year rows) — the small-sample muting of percentages is a
+   separate rule on .mts-pct-weak and is deliberately left untouched. */
 .mts-wl i { color: var(--text-muted); font-style: normal; margin: 0 1px; }
 .mts-w { color: var(--court-green); }
-.mts-l { color: var(--text-muted); }
+.mts-l { color: var(--danger); }
 
 /* ---------- percentages: never bare, thin samples marked ------------- */
 .mts-pct {
@@ -176,8 +180,17 @@
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
 }
-.mts-badge-w { background: var(--brand-teal); color: var(--accent-on); border-color: transparent; }
-.mts-badge-l { background: var(--surface-2); color: var(--text-muted); }
+/* streak letters follow the same win/loss colours as the W–L pairs */
+.mts-badge-w {
+  color: var(--court-green);
+  background: color-mix(in srgb, var(--court-green) 16%, transparent);
+  border-color: color-mix(in srgb, var(--court-green) 45%, transparent);
+}
+.mts-badge-l {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 42%, transparent);
+}
 .mts-badge-now { box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 3px var(--border); }
 .mts-streak {
   font-family: var(--font-disp);

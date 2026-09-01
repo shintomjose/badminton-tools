@@ -1160,7 +1160,12 @@
     border: 1px solid var(--border); border-radius: 999px;
     padding: 3px 10px;
   }
-  .mt-badge.done { color: var(--accent-on); background: var(--brand-teal); border-color: transparent; }
+  /* a winner pill is a win — green, per the app-wide Ergebnis convention */
+  .mt-badge.done {
+    color: var(--court-green);
+    background: color-mix(in srgb, var(--court-green) 14%, transparent);
+    border-color: color-mix(in srgb, var(--court-green) 50%, transparent);
+  }
   .mt-badge.open { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 50%, transparent); }
   .mt-score-grid {
     display: grid;
@@ -1168,7 +1173,7 @@
     gap: 4px 6px; align-items: center;
   }
   .mt-sg-name { min-width: 0; color: var(--text); overflow-wrap: anywhere; }
-  .mt-sg-name.win { color: var(--text-strong); font-weight: 700; }
+  .mt-sg-name.win { color: var(--court-green); font-weight: 700; }
   .mt-sg-val {
     text-align: center; font-variant-numeric: tabular-nums;
     font-weight: 700; color: var(--text-strong);
@@ -1385,6 +1390,13 @@
   .mt-sec-head > .mt-label,
   .mt-sec-head > h3 { flex: 1 1 auto; min-width: 0; margin: 0; }
   .mt-sec-head > .btn.icon-add { flex: none; }
+
+  /* --- Ergebnis-Konvention: Siege grün, Niederlagen rot ---
+     Utility spans wrapping the numbers of every W–L pair; the separator and
+     any surrounding words keep the inherited colour so only the figures carry
+     the meaning. Used in the header meta, the day rows and the Sätze cells. */
+  .mt-w { color: var(--court-green); font-weight: 700; }
+  .mt-l { color: var(--danger); font-weight: 700; }
 
   /* --- Kopfzeile: Datum und Spielzahl auf einen Blick --- */
   .mt-sess-meta {

@@ -270,6 +270,12 @@
   color: var(--text-strong);
   white-space: nowrap;
 }
+
+/* App-wide tracker convention: wins green, losses red, separator neutral.
+   Both tokens are defined in the dark and light blocks of style.css. */
+.mtp-w { color: var(--court-green); }
+.mtp-l { color: var(--danger); }
+.mtp-wl-sep { color: var(--text-muted); font-weight: 400; margin: 0 1px; }
 .mtp-pct {
   font-variant-numeric: tabular-nums;
   color: var(--teal-ink);
@@ -334,7 +340,25 @@
   line-height: 1.35;
 }
 .mtp-side-win { color: var(--text-strong); }
-.mtp-mark { color: var(--teal-ink); font-weight: 700; text-align: center; }
+.mtp-mark { font-weight: 700; text-align: center; }
+.mtp-mark-win { color: var(--court-green); }
+.mtp-mark-loss { color: var(--danger); }
+
+/* Screen-reader-only: gives the ✓ / ✕ markers a text equivalent so the
+   result is not conveyed by colour alone. Absolutely positioned, so it
+   never claims a cell in the .mtp-side grid. */
+.mtp-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
 .mtp-side-names { min-width: 0; }
 .mtp-sep { color: var(--text-muted); margin: 0 5px; }
 

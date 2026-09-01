@@ -70,6 +70,11 @@
       "{0} Spiele": "{0} matches",
       "1 Spiel": "1 match",
       "{0} % ({1})": "{0}% ({1})",
+      /* identical to the entry view's keys so both tabs read the same */
+      "Spiele {0}–{1}": "Matches {0}–{1}",
+      "Sätze {0}–{1}": "Sets {0}–{1}",
+      "S {0}–{1}": "S {0}–{1}",
+      "Niederlage": "Loss",
       "läuft": "in progress",
       "aufgegeben": "retired",
       "Satz {0}": "Game {0}",
@@ -221,31 +226,68 @@
     return null;
   }
 
+  /** Spec default when a match has no explicit targetScore. Mirrors the entry view. */
+  function defaultTarget(discipline) { return discipline === "doubles" ? 21 : 11; }
+
+  /** Prefer the core helper so history and entry can never disagree on a game. */
+  function gameWinnerOf(game, target) {
+    if (typeof MT.gameWinner === "function") return MT.gameWinner(game, target);
+    // Fallback mirrors core: >= target with any lead (club scoring, no deuce).
+    if (!game) return null;
+    var a = Number(game.a) || 0, b = Number(game.b) || 0, tg = Number(target) || 0;
+    if (a >= tg && a > b) return "A";
+    if (b >= tg && b > a) return "B";
+    return null;
+  }
+
   /**
-   * Aggregate a group from the isMe perspective.
-   * played  — every match in the group
-   * w / l   — only matches I played AND that have a decided winnerSide
-   * notMe   — matches whose playerIds lack my id (counted in played, not in W–L)
-   * decided — w + l, the honest sample size behind the win %
+   * Aggregate a group from the isMe perspective — attribution copied from the
+   * entry view's tallyDay() so the same day shows the same numbers in both tabs:
+   *   played  — every match in the group, mine or not
+   *   notMe   — matches I was not on court for (counted in played only)
+   *   w / l   — only FINISHED matches of mine that carry a winnerSide. A retired
+   *             or in-progress match contributes nothing beyond `played`
+   *   sw / sl — games within those same finished matches, each counted as soon as
+   *             gameWinner can decide it; half-entered games are skipped
+   *   decided — w + l, the honest sample size behind the win %
    */
   function aggregate(list, meId) {
-    var w = 0, l = 0, notMe = 0;
+    var w = 0, l = 0, sw = 0, sl = 0, notMe = 0;
     for (var i = 0; i < list.length; i++) {
       var m = list[i];
-      var ids = Array.isArray(m.playerIds) ? m.playerIds : [];
-      if (!meId || ids.indexOf(meId) === -1) { notMe++; continue; }
-      var side = mySide(m, meId);
-      if (!side || !m.winnerSide) continue;             // in_progress / undecided
-      if (m.winnerSide === side) w++; else l++;
+      var inA = sideIds(m, "A").indexOf(meId) !== -1;
+      var inB = sideIds(m, "B").indexOf(meId) !== -1;
+      if (!meId || (!inA && !inB)) { notMe++; continue; }   // not on court
+      if (m.status !== "finished") continue;                // no W–L, no Sätze
+      var mine = inA ? "A" : "B";
+      if (m.winnerSide) { if (m.winnerSide === mine) w++; else l++; }
+      var target = Number(m.targetScore) || defaultTarget(m.discipline);
+      var games = Array.isArray(m.games) ? m.games : [];
+      for (var g = 0; g < games.length; g++) {
+        var gw = gameWinnerOf(games[g], target);
+        if (!gw) continue;
+        if (gw === mine) sw++; else sl++;
+      }
     }
-    return { played: list.length, w: w, l: l, notMe: notMe, decided: w + l };
+    return { played: list.length, w: w, l: l, sw: sw, sl: sl, notMe: notMe, decided: w + l };
   }
+
+  /* App-wide tracker convention: wins green, losses red, separator neutral.
+     Both args are integers we counted ourselves, so interpolating them is safe. */
+  function winNum(n) { return '<span class="mth-w">' + n + "</span>"; }
+  function lossNum(n) { return '<span class="mth-l">' + n + "</span>"; }
 
   function statsLine(list) {
     var s = aggregate(list, state.meId);
     var parts = [];
     parts.push(s.played === 1 ? ESC(T("1 Spiel")) : ESC(TT("{0} Spiele", s.played)));
-    parts.push('<span class="mth-wl">' + s.w + "–" + s.l + "</span>");
+    parts.push('<span class="mth-wl" title="' + ESC(TT("Spiele {0}–{1}", s.w, s.l)) + '">' +
+      winNum(s.w) + '<span class="mth-sep">–</span>' + lossNum(s.l) + "</span>");
+    if (s.sw + s.sl > 0) {
+      // The template supplies the "S" prefix and the neutral dash between the numbers.
+      parts.push('<span class="mth-sets" title="' + ESC(TT("Sätze {0}–{1}", s.sw, s.sl)) + '">' +
+        TT("S {0}–{1}", winNum(s.sw), lossNum(s.sl)) + "</span>");
+    }
     if (s.decided > 0) {
       var pct = Math.round((s.w / s.decided) * 100);
       // Win % is always shown next to the sample it is based on (small-sample honesty).
@@ -258,13 +300,18 @@
     return parts.join('<span class="mth-dot">·</span>');
   }
 
-  /** Winner derived from the games — the score is the source of truth. */
-  function deriveWinner(games) {
+  /**
+   * Winner derived from the games. Defers to the core so an inline score edit
+   * writes the same winnerSide the entry view would have written.
+   */
+  function deriveWinner(games, target) {
+    if (typeof MT.deriveWinner === "function") return MT.deriveWinner(games, target);
     var a = 0, b = 0;
     for (var i = 0; i < games.length; i++) {
-      if (games[i].a > games[i].b) a++;
-      else if (games[i].b > games[i].a) b++;
+      var gw = gameWinnerOf(games[i], target);
+      if (gw === "A") a++; else if (gw === "B") b++;
     }
+    if (a === 0 && b === 0) return null;
     if (a === b) return null;
     return a > b ? "A" : "B";
   }
@@ -502,11 +549,24 @@
     "</div>";
   }
 
+  /** One side of a match row, carrying its win (green) or loss (red) marker. */
+  function sideBlock(match, side, won, lost) {
+    return '<div class="mth-side' + (won ? " win" : "") + (lost ? " lost" : "") + '">' +
+      nameButtons(match, side) +
+      (won ? '<span class="mth-win" aria-label="' + ESC(T("Sieg")) + '">✓</span>' : "") +
+      (lost ? '<span class="mth-loss" aria-label="' + ESC(T("Niederlage")) + '">✕</span>' : "") +
+    "</div>";
+  }
+
   /** showDate: the day level is gone in year/month/week modes, so each row carries its date. */
   function renderMatch(match, showDate) {
     var isEditing = !!(editing && editing.id === match.id);
     var winA = match.winnerSide === "A";
     var winB = match.winnerSide === "B";
+    // A loss is only marked on the side I was actually on — an all-other-players
+    // match has no "my" result to lose, so it gets a winner marker and nothing else.
+    var meSide = mySide(match, state.meId);
+    var lostSide = (match.winnerSide && meSide && match.winnerSide !== meSide) ? meSide : null;
     var disc = match.discipline === "singles" ? "1v1" : "2v2";
     var discLabel = match.discipline === "singles" ? T("Einzel") : T("Doppel");
     var score = scoreText(match);
@@ -519,11 +579,9 @@
         (bg ? '<span class="mth-badges">' + bg + "</span>" : "") +
       "</div>" +
       '<div class="mth-vs">' +
-        '<div class="mth-side' + (winA ? " win" : "") + '">' + nameButtons(match, "A") +
-          (winA ? '<span class="mth-win" aria-label="' + ESC(T("Sieg")) + '">✓</span>' : "") + "</div>" +
+        sideBlock(match, "A", winA, lostSide === "A") +
         '<div class="mth-vssep" aria-hidden="true">vs</div>' +
-        '<div class="mth-side' + (winB ? " win" : "") + '">' + nameButtons(match, "B") +
-          (winB ? '<span class="mth-win" aria-label="' + ESC(T("Sieg")) + '">✓</span>' : "") + "</div>" +
+        sideBlock(match, "B", winB, lostSide === "B") +
       "</div>" +
       (isEditing
         ? renderEdit(match)
@@ -795,7 +853,9 @@
     var patch = { games: games };
     // winnerSide is denormalised and derived from the score — keep it in step, but
     // never invent one for a retired match, where the score does not decide the winner.
-    if (match.status === "finished") patch.winnerSide = deriveWinner(games);
+    if (match.status === "finished") {
+      patch.winnerSide = deriveWinner(games, Number(match.targetScore) || defaultTarget(match.discipline));
+    }
 
     var token = mountToken;
     Promise.resolve(MT.repo.updateMatch(id, patch)).then(function () {
