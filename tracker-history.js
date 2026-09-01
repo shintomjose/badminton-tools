@@ -41,8 +41,8 @@
       "Turnier": "Tournament",
       "Disziplin": "Discipline",
       "Art": "Type",
-      "Alle Orte": "All venues",
-      "Alle Spieler": "All players",
+      "Filter": "Filters",
+      "{0}: Alle": "{0}: All",
       "Filter zurücksetzen": "Reset filters",
       /* states */
       "Verlauf wird geladen …": "Loading history …",
@@ -363,59 +363,58 @@
     return out.join("");
   }
 
-  function chip(group, value, label) {
-    var on = state.filters[group] === value;
-    return '<button type="button" class="mth-chip' + (on ? " on" : "") + '"' +
-      ' data-act="chip" data-f="' + ESC(group) + '" data-v="' + ESC(value) + '"' +
-      ' aria-pressed="' + (on ? "true" : "false") + '">' + ESC(label) + "</button>";
+  function opt(value, text, current) {
+    return '<option value="' + ESC(value) + '"' +
+      (current === value ? " selected" : "") + ">" + ESC(text) + "</option>";
+  }
+
+  /**
+   * One filter dropdown. The "Alle" option carries the filter's own name
+   * ("Disziplin: Alle") so the closed select is self-describing without an
+   * external label — there is no room for four visible labels on a phone.
+   */
+  function fsel(field, label, options) {
+    var active = state.filters[field] !== "all";
+    return '<select class="mth-fsel' + (active ? " on" : "") + '"' +
+      ' data-act="sel" data-f="' + ESC(field) + '" aria-label="' + ESC(label) + '">' +
+      opt("all", TT("{0}: Alle", label), state.filters[field]) + options + "</select>";
+  }
+
+  function byName(a, b) {
+    return String(a.name || "").localeCompare(String(b.name || ""), LOCALE);
   }
 
   function renderFilters() {
-    var locOpts = ['<option value="all">' + ESC(T("Alle Orte")) + "</option>"];
-    state.locations.slice().sort(function (a, b) {
-      return String(a.name || "").localeCompare(String(b.name || ""), LOCALE);
-    }).forEach(function (l) {
-      locOpts.push('<option value="' + ESC(l.id) + '"' +
-        (state.filters.locationId === l.id ? " selected" : "") + ">" + ESC(l.name || l.id) + "</option>");
-    });
+    var f = state.filters;
 
-    var plOpts = ['<option value="all">' + ESC(T("Alle Spieler")) + "</option>"];
-    state.players.slice().sort(function (a, b) {
-      return String(a.name || "").localeCompare(String(b.name || ""), LOCALE);
-    }).forEach(function (p) {
-      plOpts.push('<option value="' + ESC(p.id) + '"' +
-        (state.filters.playerId === p.id ? " selected" : "") + ">" + ESC(p.name || p.id) + "</option>");
-    });
+    var disc = opt("singles", T("Einzel"), f.discipline) +
+               opt("doubles", T("Doppel"), f.discipline);
+
+    var typ = opt("training", T("Training"), f.type) +
+              opt("tournament", T("Turnier"), f.type);
+
+    var loc = state.locations.slice().sort(byName).map(function (l) {
+      return opt(l.id, l.name || l.id, f.locationId);
+    }).join("");
+
+    var pl = state.players.slice().sort(byName).map(function (p) {
+      return opt(p.id, p.name || p.id, f.playerId);
+    }).join("");
 
     return '' +
       '<div class="mth-filters">' +
-        '<div class="mth-chiprow" role="group" aria-label="' + ESC(T("Disziplin")) + '">' +
-          '<span class="mth-flabel">' + ESC(T("Disziplin")) + "</span>" +
-          chip("discipline", "all", T("Alle")) +
-          chip("discipline", "singles", T("Einzel")) +
-          chip("discipline", "doubles", T("Doppel")) +
+        '<div class="mth-selrow" role="group" aria-label="' + ESC(T("Filter")) + '">' +
+          fsel("discipline", T("Disziplin"), disc) +
+          fsel("type", T("Art"), typ) +
+          fsel("locationId", T("Ort"), loc) +
+          fsel("playerId", T("Spieler"), pl) +
         "</div>" +
-        '<div class="mth-chiprow" role="group" aria-label="' + ESC(T("Art")) + '">' +
-          '<span class="mth-flabel">' + ESC(T("Art")) + "</span>" +
-          chip("type", "all", T("Alle")) +
-          chip("type", "training", T("Training")) +
-          chip("type", "tournament", T("Turnier")) +
-        "</div>" +
-        '<div class="mth-selrow">' +
-          '<label class="mth-sel">' +
-            '<span class="mth-flabel">' + ESC(T("Ort")) + "</span>" +
-            '<select data-act="sel" data-f="locationId" aria-label="' + ESC(T("Ort")) + '">' +
-              locOpts.join("") + "</select>" +
-          "</label>" +
-          '<label class="mth-sel">' +
-            '<span class="mth-flabel">' + ESC(T("Spieler")) + "</span>" +
-            '<select data-act="sel" data-f="playerId" aria-label="' + ESC(T("Spieler")) + '">' +
-              plOpts.join("") + "</select>" +
-          "</label>" +
-          (filtersActive()
-            ? '<button type="button" class="btn mth-btn mth-reset" data-act="reset">' + ESC(T("Filter zurücksetzen")) + "</button>"
-            : "") +
-        "</div>" +
+        (filtersActive()
+          ? '<div class="mth-resetrow">' +
+              '<button type="button" class="btn mth-btn mth-reset" data-act="reset">' +
+                ESC(T("Filter zurücksetzen")) + "</button>" +
+            "</div>"
+          : "") +
       "</div>";
   }
 
@@ -672,6 +671,7 @@
     var el = e.target.closest ? e.target.closest('select[data-act="sel"], input[data-r]') : null;
     if (!el) return;
     if (el.tagName === "SELECT") {
+      syncRangeFromDom();            // re-render redraws the range bar; keep typed dates
       state.filters[el.dataset.f] = el.value;
       render();
       return;
@@ -707,13 +707,6 @@
       if (state.expanded.has(g)) state.expanded.delete(g); else state.expanded.add(g);
       syncEditFromDom();
       syncRangeFromDom();
-      render();
-      return;
-    }
-
-    if (act === "chip") {
-      syncRangeFromDom();
-      state.filters[btn.dataset.f] = btn.dataset.v;
       render();
       return;
     }

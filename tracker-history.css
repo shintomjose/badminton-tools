@@ -49,31 +49,29 @@ button.mth-show { flex: 0 0 auto; }
   color: var(--text-muted);
   white-space: nowrap;
 }
-.mth-chiprow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.mth-chip {
-  font-family: var(--font-disp);
-  font-size: 0.95rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.04em;
-  background: var(--surface-2); color: var(--text-muted);
-  border: 1px solid var(--border); border-radius: 999px;
-  padding: 8px 16px; min-height: 44px;
-  cursor: pointer;
-  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+/* Four equal filter dropdowns on one row. minmax(0,1fr) is what stops a long
+   venue/player name from widening a column and pushing the page sideways. */
+.mth-selrow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
 }
-.mth-chip:hover { color: var(--text-strong); }
-.mth-chip:focus-visible { outline: none; box-shadow: var(--ring); }
-.mth-chip.on { background: var(--brand-teal); color: var(--accent-on); border-color: transparent; }
-
-.mth-selrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.mth-sel { display: flex; align-items: center; gap: 8px; flex: 1 1 220px; min-width: 0; }
-.mth-sel select {
+.mth-fsel {
   font: inherit;
-  flex: 1 1 auto; min-width: 0; max-width: 100%;
+  width: 100%; min-width: 0; max-width: 100%;
   background: var(--surface-2); color: var(--text-strong);
   border: 1px solid var(--border); border-radius: var(--radius-sm);
   padding: 8px 10px; min-height: 44px;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, color var(--dur-fast) ease;
 }
-.mth-sel select:focus-visible { outline: none; box-shadow: var(--ring); }
+.mth-fsel:focus-visible { outline: none; box-shadow: var(--ring); }
+/* an applied filter reads as applied even when its row is scrolled past */
+.mth-fsel.on { border-color: var(--brand-teal); color: var(--teal-ink); font-weight: 600; }
+.mth-resetrow { display: flex; justify-content: flex-end; }
+
+/* label + control pairs, used by the Zeitraum bar */
+.mth-sel { display: flex; align-items: center; gap: 8px; flex: 1 1 220px; min-width: 0; }
 
 /* composed with the app's button.btn — element-qualified so we win on specificity */
 button.mth-btn { min-height: 44px; padding: 8px 14px; font-size: 0.88em; }
@@ -276,8 +274,13 @@ button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
   .mth-rangebar, .mth-filters { padding: 10px; }
   .mth-rangebar .mth-sel { flex: 1 1 100%; }
   button.mth-show { flex: 1 1 100%; }
-  .mth-chip { padding: 8px 13px; font-size: 0.9rem; }
   .mth-sel { flex: 1 1 100%; }
+  /* Four selects across cannot show a venue or player name below ~560px, so
+     fall back to 2x2 rather than truncating every option to a few characters. */
+  .mth-selrow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .mth-fsel { font-size: 0.86em; padding: 8px 6px; }
+  .mth-resetrow { justify-content: stretch; }
+  .mth-resetrow button.mth-reset { flex: 1 1 100%; }
   .mth-gh { padding: 10px 8px; gap: 4px 8px; }
   .mth-gs { flex-basis: 100%; padding-left: 1.6em; }
   .mth-gt { font-size: 0.96rem; }
