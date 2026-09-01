@@ -51,7 +51,7 @@ Object.assign(EN, {
   "Profil folgt": "Profile coming soon",
   "Offline-Speicher nicht aktiv — Eingaben funktionieren, werden aber nicht zwischengespeichert.":
     "Offline storage is not active — entry still works, but nothing is cached.",
-  "Spiele": "Matches",
+  "Spiele": "Results",
 });
 
 const MT = (function () {
@@ -980,7 +980,7 @@ const MT = (function () {
      this file loaded, so the new tab is not covered by it. */
   if (LANG === "en") {
     const lbl = document.querySelector("#tabbtn-tracker .tlabel");
-    if (lbl) lbl.textContent = "Matches";
+    if (lbl) lbl.textContent = "Results";
     const sub = document.querySelector("#tab-tracker .tab-sub");
     if (sub) sub.textContent = "Loading match tracker …";
   }
