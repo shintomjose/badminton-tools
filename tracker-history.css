@@ -1,0 +1,293 @@
+/* ================= Match Tracker — match history =================
+   Prefix: .mth-*  ·  tokens only, no literal colours → both themes work for free.
+   Mobile first: single column, no horizontal scroll, 44px touch targets.
+   Grouping is flat (one collapsible level), so there is no nesting to indent.
+================================================================= */
+
+.mth { display: block; }
+
+/* ---------------- mode switch (reuses the app's .seg-tabs) ---------------- */
+/* Same scroll pattern as the app's .tabs: the buttons carry margin-bottom:-2px,
+   so pin overflow-y or a stray vertical scrollbar appears on narrow screens. */
+.mth-modes { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+.mth-modes::-webkit-scrollbar { display: none; }
+
+/* ---------------- custom range bar ---------------- */
+.mth-rangebar {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  background: var(--surface-1);
+  border: 1px solid color-mix(in srgb, var(--brand-teal) 32%, var(--border));
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 10px;
+}
+.mth-rangebar input[type="date"] {
+  font: inherit;
+  flex: 1 1 auto; min-width: 0; max-width: 100%;
+  background: var(--surface-2); color: var(--text-strong);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 10px; min-height: 44px;
+}
+.mth-rangebar input[type="date"]:focus-visible { outline: none; box-shadow: var(--ring); }
+button.mth-show { flex: 0 0 auto; }
+
+/* ---------------- filter bar ---------------- */
+.mth-filters {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.mth-flabel {
+  font-family: var(--font-disp);
+  font-size: 0.76rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.mth-chiprow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.mth-chip {
+  font-family: var(--font-disp);
+  font-size: 0.95rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  background: var(--surface-2); color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 8px 16px; min-height: 44px;
+  cursor: pointer;
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.mth-chip:hover { color: var(--text-strong); }
+.mth-chip:focus-visible { outline: none; box-shadow: var(--ring); }
+.mth-chip.on { background: var(--brand-teal); color: var(--accent-on); border-color: transparent; }
+
+.mth-selrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.mth-sel { display: flex; align-items: center; gap: 8px; flex: 1 1 220px; min-width: 0; }
+.mth-sel select {
+  font: inherit;
+  flex: 1 1 auto; min-width: 0; max-width: 100%;
+  background: var(--surface-2); color: var(--text-strong);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 10px; min-height: 44px;
+}
+.mth-sel select:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* composed with the app's button.btn — element-qualified so we win on specificity */
+button.mth-btn { min-height: 44px; padding: 8px 14px; font-size: 0.88em; }
+button.mth-reset { flex: 0 0 auto; }
+
+/* ---------------- flat collapsible groups ---------------- */
+.mth-list { display: block; }
+.mth-group { margin-bottom: 8px; }
+
+.mth-gh {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 4px 10px;
+  width: 100%;
+  font: inherit; text-align: left;
+  background: var(--team-band);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--brand-teal) 28%, var(--border));
+  border-radius: var(--radius-sm);
+  padding: 11px 12px; min-height: 48px;
+  cursor: pointer;
+  transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+.mth-gh:hover { background: var(--row-hover); }
+.mth-gh:focus-visible { outline: none; box-shadow: var(--ring); }
+.mth-caret { color: var(--teal-ink); font-size: 0.9em; width: 1em; flex: 0 0 auto; }
+.mth-gt {
+  font-family: var(--font-disp);
+  font-size: 1.02rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--text-strong);
+  flex: 1 1 auto; min-width: 0;
+}
+.mth-gs {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  font-size: 0.8em; color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex: 0 1 auto;
+}
+.mth-dot { color: var(--border); }
+.mth-wl { color: var(--text-strong); font-weight: 700; }
+.mth-pct { color: var(--teal-ink); font-weight: 700; }
+.mth-pct.mth-thin { color: var(--text-muted); font-weight: 500; font-style: italic; }
+.mth-notme { color: var(--warn); }
+
+.mth-gbody { display: grid; gap: 8px; padding: 8px 0 12px; }
+
+/* ---------------- match card ---------------- */
+.mth-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: grid; gap: 8px;
+}
+.mth-card.editing { border-color: var(--brand-teal); }
+
+.mth-card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mth-disc {
+  font-family: var(--font-disp);
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--teal-ink);
+  background: color-mix(in srgb, var(--brand-teal) 14%, transparent);
+  border-radius: 999px;
+  padding: 3px 10px;
+  flex: 0 0 auto;
+}
+.mth-rowdate {
+  font-size: 0.78em; color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+.mth-badges { display: flex; gap: 6px; flex-wrap: wrap; min-width: 0; }
+.mth-badge {
+  display: inline-block;
+  font-family: var(--font-disp);
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 999px; padding: 3px 9px;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mth-badge-trn { background: var(--brand-teal); color: var(--accent-on); }
+.mth-badge-live { background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--warn); border: 1px solid var(--warn); }
+.mth-badge-ret { background: var(--surface-1); color: var(--text-muted); border: 1px solid var(--border); }
+
+.mth-vs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: start;
+  gap: 6px;
+}
+.mth-side {
+  display: flex; flex-direction: column; align-items: flex-start;
+  min-width: 0;
+  border-left: 3px solid transparent;
+  padding-left: 8px;
+}
+.mth-side:last-child { text-align: right; align-items: flex-end; }
+.mth-side.win { border-left-color: var(--brand-teal); }
+.mth-side:last-child.win {
+  border-left-color: transparent;
+  border-right: 3px solid var(--brand-teal);
+  padding-left: 0; padding-right: 8px;
+}
+.mth-vssep {
+  font-family: var(--font-disp);
+  font-size: 0.78rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-muted);
+  align-self: center;
+  flex: 0 0 auto;
+}
+.mth-name {
+  font: inherit;
+  background: none; border: none;
+  color: var(--text-strong); font-weight: 500;
+  text-align: inherit;
+  padding: 6px 2px; min-height: 36px;
+  max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  cursor: pointer;
+  border-bottom: 1px dotted var(--border);
+}
+.mth-name:hover { color: var(--teal-ink); border-bottom-color: var(--brand-teal); }
+.mth-name:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 4px; }
+.mth-name-plain { cursor: default; border-bottom: none; color: var(--text-muted); }
+.mth-side.win .mth-name { color: var(--text-strong); font-weight: 700; }
+.mth-win { color: var(--brand-teal); font-weight: 700; font-size: 0.9em; }
+
+.mth-scores {
+  font-family: var(--font-disp);
+  font-size: 1.06rem; font-weight: 700; letter-spacing: 0.05em;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.mth-muted { color: var(--text-muted); font-style: italic; font-weight: 400; font-size: 0.85rem; }
+
+.mth-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+}
+.mth-loc {
+  color: var(--text-muted); font-size: 0.8em;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mth-acts { display: flex; gap: 6px; flex: 0 0 auto; }
+button.mth-del { color: var(--danger); font-weight: 600; }
+button.mth-del:hover { background: color-mix(in srgb, var(--danger) 14%, transparent); }
+button.mth-del.armed {
+  background: color-mix(in srgb, var(--danger) 20%, transparent);
+  border-color: var(--danger); color: var(--danger); font-weight: 700;
+}
+
+/* ---------------- inline score edit ---------------- */
+.mth-edit {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  display: grid; gap: 10px;
+}
+.mth-edit-rows { display: grid; gap: 8px; }
+.mth-edit-row { display: flex; align-items: center; gap: 8px; }
+.mth-edit-lbl {
+  font-family: var(--font-disp);
+  font-size: 0.76rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-muted);
+  flex: 0 0 5.5em;
+}
+.mth-num {
+  font: inherit;
+  width: 4.2em; min-width: 0;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  background: var(--surface-2); color: var(--text-strong);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 4px; min-height: 44px;
+}
+.mth-num:focus-visible { outline: none; box-shadow: var(--ring); }
+.mth-colon { color: var(--text-muted); font-weight: 700; }
+.mth-edit-acts { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.mth-edit-spacer { flex: 1 1 auto; }
+.mth-edit-acts button.mth-btn[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------------- load earlier ---------------- */
+.mth-more { display: flex; justify-content: center; padding: 14px 0 4px; }
+.mth-more:empty { display: none; }
+button.mth-more-btn {
+  font-family: var(--font-disp);
+  font-size: 0.95em; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  min-height: 46px; padding: 10px 22px;
+}
+button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
+
+/* ---------------- small screens ---------------- */
+@media (max-width: 560px) {
+  .mth-modes button { padding: 8px 11px; font-size: 0.88rem; letter-spacing: 0.05em; }
+  .mth-rangebar, .mth-filters { padding: 10px; }
+  .mth-rangebar .mth-sel { flex: 1 1 100%; }
+  button.mth-show { flex: 1 1 100%; }
+  .mth-chip { padding: 8px 13px; font-size: 0.9rem; }
+  .mth-sel { flex: 1 1 100%; }
+  .mth-gh { padding: 10px 8px; gap: 4px 8px; }
+  .mth-gs { flex-basis: 100%; padding-left: 1.6em; }
+  .mth-gt { font-size: 0.96rem; }
+  .mth-card { padding: 10px 8px; }
+  /* one comfortable tap target per player name */
+  button.mth-name { min-height: 44px; padding: 10px 2px; }
+  .mth-vs { gap: 4px; }
+  .mth-vssep { font-size: 0.7rem; }
+  .mth-scores { font-size: 1rem; }
+  .mth-acts { flex: 1 1 100%; justify-content: flex-end; }
+  .mth-edit-lbl { flex-basis: 4.6em; font-size: 0.7rem; }
+  .mth-num { width: 100%; }
+}

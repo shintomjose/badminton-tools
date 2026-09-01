@@ -4,11 +4,11 @@
  *  - Eigene HTML/CSS/JS:  network-first  → Updates kommen sofort an, offline aus Cache
  *  - img/ Produktbilder:  cache-first    → 8.7 MB, nie precachen, LRU-Deckel
  *  - CDN (Firebase SDK, Leaflet, Fonts): stale-while-revalidate
- *  - Firebase RTDB, OSRM, Nominatim, OSM-Tiles: network-only (Passthrough)
+ *  - Firebase RTDB/Firestore, OSRM, Nominatim, OSM-Tiles: network-only (Passthrough)
  */
 "use strict";
 
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL_CACHE = `shell-${VERSION}`;
 const IMG_CACHE = `img-${VERSION}`;
 const CDN_CACHE = `cdn-${VERSION}`;
@@ -21,6 +21,14 @@ const PRECACHE = [
   "./index.html",
   "./style.css",
   "./app.js",
+  "./tracker-core.js",
+  "./tracker-entry.js",
+  "./tracker-history.js",
+  "./tracker-stats.js",
+  "./tracker-profile.js",
+  "./tracker-history.css",
+  "./tracker-stats.css",
+  "./tracker-profile.css",
   "./pwa.js",
   "./anfahrt.html",
   "./manifest.webmanifest",
@@ -40,8 +48,11 @@ const NETWORK_ONLY_HOSTS = [
   "nominatim.openstreetmap.org",
   "firebasedatabase.app",
   "firebaseio.com",
+  "firestore.googleapis.com",     // Match Tracker — Firestore hat eigenen Offline-Cache
   "identitytoolkit.googleapis.com",
   "securetoken.googleapis.com",
+  "apis.google.com",              // Google-Anmeldung (Popup/Redirect)
+  "accounts.google.com",
   "tile.openstreetmap.org",
 ];
 

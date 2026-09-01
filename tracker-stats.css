@@ -1,0 +1,320 @@
+/* =====================================================================
+   Match Tracker — stats & progress view
+   Prefix: .mts-*   Tokens only (no hard-coded colours) — works in both themes.
+   Mobile-first: cards stack, tables scroll horizontally, chart is fluid.
+   ===================================================================== */
+
+.mts { display: block; }
+
+/* ---------- toolbars: type toggle + period selector ------------------ */
+.mts-bar-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 18px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+.mts-seg { margin: 2px 0 0; flex: 0 1 auto; }
+
+/* the type toggle is the primary scope switch — give it more weight */
+.mts-bar-top .mts-seg:first-child button { font-size: 1.05rem; }
+
+.mts-who {
+  color: var(--text-muted);
+  font-size: 0.85em;
+  margin: 0 0 12px;
+}
+
+.mts-loading {
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 22px 4px;
+  margin: 0;
+}
+.mts-empty { margin: 8px 0 0; }
+
+/* ---------- cards ---------------------------------------------------- */
+.mts-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.mts-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+.mts-h {
+  font-family: var(--font-disp);
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-strong);
+  margin: 0 0 12px;
+}
+.mts-h4 {
+  font-family: var(--font-disp);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+}
+.mts-label {
+  font-family: var(--font-disp);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+}
+.mts-note {
+  color: var(--text-muted);
+  font-size: 0.8em;
+  line-height: 1.45;
+  margin: 10px 0 0;
+  text-wrap: pretty;
+}
+
+/* ---------- totals: singles / doubles side by side ------------------- */
+.mts-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;   /* stays 2-up on phones — the comparison is the point */
+  gap: 10px;
+}
+.mts-tile {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--brand-teal);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px 12px;
+  min-width: 0;
+}
+.mts-tile-head {
+  font-family: var(--font-disp);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--teal-ink);
+}
+.mts-tile-num {
+  font-family: var(--font-disp);
+  font-size: clamp(2.4rem, 2rem + 4vw, 3.1rem);
+  font-weight: 700;
+  line-height: 0.95;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+.mts-tile-unit {
+  font-size: 0.76em;
+  color: var(--text-muted);
+  text-transform: lowercase;
+  margin-bottom: 8px;
+}
+.mts-tile-row { margin-top: 3px; }
+
+.mts-combined {
+  color: var(--text-muted);
+  font-size: 0.86em;
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- W–L pair ------------------------------------------------- */
+.mts-wl {
+  font-family: var(--font-disp);
+  font-size: 1.15em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mts-wl i { color: var(--text-muted); font-style: normal; margin: 0 1px; }
+.mts-w { color: var(--court-green); }
+.mts-l { color: var(--text-muted); }
+
+/* ---------- percentages: never bare, thin samples marked ------------- */
+.mts-pct {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+.mts-pct-weak {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-decoration: underline dotted currentColor;
+  text-underline-offset: 3px;
+  cursor: help;
+}
+.mts-pct-weak:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 3px; }
+.mts-pct-empty { color: var(--text-muted); font-weight: 400; }
+
+/* ---------- form / streak -------------------------------------------- */
+.mts-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 28px;
+  align-items: flex-start;
+}
+.mts-form-block { min-width: 0; }
+.mts-badges { display: flex; gap: 5px; margin-bottom: 8px; }
+.mts-badge {
+  font-family: var(--font-disp);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+.mts-badge-w { background: var(--brand-teal); color: var(--accent-on); border-color: transparent; }
+.mts-badge-l { background: var(--surface-2); color: var(--text-muted); }
+.mts-badge-now { box-shadow: 0 0 0 2px var(--surface-1), 0 0 0 3px var(--border); }
+.mts-streak {
+  font-family: var(--font-disp);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: 0.01em;
+}
+.mts-form-pct { font-size: 1.5rem; font-family: var(--font-disp); }
+.mts-form-pct .mts-pct { font-size: inherit; }
+
+/* ---------- trend chart ---------------------------------------------- */
+.mts-chart-wrap {
+  width: 100%;
+  max-width: 560px;      /* keeps the 320x180 viewBox under ~360px tall */
+}
+.mts-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+  overflow: visible;
+}
+.mts-chart .mts-ax {
+  font-family: var(--font-body);
+  font-size: 9px;
+  fill: var(--text-muted);
+}
+.mts-chart .mts-ax-title {
+  font-family: var(--font-disp);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+.mts-bar { transition: fill-opacity var(--dur-fast) ease; }
+.mts-chart:hover .mts-bar { fill-opacity: 0.6; }
+.mts-chart .mts-bar:hover { fill-opacity: 1; }
+
+/* ---------- tables ---------------------------------------------------- */
+.mts-bucket + .mts-bucket { margin-top: 18px; }
+.mts-tbl-wrap {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+.mts-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.mts-tbl th,
+.mts-tbl td {
+  padding: 8px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.mts-tbl thead th {
+  font-family: var(--font-disp);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  border-bottom-color: var(--text-muted);
+}
+.mts-tbl tbody th {
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+.mts-tbl tbody tr:last-child th,
+.mts-tbl tbody tr:last-child td { border-bottom: none; }
+.mts-tbl tbody tr:hover { background: var(--row-hover); }
+.mts-tbl .mts-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* tappable player names */
+.mts-name {
+  font: inherit;
+  font-weight: 600;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  min-height: 32px;
+  color: var(--teal-ink);
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: text-decoration-color var(--dur-fast) ease;
+}
+.mts-name:hover { text-decoration-color: currentColor; }
+.mts-name:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 4px; }
+
+/* ---------- "wenig Daten" disclosure ---------------------------------- */
+.mts-details {
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.mts-details summary {
+  font-family: var(--font-disp);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+  cursor: pointer;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mts-details summary:hover { color: var(--text-strong); }
+.mts-details summary:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 4px; }
+
+/* ---------- wider screens --------------------------------------------- */
+@media (min-width: 760px) {
+  .mts-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* the trend chart and the day/week/year tables want the full width */
+  .mts-card-wide,
+  .mts-who,
+  .mts-loading,
+  .mts-empty {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mts-bar,
+  .mts-name { transition: none; }
+}

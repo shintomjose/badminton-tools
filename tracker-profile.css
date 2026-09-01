@@ -1,0 +1,408 @@
+/* ============================================================================
+ * tracker-profile.css — Match Tracker Phase 5: player profile overlay
+ * All selectors are prefixed .mtp-* and every colour comes from a token in
+ * style.css, so both themes are covered without a second palette.
+ *
+ * z-index 49: above the app's nav / fab / drawer layer (40–46) but below the
+ * toast (50), so the error toasts this overlay raises stay readable.
+ * ========================================================================== */
+
+.mtp-root {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  display: flex;
+}
+.mtp-root[hidden] { display: none !important; }
+
+.mtp-backdrop {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--surface-0) 76%, transparent);
+  opacity: 0;
+  transition: opacity var(--dur-fast) ease;
+}
+[data-theme="light"] .mtp-backdrop {
+  /* A light surface over light content gives no separation — darken instead. */
+  background: color-mix(in srgb, var(--text-strong) 34%, transparent);
+}
+.mtp-root.mtp-open .mtp-backdrop { opacity: 1; }
+
+/* ------------------------------------------------------- sheet (mobile first) */
+.mtp-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  color: var(--text);
+  overflow: hidden;
+  transform: translateY(100%);
+  transition: transform 220ms cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+.mtp-root.mtp-open .mtp-sheet { transform: translateY(0); }
+.mtp-sheet:focus { outline: none; }
+
+/* ------------------------------------------------------------------ header */
+.mtp-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 10px 10px 14px;
+  padding-top: calc(10px + env(safe-area-inset-top));
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+}
+.mtp-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-disp);
+  font-size: 1.16rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mtp-title::before { content: none; }  /* cancel the global h2 teal square */
+
+.mtp-icon {
+  flex: none;
+  font: inherit;
+  line-height: 1;
+  width: 42px;
+  min-height: 42px;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text-strong);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background var(--dur-fast) ease;
+}
+.mtp-icon:hover { background: var(--row-hover); }
+.mtp-icon:focus-visible { outline: none; box-shadow: var(--ring); }
+.mtp-icon[hidden] { display: none !important; }
+.mtp-refresh { font-size: 1.15rem; }
+.mtp-close { font-size: 1.05rem; }
+
+/* -------------------------------------------------------------------- body */
+.mtp-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 14px calc(24px + env(safe-area-inset-bottom));
+}
+
+/* ---------------------------------------------------------------- identity */
+.mtp-ident {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 12px 12px 14px;
+  margin-bottom: 16px;
+}
+.mtp-ident-main { flex: 1 1 auto; min-width: 0; }
+.mtp-ident-name {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-family: var(--font-disp);
+  font-size: 1.32rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-strong);
+  line-height: 1.15;
+}
+.mtp-ident-club {
+  margin-top: 3px;
+  font-size: 0.88em;
+  color: var(--text-muted);
+}
+.mtp-edit { width: 36px; min-height: 36px; font-size: 0.95rem; }
+
+.mtp-ident-edit { display: block; }
+.mtp-field { display: block; margin-bottom: 10px; }
+.mtp-field > span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.78em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.mtp-input {
+  font: inherit;
+  width: 100%;
+  background: var(--surface-1);
+  color: var(--text-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  min-height: 44px;
+}
+.mtp-input:focus-visible { outline: none; box-shadow: var(--ring); }
+.mtp-ident-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+.mtp-btn {
+  font: inherit;
+  background: var(--surface-1);
+  color: var(--text-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: background var(--dur-fast) ease;
+}
+.mtp-btn:hover { background: var(--row-hover); }
+.mtp-btn:focus-visible { outline: none; box-shadow: var(--ring); }
+.mtp-btn[disabled] { opacity: 0.55; cursor: default; }
+.mtp-btn-primary {
+  background: var(--brand-teal);
+  color: var(--accent-on);
+  border-color: transparent;
+  font-family: var(--font-disp);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.mtp-btn-primary:hover { background: var(--brand-teal-press); }
+
+/* ------------------------------------------------------------------ badges */
+.mtp-badge {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  padding: 3px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.mtp-badge-me {
+  background: var(--brand-teal);
+  color: var(--accent-on);
+  border-color: transparent;
+}
+.mtp-badge-off { border-style: dashed; }
+.mtp-badge-tour {
+  background: var(--team-band);
+  color: var(--teal-ink);
+  border-color: color-mix(in srgb, var(--brand-teal) 35%, transparent);
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mtp-chip {
+  font-size: 0.68rem;
+  font-style: italic;
+  color: var(--warn);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- sections */
+.mtp-sec { margin-bottom: 20px; }
+.mtp-sec-h {
+  margin: 0 0 8px;
+  font-family: var(--font-disp);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-muted);
+}
+.mtp-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+.mtp-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+.mtp-block-h {
+  font-family: var(--font-disp);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--teal-ink);
+  padding-bottom: 6px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ------------------------------------------------------------- stat rows */
+.mtp-stat-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 0.92em;
+}
+.mtp-stat-row + .mtp-stat-row { border-top: 1px solid var(--border); }
+.mtp-stat-label { color: var(--text); }
+.mtp-stat-wl {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+.mtp-pct {
+  font-variant-numeric: tabular-nums;
+  color: var(--teal-ink);
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 9ch;
+  text-align: right;
+}
+/* Small-sample honesty: under 5 matches the percentage is visually demoted. */
+.mtp-pct.mtp-low {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-style: italic;
+}
+.mtp-dash { color: var(--text-muted); min-width: 9ch; text-align: right; }
+
+.mtp-note {
+  margin: 8px 0 0;
+  font-size: 0.8em;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------ match history */
+.mtp-matches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.mtp-match {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+.mtp-m-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.76em;
+  color: var(--text-muted);
+}
+.mtp-m-date { font-variant-numeric: tabular-nums; color: var(--text); font-weight: 600; }
+.mtp-m-disc { text-transform: uppercase; letter-spacing: 0.07em; }
+.mtp-m-loc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 18ch;
+}
+
+.mtp-side {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 6px;
+  padding: 3px 0;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+.mtp-side-win { color: var(--text-strong); }
+.mtp-mark { color: var(--teal-ink); font-weight: 700; text-align: center; }
+.mtp-side-names { min-width: 0; }
+.mtp-sep { color: var(--text-muted); margin: 0 5px; }
+
+/* Score pips, one per game, column-aligned across both side rows. */
+.mtp-pts { display: flex; gap: 6px; white-space: nowrap; }
+.mtp-pt {
+  display: inline-block;
+  min-width: 2.2ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: inherit;
+}
+
+/* Names: buttons that look like text but are real, focusable controls. */
+.mtp-name {
+  font: inherit;
+  color: inherit;
+  padding: 0;
+  background: none;
+  border: none;
+  text-align: left;
+}
+.mtp-name-link {
+  cursor: pointer;
+  border-bottom: 1px dotted color-mix(in srgb, var(--teal-ink) 55%, transparent);
+}
+.mtp-name-link:hover { color: var(--teal-ink); }
+.mtp-name-link:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 3px; }
+.mtp-name-self { font-weight: 700; color: var(--text-strong); }
+.mtp-side-win .mtp-name-self { color: var(--teal-ink); }
+
+/* ----------------------------------------------------- loading / empty / err */
+.mtp-state {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.9em;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 14px;
+  text-align: center;
+  margin: 8px 0;
+}
+.mtp-state-err { font-style: normal; color: var(--text); }
+.mtp-state-err p { margin: 0 0 12px; color: var(--danger); }
+
+/* --------------------------------------------------------------- desktop */
+@media (min-width: 700px) {
+  .mtp-root { align-items: center; justify-content: center; padding: 24px; }
+  .mtp-sheet {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+    max-height: min(86vh, 760px);
+    border-radius: var(--radius-md);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+    transform: translateY(14px) scale(0.985);
+    opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+  .mtp-root.mtp-open .mtp-sheet { transform: translateY(0) scale(1); opacity: 1; }
+  .mtp-head { padding-top: 10px; }
+  .mtp-body { padding: 16px 18px 20px; }
+  .mtp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mtp-sheet,
+  .mtp-backdrop { transition: none; transform: none; opacity: 1; }
+  .mtp-root.mtp-open .mtp-sheet { transform: none; }
+}

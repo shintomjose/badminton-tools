@@ -236,7 +236,7 @@ document.getElementById("distFrame").addEventListener("load", () => {
   applyTheme(document.documentElement.dataset.theme);
 });
 
-const TABS = ["teams", "lineup", "termine", "anfahrt", "shop"];
+const TABS = ["teams", "lineup", "termine", "anfahrt", "shop", "tracker"];
 function showTab(id) {
   if (!TABS.includes(id)) id = "teams";
   TABS.forEach(t => {
@@ -303,8 +303,16 @@ const FB_CONFIG = {
 window.fbReady = new Promise(resolve => {
   if (!window.firebase || !firebase.initializeApp) { resolve(null); return; }
   try { firebase.initializeApp(FB_CONFIG); } catch (e) { resolve(null); return; }
-  firebase.auth().onAuthStateChanged(u => { if (u) resolve(firebase.database()); });
-  firebase.auth().signInAnonymously().catch(() => resolve(null));
+  /* Sign in anonymously ONLY when the first auth callback reports nobody signed
+     in — an unconditional signInAnonymously() would clobber a persisted Google
+     session (the match tracker signs in with Google). */
+  let firstCallback = true;
+  firebase.auth().onAuthStateChanged(u => {
+    const wasFirst = firstCallback;
+    firstCallback = false;
+    if (u) { resolve(firebase.database()); return; }
+    if (wasFirst) firebase.auth().signInAnonymously().catch(() => resolve(null));
+  });
 });
 
 /* PIN prüft sich selbst, sobald 4 Zeichen eingegeben sind */

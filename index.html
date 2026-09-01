@@ -12,7 +12,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tracker-history.css">
+<link rel="stylesheet" href="tracker-stats.css">
+<link rel="stylesheet" href="tracker-profile.css">
 </head>
 <body>
 <header class="app-header">
@@ -32,6 +36,7 @@
     <button role="tab" id="tabbtn-termine" aria-selected="false" aria-controls="tab-termine"><span class="tno">03</span><span class="tlabel">Termine</span></button>
     <button role="tab" id="tabbtn-anfahrt" aria-selected="false" aria-controls="tab-anfahrt"><span class="tno">04</span><span class="tlabel">Anfahrt</span></button>
     <button role="tab" id="tabbtn-shop" aria-selected="false" aria-controls="tab-shop"><span class="tno">05</span><span class="tlabel">Shop</span></button>
+    <button role="tab" id="tabbtn-tracker" aria-selected="false" aria-controls="tab-tracker"><span class="tno">06</span><span class="tlabel">Spiele</span></button>
   </nav>
 </header>
 
@@ -205,6 +210,12 @@
     <div class="cat-chips" id="shopCats" role="group" aria-label="Kategorien"></div>
     <div class="shop-grid" id="shopGrid"></div>
   </section>
+
+  <!-- ============ TAB 6: Spiele (Match Tracker) ============
+       Rendered entirely by tracker-core.js / tracker-entry.js. -->
+  <section class="tab-panel" id="tab-tracker" role="tabpanel" aria-labelledby="tabbtn-tracker" hidden>
+    <p class="tab-sub">Spieltracker wird geladen …</p>
+  </section>
 </main>
 
 <button id="cartFab" aria-label="Warenkorb öffnen">🛒 <span id="cartFabCount">0</span> · <span id="cartFabSum">0,00 €</span></button>
@@ -242,6 +253,11 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="app.js"></script>
+<script src="tracker-core.js"></script>
+<script src="tracker-entry.js"></script>
+<script src="tracker-history.js"></script>
+<script src="tracker-stats.js"></script>
+<script src="tracker-profile.js"></script>
 <script src="pwa.js" defer></script>
 </body>
 </html>

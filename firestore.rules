@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Badminton Tools — Match Tracker.
+// The client-side PIN protects the UI only; THIS file protects the data.
+// Replace PASTE_OWNER_UID_HERE with the uid shown on the tracker's setup card
+// (sign in with Google once, tap "UID kopieren"), then re-publish the rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner() {
+      return request.auth != null
+          && request.auth.uid == "PASTE_OWNER_UID_HERE";
+    }
+
+    match /{col}/{doc} {
+      allow read, write: if isOwner()
+        && col in ["sessions", "matches", "players", "locations"];
+    }
+
+    // Everything else is denied (no catch-all rule below this point).
+  }
+}
