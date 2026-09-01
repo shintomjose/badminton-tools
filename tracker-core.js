@@ -57,7 +57,7 @@ Object.assign(EN, {
 const MT = (function () {
   /* ================= constants ================= */
   const MT_PIN_TIMEOUT_MIN = 30;              // re-lock after this much inactivity
-  const MT_PIN_DISABLED = false;              // flip to true to bypass the tracker PIN
+  const MT_PIN_DISABLED = true;               // flip to false to re-enable the tracker PIN
   const PIN_UNLOCK_KEY = "mt-pin-unlock";
   const PIN_LAST_KEY = "mt-pin-last";
   const DEFAULT_CLUB = "TSG Heilbronn";
