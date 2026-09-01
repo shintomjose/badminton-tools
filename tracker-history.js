@@ -208,6 +208,8 @@
 
   function sideNames(match, side) {
     var s = side === "A" ? match.sideA : match.sideB;
+    /* the core denormalises names as `playerNames`; `names` kept as legacy fallback */
+    if (s && Array.isArray(s.playerNames)) return s.playerNames;
     return (s && Array.isArray(s.names)) ? s.names : [];
   }
 

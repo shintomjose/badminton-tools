@@ -108,6 +108,10 @@ Object.assign(EN, {
   /* --- session header: date + matches logged today --- */
   "{0} Spiel": "{0} match",
   "{0} Spiele": "{0} matches",
+  "Sätze {0}–{1}": "Sets {0}–{1}",
+  /* abbreviated for the narrow summary rows; the long form rides along as a title */
+  "S {0}–{1}": "S {0}–{1}",
+  "Spiele {0}–{1}": "Matches {0}–{1}",
 
   /* --- day-wise totals ---
      Percentage keys mirror tracker-stats.js verbatim so both views read the
@@ -389,15 +393,34 @@ Object.assign(EN, {
     renderSummary();
   }
 
-  /* Matches I did not play in count towards the day total but never towards
-     W–L — there is nothing to attribute. Same rule as the stats view. */
+  function blankRec(dateKey, date) {
+    return { dateKey: dateKey, date: date, n: 0, w: 0, l: 0, sw: 0, sl: 0 };
+  }
+
+  /* Attribution rules — deliberately the same for matches and for games, so a
+     row never mixes two definitions of "played":
+       - every match of the day counts towards `n`, mine or not;
+       - only FINISHED matches I was on court for feed W–L and Sätze. A match
+         still in progress contributes nothing beyond `n`, even if its first
+         game is already decided;
+       - within such a match, W–L needs a winnerSide (a retirement or an
+         abandoned match has none, so it counts towards neither), while each
+         individual game counts as soon as MT.gameWinner can decide it —
+         undecided or half-entered games are skipped by that function. */
   function tallyDay(rec, m, meId) {
     rec.n++;
-    if (!meId || m.status !== "finished" || !m.winnerSide) return;
+    if (!meId || m.status !== "finished") return;
     const inA = ((m.sideA && m.sideA.playerIds) || []).indexOf(meId) >= 0;
     const inB = ((m.sideB && m.sideB.playerIds) || []).indexOf(meId) >= 0;
     if (!inA && !inB) return;
-    if (m.winnerSide === (inA ? "A" : "B")) rec.w++; else rec.l++;
+    const mine = inA ? "A" : "B";
+    if (m.winnerSide) { if (m.winnerSide === mine) rec.w++; else rec.l++; }
+    const target = Number(m.targetScore) || defaultTarget(m.discipline);
+    (Array.isArray(m.games) ? m.games : []).forEach(g => {
+      const gw = MT.gameWinner(g, target);
+      if (!gw) return;
+      if (gw === mine) rec.sw++; else rec.sl++;
+    });
   }
 
   function groupByDay(list) {
@@ -407,22 +430,27 @@ Object.assign(EN, {
     list.forEach(m => {
       const key = m.dateKey || MT.keys(MT.toDate(m.date) || new Date()).dateKey;
       let rec = byKey.get(key);
-      if (!rec) { rec = { dateKey: key, date: MT.toDate(m.date), n: 0, w: 0, l: 0 }; byKey.set(key, rec); }
+      if (!rec) { rec = blankRec(key, MT.toDate(m.date)); byKey.set(key, rec); }
       if (!rec.date) rec.date = MT.toDate(m.date);
       tallyDay(rec, m, meId);
     });
     return Array.from(byKey.values()).sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
   }
 
-  /* Today always shows, live from the watched session; older days come from
-     the ranged read above. */
-  function summaryRows() {
-    const todayKey = MT.keys(new Date()).dateKey;
-    const today = { dateKey: todayKey, date: new Date(), n: 0, w: 0, l: 0 };
+  /* Today, live from the watched session — shared by the header meta line and
+     the first summary row so the two can never disagree. */
+  function todayRecord() {
+    const rec = blankRec(MT.keys(new Date()).dateKey, new Date());
     const me = meePlayer();
     const meId = me ? me.id : null;
-    state.matches.forEach(m => tallyDay(today, m, meId));
-    const past = state.summary.filter(r => r.dateKey !== todayKey && r.n > 0);
+    state.matches.forEach(m => tallyDay(rec, m, meId));
+    return rec;
+  }
+
+  /* Today always shows; older days come from the ranged read above. */
+  function summaryRows() {
+    const today = todayRecord();
+    const past = state.summary.filter(r => r.dateKey !== today.dateKey && r.n > 0);
     return [today].concat(past).slice(0, SUMMARY_ROWS);
   }
 
@@ -510,10 +538,21 @@ Object.assign(EN, {
     return n === 1 ? tt("{0} Spiel", n) : tt("{0} Spiele", n);
   }
 
+  function hasRecord(rec) { return !!(rec.w + rec.l + rec.sw + rec.sl); }
+
+  /* "3 Spiele · 2–1 · Sätze 5–3" — the W–L parts appear only once the isMe
+     player has actually played something that day. */
+  function metaTail(rec) {
+    const parts = [matchCountLabel(rec.n)];
+    if (rec.w + rec.l) parts.push(rec.w + "–" + rec.l);
+    if (rec.sw + rec.sl) parts.push(tt("Sätze {0}–{1}", rec.sw, rec.sl));
+    return parts.join(" · ");
+  }
+
   /* Card heading — date and today's match count are the two things worth
      seeing at a glance, in both modes. */
   function sessionHeadHtml() {
-    const meta = shortDate() + " · " + matchCountLabel(state.matches.length);
+    const meta = shortDate() + " · " + metaTail(todayRecord());
     if (!isTournament()) {
       return "<h2>" + esc(t("Heute")) + '</h2><p class="mt-sess-meta">' + esc(meta) + "</p>";
     }
@@ -537,11 +576,21 @@ Object.assign(EN, {
     const todayKey = MT.keys(new Date()).dateKey;
     return '<ul class="mt-days">' + rows.map(r => {
       const isToday = r.dateKey === todayKey;
+      const played = hasRecord(r);
+      /* The stats group wraps to its own line before anything gets squeezed,
+         and the Sätze cell is abbreviated with the long form as its title. */
       return '<li class="mt-day' + (isToday ? " today" : "") + '">' +
         '<span class="mt-day-date">' + esc(isToday ? t("Heute") : shortDate(r.date)) + "</span>" +
-        '<span class="mt-day-n">' + esc(matchCountLabel(r.n)) + "</span>" +
-        '<span class="mt-day-wl">' + r.w + "–" + r.l + "</span>" +
-        pctHtml(r.w, r.w + r.l) +
+        '<span class="mt-day-stats">' +
+          '<span class="mt-day-n">' + esc(matchCountLabel(r.n)) + "</span>" +
+          (played
+            ? '<span class="mt-day-wl" title="' + esc(tt("Spiele {0}–{1}", r.w, r.l)) + '">' +
+                r.w + "–" + r.l + "</span>" +
+              '<span class="mt-day-sets" title="' + esc(tt("Sätze {0}–{1}", r.sw, r.sl)) + '">' +
+                esc(tt("S {0}–{1}", r.sw, r.sl)) + "</span>"
+            : "") +
+          pctHtml(r.w, r.w + r.l) +
+        "</span>" +
       "</li>";
     }).join("") + "</ul>";
   }

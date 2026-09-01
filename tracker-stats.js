@@ -248,12 +248,12 @@
       bumpKey(out.year, yrKey, won);
 
       if (isDoubles) {
-        var pIds = mySide.playerIds || [], pNames = mySide.names || [];
+        var pIds = mySide.playerIds || [], pNames = mySide.playerNames || mySide.names || [];
         for (var j = 0; j < pIds.length; j++) {
           if (pIds[j] !== meId) bumpPerson(out.partners, pIds[j], pNames[j], won);
         }
       }
-      var oIds = oppSide.playerIds || [], oNames = oppSide.names || [];
+      var oIds = oppSide.playerIds || [], oNames = oppSide.playerNames || oppSide.names || [];
       for (var k = 0; k < oIds.length; k++) bumpPerson(out.opponents, oIds[k], oNames[k], won);
     }
     return out;

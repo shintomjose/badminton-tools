@@ -463,7 +463,8 @@
 
   function sideHtml(side, playerId) {
     var ids = side && Array.isArray(side.playerIds) ? side.playerIds : [];
-    var names = side && Array.isArray(side.names) ? side.names : [];
+    var names = side && Array.isArray(side.playerNames) ? side.playerNames
+      : (side && Array.isArray(side.names) ? side.names : []);
     var count = Math.max(ids.length, names.length);
     if (!count) return '<span class="mtp-name mtp-name-plain">' + E(T("Unbekannter Spieler")) + "</span>";
     var parts = [];
@@ -591,7 +592,8 @@
         var side = sides[s];
         if (!side || !Array.isArray(side.playerIds)) continue;
         var idx = side.playerIds.indexOf(playerId);
-        if (idx !== -1 && side.names && side.names[idx]) return side.names[idx];
+        var nm = side.playerNames || side.names;
+        if (idx !== -1 && nm && nm[idx]) return nm[idx];
       }
     }
     return "";

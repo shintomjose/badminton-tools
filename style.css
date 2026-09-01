@@ -1396,19 +1396,26 @@
 
   /* --- Tagesbilanz: ein Blick am Spielfeldrand, keine Analyse --- */
   .mt-days { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  /* flex + wrap, not a fixed grid: on a narrow phone the stats group drops to
+     its own line instead of squeezing the date or clipping the percentage */
   .mt-day {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto auto;
-    gap: 10px; align-items: baseline;
+    display: flex; flex-wrap: wrap;
+    gap: 2px 10px; align-items: baseline;
     padding: 8px 0;
     border-bottom: 1px solid var(--border);
     font-variant-numeric: tabular-nums;
   }
   .mt-day:last-child { border-bottom: 0; }
   .mt-day.today .mt-day-date { color: var(--text-strong); font-weight: 700; }
-  .mt-day-date { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mt-day-date { flex: 1 0 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mt-day-stats {
+    display: flex; flex-wrap: wrap;
+    gap: 2px 10px; align-items: baseline;
+    margin-left: auto;              /* stays right-aligned on whichever line it lands */
+  }
   .mt-day-n { color: var(--text-muted); font-size: 0.86em; }
   .mt-day-wl { font-weight: 600; color: var(--text-strong); }
+  .mt-day-sets { color: var(--text-muted); font-size: 0.86em; }
   .mt-pct { color: var(--teal-ink); font-weight: 600; }
   .mt-pct.empty { color: var(--text-muted); font-weight: 400; }
   /* a thin sample must never read like a solid one */
