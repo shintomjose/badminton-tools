@@ -585,17 +585,7 @@
     .badge-ha { font-size: 0.68em; padding: 1px 6px; }
     .panel { padding: 12px; }
     .tab-toolbar { gap: 8px; }
-    #tab-termine .av-add input#avAddName { flex: 1 1 auto; }
   }
-  #tab-termine .av-add { display: flex; gap: 8px; margin-top: 12px; }
-  #tab-termine .av-add input {
-    font: inherit;
-    background: var(--surface-2); color: var(--text-strong);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 8px 10px; min-height: 44px;
-    flex: 0 1 280px; min-width: 0;
-  }
-  #tab-termine .av-add input:focus-visible { outline: none; box-shadow: var(--ring); }
 
   /* ================= TAB 2: Aufstellung (lineup) ================= */
   #tab-lineup .layout { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }

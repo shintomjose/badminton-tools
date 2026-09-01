@@ -30,7 +30,6 @@ const EN = {
   "Bitte zuerst oben deinen Namen wählen": "Please pick your name above first",
   "Du kannst nur deine eigene Verfügbarkeit ändern": "You can only change your own availability",
   "Speichern fehlgeschlagen": "Save failed",
-  "Spieler schon in der Liste": "Player already in the list",
   "Spieler existiert bereits": "Player already exists",
   "○ offline — keine Verbindung": "○ offline — no connection",
   "○ Zugriff verweigert — DB-Regeln prüfen": "○ access denied — check DB rules",
@@ -169,7 +168,6 @@ const STATIC_EN_ATTR = [
   ["#rkAddName", "placeholder", "Last name, first name"],
   ["#rkAddNote", "placeholder", "Status / note (optional)"],
   ["#luAddName", "placeholder", "Name"],
-  ["#avAddName", "placeholder", "Add player"],
   ["#shopSearch", "placeholder", "Search: name, article no., colour …"],
 ];
 function applyStaticEn() {
@@ -284,7 +282,9 @@ async function sha256Hex(s) {
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
   return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, "0")).join("");
 }
-function pinUnlocked() { return localStorage.getItem(PIN_KEY) === PIN_HASH; }
+/* PIN protection temporarily disabled — set PIN_DISABLED to false to re-enable */
+const PIN_DISABLED = true;
+function pinUnlocked() { return PIN_DISABLED || localStorage.getItem(PIN_KEY) === PIN_HASH; }
 function applyPinLocks() {
   document.querySelectorAll("[data-pin-protect]").forEach(el =>
     el.classList.toggle("pin-locked", !pinUnlocked()));
@@ -1178,40 +1178,6 @@ document.getElementById("avLogClear").addEventListener("click", e => {
     avDb.ref("avail/log").remove()
       .then(() => toast(t("Verlauf komplett gelöscht")))
       .catch(() => toast(t("Löschen fehlgeschlagen"))));
-});
-
-document.getElementById("avAddName").addEventListener("focus", () => {
-  const dl = document.getElementById("avRoster");
-  if (dl.children.length || !window.LU_ROSTER) return;
-  window.LU_ROSTER.forEach(n => {
-    const o = document.createElement("option");
-    o.value = n;
-    dl.appendChild(o);
-  });
-});
-document.getElementById("avAddForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const inp = document.getElementById("avAddName");
-  const name = inp.value.trim();
-  if (!name) return;
-  if (av.players.includes(name)) { toast(t("Spieler schon in der Liste")); return; }
-  if (!avDb) { toast(t("Keine Verbindung zur Datenbank")); return; }
-  const by = whoami();
-  if (!by) {
-    toast(t("Bitte zuerst oben deinen Namen wählen"));
-    document.getElementById("avWho").focus();
-    return;
-  }
-  avDb.ref("avail/players").transaction(list => {
-    list = Array.isArray(list) ? list : [];
-    if (list.includes(name)) return;
-    list.push(name);
-    return list;
-  }).then(res => {
-    if (res.committed) avLogWrite({ action: "add", player: name, by });
-  }).catch(() => toast(t("Speichern fehlgeschlagen")));
-  inp.value = "";
-  inp.focus();
 });
 
 /* ---- Firebase-Verbindung ---- */
