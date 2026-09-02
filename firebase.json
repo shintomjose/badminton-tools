@@ -1,14 +1,30 @@
 {
-  "hosting": {
-    "public": ".",
-    "ignore": [
-      "firebase.json",
-      ".firebaserc",
-      "**/.git/**",
-      "**/.idea/**",
-      "**/node_modules/**",
-      "**/*.md",
-      "start-local.cmd"
-    ]
-  }
+  "hosting": [
+    {
+      "target": "fansite",
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        ".firebaserc",
+        "**/.git/**",
+        "**/.idea/**",
+        "**/node_modules/**",
+        "**/*.md",
+        "start-local.cmd"
+      ]
+    },
+    {
+      "target": "default-site",
+      "public": ".",
+      "ignore": [
+        "firebase.json",
+        ".firebaserc",
+        "**/.git/**",
+        "**/.idea/**",
+        "**/node_modules/**",
+        "**/*.md",
+        "start-local.cmd"
+      ]
+    }
+  ]
 }

@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "badminton-tools-c6b27"
-  }
+  },
+  "targets": {
+    "badminton-tools-c6b27": {
+      "hosting": {
+        "fansite": [
+          "tsg-badminton-fansite"
+        ],
+        "default-site": [
+          "badminton-tools-c6b27"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

@@ -344,10 +344,11 @@ function applyPinLocks() {
    Config ist öffentlich unbedenklich — Zugriff regeln die DB-Rules. */
 const FB_CONFIG = {
   apiKey: "AIzaSyC6ZVUwkthjkgo3HjeaNwRigH-ueK_95E0",
-  /* web.app is the Firebase Hosting domain: when the app is served from there,
+  /* The Firebase Hosting fansite domain: when the app is served from there,
      the auth helper is same-origin and redirect sign-in works in installed
-     PWAs. Sign-in from other origins (GitHub Pages) still works via popup. */
-  authDomain: "badminton-tools-c6b27.web.app",
+     PWAs. Sign-in from other origins (GitHub Pages, the default web.app
+     site) still works via popup. */
+  authDomain: "tsg-badminton-fansite.web.app",
   databaseURL: "https://badminton-tools-c6b27-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "badminton-tools-c6b27",
   storageBucket: "badminton-tools-c6b27.firebasestorage.app",
