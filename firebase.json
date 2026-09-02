@@ -1,0 +1,14 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.git/**",
+      "**/.idea/**",
+      "**/node_modules/**",
+      "**/*.md",
+      "start-local.cmd"
+    ]
+  }
+}

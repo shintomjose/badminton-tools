@@ -25,6 +25,9 @@ Object.assign(EN, {
   "Melde dich mit deinem Google-Konto an. Nur dein Konto darf diese Spiele lesen und schreiben — das erzwingen die Firestore-Regeln, nicht der PIN.":
     "Sign in with your Google account. Only your account may read or write these matches — enforced by the Firestore rules, not by the PIN.",
   "Mit Google anmelden": "Sign in with Google",
+  "Die Google-Anmeldung funktioniert in der installierten App auf dem iPhone leider nicht (Apple-Einschränkung). Bitte diesen Bereich in Safari öffnen und dort anmelden.": "Google sign-in does not work in the installed app on iPhone (an Apple restriction). Please open this section in Safari and sign in there.",
+  "Link kopieren": "Copy link",
+  "Link kopiert — in Safari einfügen": "Link copied — paste it in Safari",
   "Anmeldung fehlgeschlagen": "Sign-in failed",
   "Anmeldung hier nicht möglich — Seite einmal im Browser öffnen und dort anmelden": "Sign-in not possible here — open the page in the browser once and sign in there",
   "Abmeldung fehlgeschlagen": "Sign-out failed",
@@ -261,10 +264,24 @@ const MT = (function () {
     } catch (e) { return false; }
   }
 
+  /* When the page is served from the authDomain itself (Firebase Hosting),
+     the auth helper is first-party: redirect sign-in works everywhere,
+     including installed PWAs. */
+  function sameOriginAuth() {
+    try { return firebase.app().options.authDomain === location.host; }
+    catch (e) { return false; }
+  }
+
   async function signIn() {
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
       provider.setCustomParameters({ prompt: "select_account" });
+      if (inStandalonePwa() && sameOriginAuth()) {
+        /* First-party auth: redirect is the reliable flow in installed apps
+           (popups may not return to the standalone context). */
+        await firebase.auth().signInWithRedirect(provider);
+        return;
+      }
       try {
         /* Popup is the reliable flow everywhere: with authDomain on firebaseapp.com
            (a third-party origin for this page), the redirect flow silently loses the
@@ -794,7 +811,24 @@ const MT = (function () {
       "</div></div>";
   }
 
+  function isIos() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  }
+
   function renderSignIn(gate) {
+    /* In an iOS home-screen app the Google sign-in cannot complete: the popup
+       cannot message back into the standalone webview and the redirect flow
+       loses its session to storage partitioning — and iOS standalone storage
+       is separate from Safari, so signing in there does not carry over either.
+       Be honest about it instead of looping through the account picker. */
+    if (inStandalonePwa() && isIos() && !sameOriginAuth()) {
+      gate.innerHTML = card(t("Deine Spieldaten sind privat"),
+        "<p>" + esc(t("Die Google-Anmeldung funktioniert in der installierten App auf dem iPhone leider nicht (Apple-Einschränkung). Bitte diesen Bereich in Safari öffnen und dort anmelden.")) + "</p>" +
+        '<div class="mt-card-actions"><button type="button" class="btn" data-mt="copylink">' + esc(t("Link kopieren")) + "</button></div>",
+        "mt-auth");
+      return;
+    }
     gate.innerHTML = card(t("Deine Spieldaten sind privat"),
       "<p>" + esc(t("Melde dich mit deinem Google-Konto an. Nur dein Konto darf diese Spiele lesen und schreiben — das erzwingen die Firestore-Regeln, nicht der PIN.")) + "</p>" +
       '<div class="mt-card-actions"><button type="button" class="btn primary" data-mt="signin">' + esc(t("Mit Google anmelden")) + "</button></div>",
@@ -886,6 +920,13 @@ const MT = (function () {
       const act = btn.dataset.mt;
       if (act === "signin") { signIn(); return; }
       if (act === "signout") { signOut(); return; }
+      if (act === "copylink") {
+        const url = location.origin + location.pathname + "#tracker";
+        navigator.clipboard.writeText(url)
+          .then(() => toast(t("Link kopiert — in Safari einfügen")))
+          .catch(() => toast(url));
+        return;
+      }
       if (act === "retry") {
         btn.disabled = true;
         checkAccess().then(() => { state.phase = "authed"; render(); });
