@@ -85,16 +85,28 @@
             <button id="luTabM" role="tab" aria-selected="true" aria-controls="luPaneM">Herren <span class="seg-count" id="luCountM"></span></button>
             <button id="luTabF" role="tab" aria-selected="false" aria-controls="luPaneF">Damen <span class="seg-count" id="luCountF"></span></button>
           </div>
-          <div class="squad-scroll" id="luPaneM" role="tabpanel"></div>
-          <div class="squad-scroll" id="luPaneF" role="tabpanel" hidden></div>
-          <form id="luAddForm" class="add-form">
-            <input id="luAddName" type="text" placeholder="Name" required autocomplete="off">
-            <select id="luAddGender" aria-label="Geschlecht">
-              <option value="m">Herr</option>
-              <option value="f">Dame</option>
-            </select>
-            <button type="submit" class="btn primary">+</button>
-          </form>
+          <div class="kd-pane" id="luPaneM" role="tabpanel" aria-labelledby="luTabM">
+            <div class="squad-scroll" id="luSelM"></div>
+            <div class="kd-addbar">
+              <button type="button" id="luAddToggleM" class="btn icon-add" aria-expanded="false" aria-controls="luAvailM" title="Spieler hinzufügen">+</button>
+            </div>
+            <div class="kd-avail" id="luAvailM" hidden>
+              <input id="luFilterM" class="kd-filter" type="text" placeholder="Name tippen…" aria-label="Spieler suchen" autocomplete="off">
+              <div class="kd-avail-list" id="luAvailListM"></div>
+              <div id="luCreateM"></div>
+            </div>
+          </div>
+          <div class="kd-pane" id="luPaneF" role="tabpanel" aria-labelledby="luTabF" hidden>
+            <div class="squad-scroll" id="luSelF"></div>
+            <div class="kd-addbar">
+              <button type="button" id="luAddToggleF" class="btn icon-add" aria-expanded="false" aria-controls="luAvailF" title="Spielerin hinzufügen">+</button>
+            </div>
+            <div class="kd-avail" id="luAvailF" hidden>
+              <input id="luFilterF" class="kd-filter" type="text" placeholder="Name tippen…" aria-label="Spielerin suchen" autocomplete="off">
+              <div class="kd-avail-list" id="luAvailListF"></div>
+              <div id="luCreateF"></div>
+            </div>
+          </div>
         </section>
       </div>
       <div class="col-right" id="luRight">
