@@ -4,8 +4,23 @@ A static, build-step-free web app (plain HTML/CSS/JS + Firebase compat SDK) for
 the TSG Heilbronn badminton teams: rankings, lineup builder, fixtures with shared
 availability, directions, the VICTOR club shop — and a private match tracker.
 
-Deployed as a static site (GitHub Pages: `shintomjose.github.io`). There is
-nothing to build: open `index.html`, or serve the folder with any static server.
+There is nothing to build: open `index.html`, or serve the folder with any
+static server. Every push to `main` deploys automatically to GitHub Pages and
+to both Firebase Hosting sites (via `.github/workflows/deploy-hosting.yml`).
+
+## App links
+
+| App | URL | Notes |
+| --- | --- | --- |
+| **Badminton Tools** (this repo) | https://tsg-badminton-fansite.web.app | Primary. Use this one to install the PWA — Google sign-in for the match tracker works inside the installed app here (first-party auth domain). |
+| Badminton Tools (mirror) | https://badminton-tools-c6b27.web.app | Firebase default site, same deploys. |
+| Badminton Tools (mirror) | https://shintomjose.github.io/badminton-tools/ | GitHub Pages. Tracker sign-in works via popup only. |
+| Match tracker direct link | https://tsg-badminton-fansite.web.app/#tracker | Tab 6 ("Spiele"/"Results"), owner-only data. |
+| **Team 4 app** (repo `tsg-heilbronn`) | https://tsg-badminton-our-team.web.app | Share this with Team 4 members; installs as the "Team 4" PWA. |
+| Team 4 app (mirror) | https://shintomjose.github.io/tsg-heilbronn/ | GitHub Pages. |
+
+Both apps share the same Firebase Realtime Database — availability and team
+data sync between them in both directions.
 
 | File | Purpose |
 | --- | --- |
