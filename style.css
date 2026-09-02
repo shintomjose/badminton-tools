@@ -726,6 +726,13 @@
     cursor: pointer;
   }
   #tab-lineup .option.selected { border-color: var(--brand-teal); box-shadow: 0 0 0 1px var(--brand-teal); }
+  /* Max-2-Disziplinen: Karte bleibt sichtbar, ist aber nicht wählbar (Sterne schon) */
+  #tab-lineup .option.disabled { opacity: 0.5; cursor: not-allowed; }
+  #tab-lineup .option.disabled .option-head label { cursor: not-allowed; }
+  #tab-lineup .option.disabled .stars { cursor: auto; }
+  #tab-lineup .opt-note { margin-top: 4px; font-size: 0.78em; color: var(--text-muted); }
+  #tab-lineup .more-row { margin-top: 10px; }
+  #tab-lineup #luHdOut h3:first-child { margin-top: 0; }
   #tab-lineup .option-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; gap: 6px; }
   #tab-lineup .option-head label { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--text-strong); cursor: pointer; }
   #tab-lineup .option-head input[type="radio"] { width: 18px; height: 18px; accent-color: var(--brand-teal); cursor: pointer; }

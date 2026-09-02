@@ -48,11 +48,11 @@ const EN = {
   "Dameneinzel:": "Women's singles:",
   "Beste Chemie": "Best chemistry",
   "⚖ Rangsummen gleich — Kapitän entscheidet die Reihenfolge.": "⚖ Equal rank sums — captain decides the order.",
-  "Mindestens 4 Herren anhaken — dann erscheinen die 3 möglichen Doppel-Kombinationen.": "Check at least 4 men — the 3 possible doubles combinations will appear.",
+  "Mindestens 2 Herren anhaken.": "Check at least 2 men.",
   "Mindestens 2 Damen anhaken.": "Check at least 2 women.",
   "Herren und Damen anhaken.": "Check men and women.",
-  "Erst Herrendoppel-Option und Damendoppel wählen — dann zeigt sich, wer fürs Mixed frei ist.": "Pick the men's doubles option and the women's doubles first — then you'll see who is free for mixed.",
-  "Niemand hat mehr eine Disziplin frei — mehr Spieler anhaken oder andere Doppel wählen.": "Nobody has a free event slot — check more players or pick different doubles.",
+  "Zuerst HD1 wählen — dann erscheinen die möglichen HD2-Paare.": "Pick MD1 first — then the possible MD2 pairs appear.",
+  "Keine freien Paare mehr — mehr Herren anhaken.": "No pairs left without a repeated player — check more men.",
   "Aufstellung": "Lineup",
   "Aufstellung kopiert": "Lineup copied",
   "Auswahl geleert — neue Mannschaft anhaken": "Selection cleared — check a new team",
@@ -100,6 +100,8 @@ const EN = {
   "Rang {0}": "Rank {0}",
   "Mannschaft {0} ist leer": "Team {0} is empty",
   "Mannschaft {0}: {1} Spieler übernommen": "Team {0}: {1} players selected",
+  "Alle {0} anzeigen": "Show all {0}",
+  "— schon 2 Disziplinen: {0}": "— already 2 events: {0}",
 };
 function t(s) { return LANG === "en" && EN[s] !== undefined ? EN[s] : s; }
 function tt(tpl) {
@@ -156,9 +158,9 @@ const STATIC_EN = [
 ];
 const STATIC_EN_HTML = [
   ["#tab-lineup .col-right .panel:nth-child(1) h2", "Singles <span class=\"hint\">— captain picks who plays · order fixed by ranking</span>"],
-  ["#tab-lineup .col-right .panel:nth-child(2) h2", "Men's doubles <span class=\"hint\">— pick an option · MD1 = lower rank sum · ⭐ = chemistry</span>"],
+  ["#tab-lineup .col-right .panel:nth-child(2) h2", "Men's doubles <span class=\"hint\">— pick MD1 and MD2 freely · MD1 = lower rank sum · ⭐ = chemistry</span>"],
   ["#tab-lineup .col-right .panel:nth-child(3) h2", "Women's doubles <span class=\"hint\">— pick a pair</span>"],
-  ["#tab-lineup .col-right .panel:nth-child(4) h2", "Mixed <span class=\"hint\">— only players with a free event slot</span>"],
+  ["#tab-lineup .col-right .panel:nth-child(4) h2", "Mixed <span class=\"hint\">— all combinations · max. 2 events per player</span>"],
   ["#tab-lineup .col-right .panel:nth-child(5) h2", "Lineup"],
   ["#tab-termine .rounds .panel:nth-child(1) h2", "First half <span class=\"hint\">— Oct–Nov 2026</span>"],
   ["#tab-termine .rounds .panel:nth-child(2) h2", "Second half <span class=\"hint\">— Jan–Mar 2027</span>"],
@@ -1399,7 +1401,7 @@ function defaultState(chem) {
   return {
     players, selected, team: 4,
     chem: chem || {},
-    hd: null, dd: null, gd: null,
+    hd1: null, hd2: null, dd: null, gd: null,
     he: null, de: null,
   };
 }
@@ -1419,10 +1421,15 @@ function load() {
       });
       if (!("he" in s)) s.he = null;
       if (!("de" in s)) s.de = null;
+      /* Migration: das alte numerische `hd` (Index einer festen Doppel-Option) gibt es
+         nicht mehr — Herrendoppel werden jetzt als zwei Paar-Keys gespeichert. */
+      if ("hd" in s) delete s.hd;
+      if (typeof s.hd1 !== "string") s.hd1 = null;
+      if (typeof s.hd2 !== "string") s.hd2 = null;
       if (!("team" in s)) {
         /* Migration: alter Speicherstand ohne Mannschafts-Pill → Mannschaft 4 laden */
         s.team = 4;
-        s.hd = null; s.dd = null; s.gd = null;
+        s.hd1 = null; s.hd2 = null; s.dd = null; s.gd = null;
         s.he = null; s.de = null;
       }
       if (s.team) {
@@ -1537,27 +1544,24 @@ function starsHtml(p) {
   return h + `</span>`;
 }
 
-function hdOptions(men) {
-  if (men.length < 4) return [];
-  const [A, B, C, D] = men.slice(0, 4);
-  return [
-    [[A, B], [C, D]],
-    [[A, C], [B, D]],
-    [[A, D], [B, C]],
-  ].map((pair, idx) => {
-    let [p1, p2] = pair;
-    const tie = pairSum(p1) === pairSum(p2);
-    if (pairSum(p2) < pairSum(p1)) [p1, p2] = [p2, p1];
-    return { idx, p1, p2, tie, chem: chemOf(p1[0].name, p1[1].name) + chemOf(p2[0].name, p2[1].name) };
-  });
+/* alle C(n,2) Paare einer nach Rang sortierten Spielerliste */
+function allPairs(list) {
+  const out = [];
+  for (let i = 0; i < list.length; i++)
+    for (let j = i + 1; j < list.length; j++)
+      out.push([list[i], list[j]]);
+  return out;
 }
-function ddOptions(women) {
-  const opts = [];
-  for (let i = 0; i < women.length; i++)
-    for (let j = i + 1; j < women.length; j++)
-      opts.push([women[i], women[j]]);
-  return opts;
+/* Herrendoppel-Paare: kleinste Rangsumme zuerst, danach stabil nach Einzelrängen */
+function hdPairs(men) {
+  return allPairs(men).sort((a, b) =>
+    pairSum(a) - pairSum(b) || a[0].rank - b[0].rank || a[1].rank - b[1].rank);
 }
+function ddOptions(women) { return allPairs(women); }
+function pairByKey(pairs, key) {
+  return key ? (pairs.find(p => pairKey(p[0].name, p[1].name) === key) || null) : null;
+}
+function pairNames(key) { return key ? key.split("|") : []; }
 
 function chosenHE(men) {
   if (Array.isArray(state.he)) {
@@ -1574,24 +1578,38 @@ function chosenDE(women) {
   return women[0] || null;
 }
 
-function disciplineCount(name, men, women, hdOpt, ddPair) {
+function disciplineCount(name, men, women, hd, ddPair) {
   let n = 0;
   if (chosenHE(men).some(p => p.name === name)) n++;
   const de = chosenDE(women);
   if (de && de.name === name) n++;
-  if (hdOpt && [...hdOpt.p1, ...hdOpt.p2].some(p => p.name === name)) n++;
+  if (hd) {
+    if (hd.p1 && hd.p1.some(p => p.name === name)) n++;
+    if (hd.p2 && hd.p2.some(p => p.name === name)) n++;
+  }
   if (ddPair && ddPair.some(p => p.name === name)) n++;
   return n;
 }
 
+/* Gewähltes Herrendoppel. p2 kann null sein, solange nur HD1 gesetzt ist;
+   null, wenn noch gar nichts gewählt wurde. */
 function currentHd(men) {
-  const opts = hdOptions(men);
-  return state.hd !== null && opts[state.hd] ? opts[state.hd] : null;
+  const pairs = hdPairs(men);
+  const p1 = pairByKey(pairs, state.hd1);
+  const p2 = pairByKey(pairs, state.hd2);
+  if (!p1 && !p2) return null;
+  return { p1, p2, tie: !!(p1 && p2 && pairSum(p1) === pairSum(p2)) };
 }
+/* Ligaregel: HD1 trägt die kleinere Rangsumme — die beiden Picks ggf. tauschen. */
+function normalizeHdOrder(men) {
+  const pairs = hdPairs(men);
+  const a = pairByKey(pairs, state.hd1), b = pairByKey(pairs, state.hd2);
+  if (!a || !b) return;
+  if (pairSum(b) < pairSum(a)) { const k = state.hd1; state.hd1 = state.hd2; state.hd2 = k; }
+}
+
 function currentDd(women) {
-  if (!state.dd) return null;
-  const opts = ddOptions(women);
-  return opts.find(p => pairKey(p[0].name, p[1].name) === state.dd) || null;
+  return pairByKey(ddOptions(women), state.dd);
 }
 
 function renderSingles(men, women) {
@@ -1648,32 +1666,94 @@ document.getElementById("luSinglesOut").addEventListener("change", e => {
   }
 });
 
+/* Lange Paarlisten werden gekürzt; der Aufklapp-Zustand ist reine UI-Sache
+   und wird bewusst nicht gespeichert. */
+const PAIR_CAP = 12;
+const expanded = { hd1: false, hd2: false, dd: false, gd: false };
+
+/* Eine Karten-Liste (HD1/HD2/DD/GD) mit Deckel und „Alle N anzeigen“-Button.
+   Die aktuelle Auswahl bleibt immer sichtbar, auch weit hinten in der Liste. */
+function cardList(listKey, cards, selIdx) {
+  let vis = cards;
+  if (!expanded[listKey] && cards.length > PAIR_CAP) {
+    vis = cards.slice(0, PAIR_CAP);
+    if (selIdx >= PAIR_CAP) vis.push(cards[selIdx]);
+  }
+  const more = vis.length < cards.length
+    ? `<div class="more-row"><button type="button" class="btn small" data-more="${listKey}">${tt("Alle {0} anzeigen", cards.length)}</button></div>`
+    : "";
+  return `<div class="options">${vis.join("")}</div>${more}`;
+}
+
+/* Eine Paar-Option als Karte. `attr` ist das data-Attribut, das der Klick-Handler liest. */
+function pairCard(p, { slot, attr, radio, selKey, best, disabled, note, sumHtml }) {
+  const key = pairKey(p[0].name, p[1].name);
+  const on = selKey === key;
+  const sum = sumHtml || `${p[0].rank}+${p[1].rank} = ${pairSum(p)}`;
+  return `
+    <div class="option${on ? " selected" : ""}${disabled ? " disabled" : ""}"
+      ${disabled ? "" : `data-${attr}="${esc(key)}"`}>
+      <div class="option-head">
+        <label><input type="radio" name="${radio}" value="${esc(key)}"
+          ${on ? "checked" : ""} ${disabled ? "disabled" : ""}> ${t(slot)}</label>
+        ${best ? `<span class="badge-best">${t("Beste Chemie")}</span>` : ""}
+      </div>
+      <div class="pair">
+        <span class="slot">${t(slot)}</span><span class="names">${pairLabel(p)}</span>
+        <span class="sum">${sum}</span>
+        ${starsHtml(p)}
+      </div>
+      ${note ? `<div class="opt-note">${note}</div>` : ""}
+    </div>`;
+}
+
+function pairChem(p) { return chemOf(p[0].name, p[1].name); }
+
 function renderHd(men) {
   const el = document.getElementById("luHdOut");
-  const opts = hdOptions(men);
-  if (!opts.length) {
-    el.innerHTML = `<div class="empty-note">${t("Mindestens 4 Herren anhaken — dann erscheinen die 3 möglichen Doppel-Kombinationen.")}</div>`;
+  const pairs = hdPairs(men);
+  if (!pairs.length) {
+    el.innerHTML = `<div class="empty-note">${t("Mindestens 2 Herren anhaken.")}</div>`;
     return;
   }
-  const bestChem = Math.max(...opts.map(o => o.chem));
-  el.innerHTML = `<div class="options">` + opts.map(o => `
-    <div class="option${state.hd === o.idx ? " selected" : ""}" data-hd="${o.idx}">
-      <div class="option-head">
-        <label><input type="radio" name="luHd" value="${o.idx}" ${state.hd === o.idx ? "checked" : ""}> Option ${o.idx + 1}</label>
-        ${bestChem > 0 && o.chem === bestChem ? `<span class="badge-best">${t("Beste Chemie")}</span>` : ""}
-      </div>
-      <div class="pair">
-        <span class="slot">${t("HD1")}</span><span class="names">${pairLabel(o.p1)}</span>
-        <span class="sum">${o.p1[0].rank}+${o.p1[1].rank} = ${pairSum(o.p1)}</span>
-        ${starsHtml(o.p1)}
-      </div>
-      <div class="pair">
-        <span class="slot">${t("HD2")}</span><span class="names">${pairLabel(o.p2)}</span>
-        <span class="sum">${o.p2[0].rank}+${o.p2[1].rank} = ${pairSum(o.p2)}</span>
-        ${starsHtml(o.p2)}
-      </div>
-      ${o.tie ? `<div class="tie">${t("⚖ Rangsummen gleich — Kapitän entscheidet die Reihenfolge.")}</div>` : ""}
-    </div>`).join("") + `</div>`;
+
+  /* HD1: alle Paare der angehakten Herren */
+  const best1 = Math.max(0, ...pairs.map(pairChem));
+  const cards1 = pairs.map(p => pairCard(p, {
+    slot: "HD1", attr: "hd1", radio: "luHd1", selKey: state.hd1,
+    best: best1 > 0 && pairChem(p) === best1,
+  }));
+  const sel1 = pairs.findIndex(p => pairKey(p[0].name, p[1].name) === state.hd1);
+  let html = `<h3>${t("HD1")}</h3>` + cardList("hd1", cards1, sel1);
+
+  /* HD2: nur Paare ohne Spieler aus HD1 */
+  const hd1 = pairByKey(pairs, state.hd1);
+  html += `<h3>${t("HD2")}</h3>`;
+  if (!hd1) {
+    html += `<div class="empty-note">${t("Zuerst HD1 wählen — dann erscheinen die möglichen HD2-Paare.")}</div>`;
+  } else {
+    const used = hd1.map(p => p.name);
+    const rest = pairs.filter(p => !used.includes(p[0].name) && !used.includes(p[1].name));
+    if (!rest.length) {
+      html += `<div class="empty-note">${t("Keine freien Paare mehr — mehr Herren anhaken.")}</div>`;
+    } else {
+      const best2 = Math.max(0, ...rest.map(pairChem));
+      const cards2 = rest.map(p => pairCard(p, {
+        slot: "HD2", attr: "hd2", radio: "luHd2", selKey: state.hd2,
+        best: best2 > 0 && pairChem(p) === best2,
+      }));
+      const sel2 = rest.findIndex(p => pairKey(p[0].name, p[1].name) === state.hd2);
+      html += cardList("hd2", cards2, sel2);
+    }
+  }
+
+  /* Ligaregel bleibt sichtbar: HD1 hat die kleinere Rangsumme (wird beim Wählen
+     automatisch getauscht), bei Gleichstand entscheidet der Kapitän. */
+  const hd = currentHd(men);
+  if (hd && hd.tie) {
+    html += `<div class="tie">${t("⚖ Rangsummen gleich — Kapitän entscheidet die Reihenfolge.")}</div>`;
+  }
+  el.innerHTML = html;
 }
 
 function renderDd(women) {
@@ -1683,72 +1763,60 @@ function renderDd(women) {
     el.innerHTML = `<div class="empty-note">${t("Mindestens 2 Damen anhaken.")}</div>`;
     return;
   }
-  el.innerHTML = `<div class="options">` + opts.map(p => {
-    const key = pairKey(p[0].name, p[1].name);
-    return `
-    <div class="option${state.dd === key ? " selected" : ""}" data-dd="${esc(key)}">
-      <div class="option-head">
-        <label><input type="radio" name="luDd" value="${esc(key)}" ${state.dd === key ? "checked" : ""}> DD</label>
-      </div>
-      <div class="pair">
-        <span class="slot">${t("DD")}</span><span class="names">${pairLabel(p)}</span>
-        <span class="sum">${p[0].rank}+${p[1].rank} = ${pairSum(p)}</span>
-        ${starsHtml(p)}
-      </div>
-    </div>`;
-  }).join("") + `</div>`;
+  const cards = opts.map(p => pairCard(p, {
+    slot: "DD", attr: "dd", radio: "luDd", selKey: state.dd,
+  }));
+  const sel = opts.findIndex(p => pairKey(p[0].name, p[1].name) === state.dd);
+  el.innerHTML = cardList("dd", cards, sel);
+}
+
+/* Alle Mixed-Kombinationen, sortiert nach Rangsumme. Die Max-2-Disziplinen-Regel
+   wird nicht weggefiltert, sondern als deaktivierte Karte sichtbar gemacht. */
+function gdCombos(men, women) {
+  const combos = [];
+  men.forEach(m => women.forEach(w => combos.push([m, w])));
+  return combos.sort((a, b) =>
+    pairSum(a) - pairSum(b) || a[0].rank - b[0].rank || a[1].rank - b[1].rank);
+}
+/* Namen der Spieler eines Mixed-Paars, die schon 2 Disziplinen haben (ohne GD selbst) */
+function gdBlockedBy(p, men, women, hd, ddPair) {
+  return p.filter(x => disciplineCount(x.name, men, women, hd, ddPair) >= 2)
+          .map(x => x.name);
 }
 
 function renderGd(men, women) {
   const el = document.getElementById("luGdOut");
-  const hdOpt = currentHd(men);
-  const ddPair = currentDd(women);
   if (!men.length || !women.length) {
     el.innerHTML = `<div class="empty-note">${t("Herren und Damen anhaken.")}</div>`;
     return;
   }
-  if (!hdOpt || !ddPair) {
-    el.innerHTML = `<div class="empty-note">${t("Erst Herrendoppel-Option und Damendoppel wählen — dann zeigt sich, wer fürs Mixed frei ist.")}</div>`;
-    return;
-  }
-  const freeMen = men.filter(p => disciplineCount(p.name, men, women, hdOpt, ddPair) < 2);
-  const freeWomen = women.filter(p => disciplineCount(p.name, men, women, hdOpt, ddPair) < 2);
-  const combos = [];
-  freeMen.forEach(m => freeWomen.forEach(w => combos.push([m, w])));
-  if (!combos.length) {
-    el.innerHTML = `<div class="empty-note">${t("Niemand hat mehr eine Disziplin frei — mehr Spieler anhaken oder andere Doppel wählen.")}</div>`;
-    return;
-  }
-  el.innerHTML = `<div class="options">` + combos.map(p => {
-    const key = pairKey(p[0].name, p[1].name);
-    return `
-    <div class="option${state.gd === key ? " selected" : ""}" data-gd="${esc(key)}">
-      <div class="option-head">
-        <label><input type="radio" name="luGd" value="${esc(key)}" ${state.gd === key ? "checked" : ""}> GD</label>
-      </div>
-      <div class="pair">
-        <span class="slot">${t("GD")}</span><span class="names">${pairLabel(p)}</span>
-        <span class="sum">Rang ${p[0].rank} / ${p[1].rank}</span>
-        ${starsHtml(p)}
-      </div>
-    </div>`;
-  }).join("") + `</div>`;
+  const hd = currentHd(men);
+  const ddPair = currentDd(women);
+  const combos = gdCombos(men, women);
+  const cards = combos.map(p => {
+    const blocked = gdBlockedBy(p, men, women, hd, ddPair);
+    return pairCard(p, {
+      slot: "GD", attr: "gd", radio: "luGd", selKey: state.gd,
+      disabled: blocked.length > 0,
+      note: blocked.length ? esc(tt("— schon 2 Disziplinen: {0}", blocked.join(" · "))) : "",
+      sumHtml: `Rang ${p[0].rank} / ${p[1].rank}`,
+    });
+  });
+  const sel = combos.findIndex(p => pairKey(p[0].name, p[1].name) === state.gd);
+  el.innerHTML = cardList("gd", cards, sel);
 }
 
 function sheetRows(men, women) {
-  const hdOpt = currentHd(men);
+  const hd = currentHd(men);
+  const hd1 = hd && hd.p1, hd2 = hd && hd.p2;
+  const tie = hd && hd.tie;
   const ddPair = currentDd(women);
   const he = chosenHE(men);
   const de = chosenDE(women);
-  let gdPair = null;
-  if (state.gd) {
-    const all = [];
-    men.forEach(m => women.forEach(w => all.push([m, w])));
-    gdPair = all.find(p => pairKey(p[0].name, p[1].name) === state.gd) || null;
-  }
+  const gdPair = pairByKey(gdCombos(men, women), state.gd);
   return [
-    ["HD1", hdOpt ? `${hdOpt.p1[0].name} + ${hdOpt.p1[1].name}` : null, hdOpt ? `Σ ${pairSum(hdOpt.p1)}${hdOpt.tie ? " ⚖" : ""}` : ""],
-    ["HD2", hdOpt ? `${hdOpt.p2[0].name} + ${hdOpt.p2[1].name}` : null, hdOpt ? `Σ ${pairSum(hdOpt.p2)}${hdOpt.tie ? " ⚖" : ""}` : ""],
+    ["HD1", hd1 ? `${hd1[0].name} + ${hd1[1].name}` : null, hd1 ? `Σ ${pairSum(hd1)}${tie ? " ⚖" : ""}` : ""],
+    ["HD2", hd2 ? `${hd2[0].name} + ${hd2[1].name}` : null, hd2 ? `Σ ${pairSum(hd2)}${tie ? " ⚖" : ""}` : ""],
     ["DD",  ddPair ? `${ddPair[0].name} + ${ddPair[1].name}` : null, ddPair ? `Σ ${pairSum(ddPair)}` : ""],
     ["HE1", he[0] ? he[0].name : null, he[0] ? tt("Rang {0}", he[0].rank) : ""],
     ["HE2", he[1] ? he[1].name : null, he[1] ? tt("Rang {0}", he[1].rank) : ""],
@@ -1763,7 +1831,7 @@ function renderSheet(men, women) {
   const rows = sheetRows(men, women).map(([pos, val, extra]) =>
     `<tr><td class="pos" style="font-weight:700;color:var(--teal-ink)">${t(pos)}</td>
      ${val ? `<td class="pname" style="color:var(--text-strong);font-weight:500">${esc(val)}</td>`
-           : `<td class="missing">— noch nicht gewählt</td>`}
+           : `<td class="missing">${t("— noch nicht gewählt")}</td>`}
      <td class="prank" style="color:var(--text-muted);text-align:right">${extra}</td></tr>`
   ).join("");
   el.innerHTML = `<table class="sheet">${rows}</table>`;
@@ -1779,8 +1847,12 @@ document.getElementById("luRight").addEventListener("click", e => {
     renderAll();
     return;
   }
-  const hd = e.target.closest("[data-hd]");
-  if (hd && !e.target.closest(".stars")) { state.hd = +hd.dataset.hd; save(); renderAll(); return; }
+  const more = e.target.closest("button[data-more]");
+  if (more) { expanded[more.dataset.more] = true; renderAll(); return; }
+  const hd1 = e.target.closest("[data-hd1]");
+  if (hd1 && !e.target.closest(".stars")) { state.hd1 = hd1.dataset.hd1; save(); renderAll(); return; }
+  const hd2 = e.target.closest("[data-hd2]");
+  if (hd2 && !e.target.closest(".stars")) { state.hd2 = hd2.dataset.hd2; save(); renderAll(); return; }
   const dd = e.target.closest("[data-dd]");
   if (dd && !e.target.closest(".stars")) { state.dd = dd.dataset.dd; save(); renderAll(); return; }
   const gd = e.target.closest("[data-gd]");
@@ -1857,7 +1929,7 @@ document.querySelectorAll(".team-pills .pill").forEach(btn => {
     if (!members.length) { toast(tt("Mannschaft {0} ist leer", n)); return; }
     state.selected = members;
     state.team = n;
-    state.hd = null; state.dd = null; state.gd = null;
+    state.hd1 = null; state.hd2 = null; state.dd = null; state.gd = null;
     state.he = null; state.de = null;
     save();
     renderAll();
@@ -1868,7 +1940,7 @@ document.querySelectorAll(".team-pills .pill").forEach(btn => {
 document.getElementById("luClearBtn").addEventListener("click", () => {
   state.selected = [];
   state.team = null;
-  state.hd = null; state.dd = null; state.gd = null;
+  state.hd1 = null; state.hd2 = null; state.dd = null; state.gd = null;
   state.he = null; state.de = null;
   save();
   renderAll();
@@ -1885,26 +1957,38 @@ document.getElementById("luResetBtn").addEventListener("click", () => {
 function renderAll() {
   renderPills();
   const men = availMen(), women = availWomen();
+  /* Die Aufräum-Regeln unten können Picks verwerfen oder tauschen — das muss
+     auch im Speicher landen, sonst weicht localStorage vom Bildschirm ab. */
+  const picksBefore = JSON.stringify([state.he, state.de, state.hd1, state.hd2, state.dd, state.gd]);
   if (Array.isArray(state.he)) {
     state.he = state.he.filter(n => men.some(p => p.name === n)).slice(0, 3);
     if (!state.he.length) state.he = null;
   }
   if (state.de && !women.some(p => p.name === state.de)) state.de = null;
-  if (state.hd !== null && !hdOptions(men)[state.hd]) state.hd = null;
+  /* Herrendoppel: Paare mit abgemeldeten/gelöschten Spielern fallen raus … */
+  const hdAll = hdPairs(men);
+  if (!pairByKey(hdAll, state.hd1)) state.hd1 = null;
+  if (!pairByKey(hdAll, state.hd2)) state.hd2 = null;
+  /* … HD2 ohne HD1 rückt auf (der HD2-Picker ist ohne HD1 gar nicht sichtbar) … */
+  if (!state.hd1 && state.hd2) { state.hd1 = state.hd2; state.hd2 = null; }
+  /* … kein Spieler darf in beiden Doppeln stehen … */
+  if (state.hd1 && state.hd2 && pairNames(state.hd2).some(n => pairNames(state.hd1).includes(n)))
+    state.hd2 = null;
+  /* … und HD1 behält die kleinere Rangsumme. */
+  normalizeHdOrder(men);
   if (state.dd && !currentDd(women)) state.dd = null;
   if (state.gd) {
-    const hdOpt = currentHd(men), ddPair = currentDd(women);
-    const ok = hdOpt && ddPair && (() => {
-      const [a, b] = state.gd.split("|");
-      const names = [a, b];
-      const m = men.find(p => names.includes(p.name));
-      const w = women.find(p => names.includes(p.name));
-      return m && w
-        && disciplineCount(m.name, men, women, hdOpt, ddPair) < 2
-        && disciplineCount(w.name, men, women, hdOpt, ddPair) < 2;
-    })();
+    const hd = currentHd(men), ddPair = currentDd(women);
+    const names = pairNames(state.gd);
+    const m = men.find(p => names.includes(p.name));
+    const w = women.find(p => names.includes(p.name));
+    /* Mixed fällt raus, wenn ein Spieler fehlt oder durch spätere Picks auf 2 Disziplinen kommt */
+    const ok = m && w
+      && disciplineCount(m.name, men, women, hd, ddPair) < 2
+      && disciplineCount(w.name, men, women, hd, ddPair) < 2;
     if (!ok) state.gd = null;
   }
+  if (JSON.stringify([state.he, state.de, state.hd1, state.hd2, state.dd, state.gd]) !== picksBefore) save();
   renderSquad();
   renderSingles(men, women);
   renderHd(men);
