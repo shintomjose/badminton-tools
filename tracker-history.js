@@ -75,6 +75,8 @@
       "Sätze {0}–{1}": "Sets {0}–{1}",
       "S {0}–{1}": "S {0}–{1}",
       "Niederlage": "Loss",
+      "Sieg links": "Win left",
+      "Sieg rechts": "Win right",
       "läuft": "in progress",
       "aufgegeben": "retired",
       "Satz {0}": "Game {0}",
@@ -216,14 +218,6 @@
     /* the core denormalises names as `playerNames`; `names` kept as legacy fallback */
     if (s && Array.isArray(s.playerNames)) return s.playerNames;
     return (s && Array.isArray(s.names)) ? s.names : [];
-  }
-
-  /** "A" | "B" | null — which side the isMe player was on. */
-  function mySide(match, meId) {
-    if (!meId) return null;
-    if (sideIds(match, "A").indexOf(meId) !== -1) return "A";
-    if (sideIds(match, "B").indexOf(meId) !== -1) return "B";
-    return null;
   }
 
   /** Spec default when a match has no explicit targetScore. Mirrors the entry view. */
@@ -503,22 +497,9 @@
   function scoreText(match) {
     var games = Array.isArray(match.games) ? match.games : [];
     if (!games.length) return "";
-    return games.map(function (g) { return g.a + ":" + g.b; }).join(", ");
+    return games.map(function (g) { return g.a + ":" + g.b; }).join(" · ");
   }
 
-  function badges(match) {
-    var out = [];
-    if (match.type === "tournament") {
-      var label = (match.tournament && match.tournament.name) ? match.tournament.name : T("Turnier");
-      out.push('<span class="mth-badge mth-badge-trn">' + ESC(label) + "</span>");
-    }
-    if (match.status === "in_progress") {
-      out.push('<span class="mth-badge mth-badge-live">' + ESC(T("läuft")) + "</span>");
-    } else if (match.status === "retired") {
-      out.push('<span class="mth-badge mth-badge-ret">' + ESC(T("aufgegeben")) + "</span>");
-    }
-    return out.join("");
-  }
 
   function renderEdit(match) {
     var games = (editing && editing.id === match.id) ? editing.games : [];
@@ -549,51 +530,98 @@
     "</div>";
   }
 
-  /** One side of a match row, carrying its win (green) or loss (red) marker. */
-  function sideBlock(match, side, won, lost) {
-    return '<div class="mth-side' + (won ? " win" : "") + (lost ? " lost" : "") + '">' +
-      nameButtons(match, side) +
-      (won ? '<span class="mth-win" aria-label="' + ESC(T("Sieg")) + '">✓</span>' : "") +
-      (lost ? '<span class="mth-loss" aria-label="' + ESC(T("Niederlage")) + '">✕</span>' : "") +
+  /**
+   * One team block. Win/loss colouring is purely result-based here (not isMe-based):
+   * the winning side is green, the losing side red, an undecided match neutral.
+   * Colour is never the only signal — each decided side carries screen-reader text
+   * and a title, and the verdict caption under the score spells the result out.
+   */
+  function teamBlock(match, side, winner) {
+    var cls = "mth-team mth-team-" + side.toLowerCase();
+    var sr = "";
+    if (winner === side) {
+      cls += " win";
+      sr = '<span class="mth-sr">' + ESC(T("Sieg")) + "</span>";
+    } else if (winner) {
+      cls += " lost";
+      sr = '<span class="mth-sr">' + ESC(T("Niederlage")) + "</span>";
+    }
+    return '<div class="' + cls + '">' + sr + nameButtons(match, side) + "</div>";
+  }
+
+  /** The caption under the score: the verdict, or the live/retired badge when undecided. */
+  function verdict(match) {
+    if (match.winnerSide === "A" || match.winnerSide === "B") {
+      var word = match.winnerSide === "A" ? T("Sieg links") : T("Sieg rechts");
+      return '<span class="mth-verdict"><span aria-hidden="true">✓</span> ' + ESC(word) + "</span>";
+    }
+    if (match.status === "in_progress") {
+      return '<span class="mth-badge mth-badge-live">' + ESC(T("läuft")) + "</span>";
+    }
+    if (match.status === "retired") {
+      return '<span class="mth-badge mth-badge-ret">' + ESC(T("aufgegeben")) + "</span>";
+    }
+    return "";
+  }
+
+  function leadCol(match, showDate) {
+    var disc = match.discipline === "singles" ? "1v1" : "2v2";
+    var discLabel = match.discipline === "singles" ? T("Einzel") : T("Doppel");
+    var venue = match.locationName || "";
+    return '<div class="mth-lead">' +
+      '<span class="mth-disc" title="' + ESC(discLabel) + '" aria-label="' + ESC(discLabel) + '">' + disc + "</span>" +
+      (showDate ? '<span class="mth-rowdate">' + ESC(rowDate(match.dateKey)) + "</span>" : "") +
+      (venue ? '<span class="mth-loc" title="' + ESC(venue) + '">' + ESC(venue) + "</span>" : "") +
+    "</div>";
+  }
+
+  function rowActions(match) {
+    return '<div class="mth-rowacts">' +
+      '<button type="button" class="mth-editbtn" data-act="edit" data-id="' + ESC(match.id) + '">' +
+        ESC(T("Bearbeiten")) + "</button>" +
+      '<button type="button" class="mth-del" data-act="del" data-id="' + ESC(match.id) + '">' +
+        ESC(T("Löschen")) + "</button>" +
     "</div>";
   }
 
   /** showDate: the day level is gone in year/month/week modes, so each row carries its date. */
   function renderMatch(match, showDate) {
     var isEditing = !!(editing && editing.id === match.id);
-    var winA = match.winnerSide === "A";
-    var winB = match.winnerSide === "B";
-    // A loss is only marked on the side I was actually on — an all-other-players
-    // match has no "my" result to lose, so it gets a winner marker and nothing else.
-    var meSide = mySide(match, state.meId);
-    var lostSide = (match.winnerSide && meSide && match.winnerSide !== meSide) ? meSide : null;
-    var disc = match.discipline === "singles" ? "1v1" : "2v2";
-    var discLabel = match.discipline === "singles" ? T("Einzel") : T("Doppel");
     var score = scoreText(match);
-    var bg = badges(match);
 
-    return '<article class="mth-card' + (isEditing ? " editing" : "") + '" data-mid="' + ESC(match.id) + '">' +
-      '<div class="mth-card-top">' +
-        '<span class="mth-disc" title="' + ESC(discLabel) + '" aria-label="' + ESC(discLabel) + '">' + disc + "</span>" +
-        (showDate ? '<span class="mth-rowdate">' + ESC(rowDate(match.dateKey)) + "</span>" : "") +
-        (bg ? '<span class="mth-badges">' + bg + "</span>" : "") +
+    // Editing drops the ledger grid entirely and stacks: context line, then the form.
+    if (isEditing) {
+      return '<article class="mth-row editing" data-mid="' + ESC(match.id) + '">' +
+        '<div class="mth-editctx">' +
+          leadCol(match, true) +
+          '<div class="mth-editnames">' +
+            ESC(sideNames(match, "A").join(" / ")) +
+            '<span class="mth-vs-lite"> vs </span>' +
+            ESC(sideNames(match, "B").join(" / ")) +
+          "</div>" +
+        "</div>" +
+        renderEdit(match) +
+      "</article>";
+    }
+
+    var trn = "";
+    if (match.type === "tournament") {
+      var tname = (match.tournament && match.tournament.name) ? match.tournament.name : T("Turnier");
+      trn = '<span class="mth-badge mth-badge-trn" title="' + ESC(tname) + '">' + ESC(tname) + "</span>";
+    }
+    var cap = verdict(match);
+
+    return '<article class="mth-row" data-mid="' + ESC(match.id) + '">' +
+      leadCol(match, showDate) +
+      teamBlock(match, "A", match.winnerSide) +
+      '<div class="mth-score">' +
+        '<div class="mth-games">' +
+          (score ? ESC(score) : '<span class="mth-muted">' + ESC(T("Kein Ergebnis")) + "</span>") +
+        "</div>" +
+        ((cap || trn) ? '<div class="mth-cap">' + cap + trn + "</div>" : "") +
       "</div>" +
-      '<div class="mth-vs">' +
-        sideBlock(match, "A", winA, lostSide === "A") +
-        '<div class="mth-vssep" aria-hidden="true">vs</div>' +
-        sideBlock(match, "B", winB, lostSide === "B") +
-      "</div>" +
-      (isEditing
-        ? renderEdit(match)
-        : '<div class="mth-scores">' + (score ? ESC(score) : '<span class="mth-muted">' + ESC(T("Kein Ergebnis")) + "</span>") + "</div>") +
-      '<div class="mth-foot">' +
-        '<span class="mth-loc">' + ESC(match.locationName || "") + "</span>" +
-        (isEditing ? "" :
-          '<span class="mth-acts">' +
-            '<button type="button" class="btn mth-btn" data-act="edit" data-id="' + ESC(match.id) + '">' + ESC(T("Bearbeiten")) + "</button>" +
-            '<button type="button" class="btn mth-btn mth-del" data-act="del" data-id="' + ESC(match.id) + '">' + ESC(T("Löschen")) + "</button>" +
-          "</span>") +
-      "</div>" +
+      teamBlock(match, "B", match.winnerSide) +
+      rowActions(match) +
     "</article>";
   }
 
@@ -696,7 +724,7 @@
   /** Pull typed values back into state before any re-render of the edit form. */
   function syncEditFromDom() {
     if (!editing || !listEl) return;
-    var card = listEl.querySelector('.mth-card[data-mid="' + cssEscape(editing.id) + '"]');
+    var card = listEl.querySelector('.mth-row[data-mid="' + cssEscape(editing.id) + '"]');
     if (!card) return;
     var rows = card.querySelectorAll(".mth-edit-row");
     var games = [];

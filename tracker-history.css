@@ -121,121 +121,140 @@ button.mth-reset { flex: 0 0 auto; }
 .mth-pct.mth-thin { color: var(--text-muted); font-weight: 500; font-style: italic; }
 .mth-notme { color: var(--warn); }
 
-.mth-gbody { display: grid; gap: 8px; padding: 8px 0 12px; }
+/* rows carry their own hairline separators, so no gap between them */
+.mth-gbody { display: block; padding: 2px 0 12px; }
 
 /* ---------------- match card ---------------- */
-.mth-card {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  display: grid; gap: 8px;
+/* ---------------- match row: scoreboard ledger ----------------
+   [chip+date+venue] [side A] [score] [side B] ......... [edit] [delete]
+   Rows are separated by a hairline, not boxed in cards. */
+.mth-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 4px;
+  border-bottom: 1px solid var(--border);
 }
-.mth-card.editing { border-color: var(--brand-teal); }
+.mth-row:last-child { border-bottom: 0; }
 
-.mth-card-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* screen-reader-only: keeps win/loss from being colour-only */
+.mth-sr {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+/* left column */
+.mth-lead { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
 .mth-disc {
   font-family: var(--font-disp);
-  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em;
+  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
   color: var(--teal-ink);
-  background: color-mix(in srgb, var(--brand-teal) 14%, transparent);
-  border-radius: 999px;
-  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, var(--teal-ink) 45%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
   flex: 0 0 auto;
 }
 .mth-rowdate {
   font-size: 0.78em; color: var(--text-muted);
   font-variant-numeric: tabular-nums;
-  flex: 0 0 auto;
 }
-.mth-badges { display: flex; gap: 6px; flex-wrap: wrap; min-width: 0; }
+.mth-loc {
+  font-size: 0.74em; color: var(--text-muted);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* team blocks */
+.mth-team { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+.mth-team-a { align-items: flex-end; text-align: right; }
+.mth-team-b { align-items: flex-start; text-align: left; }
+.mth-name {
+  font: inherit;
+  background: none; border: none; border-bottom: 1px solid transparent;
+  color: var(--text-strong); font-weight: 400;
+  text-align: inherit;
+  padding: 3px 0; min-height: 0;
+  max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  cursor: pointer;
+}
+.mth-name:hover { border-bottom-color: currentColor; }
+.mth-name:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 4px; }
+.mth-name-plain { cursor: default; color: var(--text-muted); }
+.mth-team.win .mth-name { color: var(--court-green); font-weight: 700; }
+.mth-team.lost .mth-name { color: var(--danger); font-weight: 400; }
+
+/* centre score block */
+.mth-score {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  min-width: 128px;
+}
+.mth-games {
+  font-size: 1.1em; font-weight: 700;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mth-cap { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: 100%; }
+.mth-verdict {
+  font-size: 0.68rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.mth-muted { color: var(--text-muted); font-style: italic; font-weight: 400; font-size: 0.85rem; }
+
 .mth-badge {
   display: inline-block;
   font-family: var(--font-disp);
-  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em;
   text-transform: uppercase;
-  border-radius: 999px; padding: 3px 9px;
+  border-radius: 999px; padding: 2px 8px;
   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .mth-badge-trn { background: var(--brand-teal); color: var(--accent-on); }
 .mth-badge-live { background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--warn); border: 1px solid var(--warn); }
 .mth-badge-ret { background: var(--surface-1); color: var(--text-muted); border: 1px solid var(--border); }
 
-.mth-vs {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: start;
-  gap: 6px;
-}
-.mth-side {
-  display: flex; flex-direction: column; align-items: flex-start;
-  min-width: 0;
-  border-left: 3px solid transparent;
-  padding-left: 8px;
-}
-.mth-side:last-child { text-align: right; align-items: flex-end; }
-.mth-side.win { border-left-color: var(--court-green); }
-.mth-side.lost { border-left-color: var(--danger); }
-.mth-side:last-child.win,
-.mth-side:last-child.lost {
-  border-left-color: transparent;
-  padding-left: 0; padding-right: 8px;
-}
-.mth-side:last-child.win { border-right: 3px solid var(--court-green); }
-.mth-side:last-child.lost { border-right: 3px solid var(--danger); }
-.mth-vssep {
-  font-family: var(--font-disp);
-  font-size: 0.78rem; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.08em;
-  color: var(--text-muted);
-  align-self: center;
-  flex: 0 0 auto;
-}
-.mth-name {
-  font: inherit;
-  background: none; border: none;
-  color: var(--text-strong); font-weight: 500;
-  text-align: inherit;
-  padding: 6px 2px; min-height: 36px;
-  max-width: 100%;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+/* right-hand actions */
+.mth-rowacts { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.mth-editbtn, .mth-del {
+  font: inherit; font-size: 0.8em;
   cursor: pointer;
-  border-bottom: 1px dotted var(--border);
+  padding: 7px 11px; min-height: 36px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
 }
-.mth-name:hover { color: var(--teal-ink); border-bottom-color: var(--brand-teal); }
-.mth-name:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 4px; }
-.mth-name-plain { cursor: default; border-bottom: none; color: var(--text-muted); }
-.mth-side.win .mth-name { color: var(--court-green); font-weight: 700; }
-.mth-side.win .mth-name:hover { color: var(--court-green); border-bottom-color: var(--court-green); }
-.mth-side.lost .mth-name { color: var(--danger); }
-.mth-side.lost .mth-name:hover { color: var(--danger); border-bottom-color: var(--danger); }
-.mth-win { color: var(--court-green); font-weight: 700; font-size: 0.9em; }
-.mth-loss { color: var(--danger); font-weight: 700; font-size: 0.9em; }
-
-.mth-scores {
-  font-family: var(--font-disp);
-  font-size: 1.06rem; font-weight: 700; letter-spacing: 0.05em;
-  color: var(--text-strong);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
+.mth-editbtn {
+  background: transparent; color: var(--text);
+  border: 1px solid var(--border);
 }
-.mth-muted { color: var(--text-muted); font-style: italic; font-weight: 400; font-size: 0.85rem; }
-
-.mth-foot {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 8px; flex-wrap: wrap;
+.mth-editbtn:hover { background: var(--row-hover); border-color: var(--text-muted); }
+.mth-del {
+  background: none; border: 1px solid transparent;
+  color: var(--danger); font-weight: 600;
 }
-.mth-loc {
-  color: var(--text-muted); font-size: 0.8em;
-  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.mth-acts { display: flex; gap: 6px; flex: 0 0 auto; }
-button.mth-del { color: var(--danger); font-weight: 600; }
-button.mth-del:hover { background: color-mix(in srgb, var(--danger) 14%, transparent); }
-button.mth-del.armed {
+.mth-del:hover { background: color-mix(in srgb, var(--danger) 12%, transparent); }
+.mth-del.armed {
   background: color-mix(in srgb, var(--danger) 20%, transparent);
-  border-color: var(--danger); color: var(--danger); font-weight: 700;
+  border-color: var(--danger); font-weight: 700;
 }
+.mth-editbtn:focus-visible, .mth-del:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* editing collapses the ledger grid and stacks context + form */
+.mth-row.editing {
+  display: block;
+  background: var(--surface-2);
+  border: 1px solid var(--brand-teal);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.mth-editctx { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.mth-editctx .mth-lead { flex-direction: row; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mth-editnames { color: var(--text-strong); font-weight: 500; min-width: 0; }
+.mth-vs-lite { color: var(--text-muted); font-weight: 400; }
 
 /* ---------------- inline score edit ---------------- */
 .mth-edit {
@@ -296,13 +315,35 @@ button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
   .mth-gh { padding: 10px 8px; gap: 4px 8px; }
   .mth-gs { flex-basis: 100%; padding-left: 1.6em; }
   .mth-gt { font-size: 0.96rem; }
-  .mth-card { padding: 10px 8px; }
+
+  /* The ledger cannot hold one line here. Two lines instead:
+       [chip · date · venue ................ edit  delete]
+       [    side A     |  score  |     side B        ]
+     Names wrap rather than truncate, so nothing needs horizontal scroll. */
+  .mth-row {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      "lead  lead  acts"
+      "teama score teamb";
+    align-items: start;
+    gap: 8px;
+    padding: 12px 2px;
+  }
+  .mth-lead   { grid-area: lead; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 6px; }
+  .mth-rowacts{ grid-area: acts; justify-content: flex-end; }
+  .mth-team-a { grid-area: teama; }
+  .mth-score  { grid-area: score; min-width: 0; }
+  .mth-team-b { grid-area: teamb; }
+
   /* one comfortable tap target per player name */
-  button.mth-name { min-height: 44px; padding: 10px 2px; }
-  .mth-vs { gap: 4px; }
-  .mth-vssep { font-size: 0.7rem; }
-  .mth-scores { font-size: 1rem; }
-  .mth-acts { flex: 1 1 100%; justify-content: flex-end; }
+  button.mth-name {
+    min-height: 44px; padding: 10px 2px;
+    white-space: normal; overflow-wrap: anywhere; text-overflow: clip;
+  }
+  .mth-editbtn, .mth-del { min-height: 44px; padding: 10px 12px; }
+  .mth-games { font-size: 1em; }
+  .mth-verdict { font-size: 0.62rem; letter-spacing: 0.07em; white-space: normal; }
   .mth-edit-lbl { flex-basis: 4.6em; font-size: 0.7rem; }
   .mth-num { width: 100%; }
+  .mth-editctx { flex-direction: column; gap: 6px; }
 }
