@@ -98,6 +98,7 @@ const EN = {
   "· {0} fehlen": "· {0} missing",
   "{0} verfügbar": "{0} available",
   "Rang {0}": "Rank {0}",
+  "Rang": "Rank",
   "Mannschaft {0} ist leer": "Team {0} is empty",
   "Mannschaft {0}: {1} Spieler übernommen": "Team {0}: {1} players selected",
   "Alle {0} anzeigen": "Show all {0}",
@@ -1799,7 +1800,7 @@ function renderGd(men, women) {
       slot: "GD", attr: "gd", radio: "luGd", selKey: state.gd,
       disabled: blocked.length > 0,
       note: blocked.length ? esc(tt("— schon 2 Disziplinen: {0}", blocked.join(" · "))) : "",
-      sumHtml: `Rang ${p[0].rank} / ${p[1].rank}`,
+      sumHtml: `${t("Rang")} ${p[0].rank} / ${p[1].rank}`,
     });
   });
   const sel = combos.findIndex(p => pairKey(p[0].name, p[1].name) === state.gd);
