@@ -1,2 +1,7 @@
 .idea/
 .firebase/
+
+# Service-account keys — live credentials, never commit
+badminton-tools-c6b27-*.json
+*-serviceaccount*.json
+service-account*.json

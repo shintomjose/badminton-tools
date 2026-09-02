@@ -1,0 +1,24 @@
+# Deploy both Firebase Hosting sites (tsg-badminton-fansite.web.app and
+# badminton-tools-c6b27.web.app) on every push to main, keeping them in
+# sync with GitHub Pages.
+#
+# Requires the FIREBASE_SERVICE_ACCOUNT_BADMINTON_TOOLS_C6B27 repo secret
+# (a service-account JSON with the Firebase Hosting Admin role).
+name: Deploy Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BADMINTON_TOOLS_C6B27 }}
+          projectId: badminton-tools-c6b27
+          channelId: live

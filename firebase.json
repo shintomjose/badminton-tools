@@ -10,7 +10,22 @@
         "**/.idea/**",
         "**/node_modules/**",
         "**/*.md",
-        "start-local.cmd"
+        "start-local.cmd",
+        "badminton-tools-c6b27-*.json",
+        "**/*serviceaccount*.json",
+        "**/service-account*.json",
+        ".github/**"
+      ],
+      "headers": [
+        {
+          "source": "sw.js",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        }
       ]
     },
     {
@@ -23,7 +38,22 @@
         "**/.idea/**",
         "**/node_modules/**",
         "**/*.md",
-        "start-local.cmd"
+        "start-local.cmd",
+        "badminton-tools-c6b27-*.json",
+        "**/*serviceaccount*.json",
+        "**/service-account*.json",
+        ".github/**"
+      ],
+      "headers": [
+        {
+          "source": "sw.js",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache"
+            }
+          ]
+        }
       ]
     }
   ]
