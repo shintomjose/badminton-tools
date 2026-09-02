@@ -115,6 +115,11 @@ Object.assign(EN, {
   "S {0}–{1}": "S {0}–{1}",
   "Spiele {0}–{1}": "Matches {0}–{1}",
 
+  /* --- manual ordering of the day's list --- */
+  "Reihenfolge ändern": "Reorder",
+  "Spiel {0} nach oben": "Move match {0} up",
+  "Spiel {0} nach unten": "Move match {0} down",
+
   /* --- day-wise totals ---
      Percentage keys mirror tracker-stats.js verbatim so both views read the
      same; assigning an identical value twice is harmless. */
@@ -487,6 +492,78 @@ Object.assign(EN, {
     return rows.slice(0, SUMMARY_ROWS);
   }
 
+  /* ================= manual ordering =================
+     The day's list is ordered by a numeric `seq` (1..n). Documents written
+     before this existed have no seq at all; they keep their previous
+     createdAt order and are only given numbers the first time the list is
+     actually reordered — nothing is migrated behind the user's back. */
+  function seqOf(m) {
+    const v = Number(m && m.seq);
+    return isFinite(v) && v > 0 ? v : null;
+  }
+
+  /* watchSession already hands the matches over in createdAt order, so a
+     stable sort on seq alone preserves that as the fallback. Matches without
+     a seq sort after those with one, keeping old days in their original
+     sequence. */
+  function orderedMatches() {
+    return state.matches
+      .map((m, i) => ({ m: m, i: i, s: seqOf(m) }))
+      .sort((a, b) => {
+        if (a.s !== null && b.s !== null) return a.s - b.s || a.i - b.i;
+        if (a.s !== null) return -1;
+        if (b.s !== null) return 1;
+        return a.i - b.i;                       // both unnumbered: createdAt order
+      })
+      .map(x => x.m);
+  }
+
+  function nextSeq() {
+    let max = 0;
+    state.matches.forEach(m => { const s = seqOf(m); if (s && s > max) max = s; });
+    return max + 1;
+  }
+
+  /* Renumbers 1..n and queues an update ONLY for the matches whose number
+     actually moved. Local state is patched first so the serial chips redraw
+     immediately — the writes are never awaited. */
+  function applyOrder(ids) {
+    let writes = 0;
+    ids.forEach((id, idx) => {
+      const m = state.matches.find(x => x.id === id);
+      if (!m) return;
+      const want = idx + 1;
+      if (seqOf(m) === want) return;
+      m.seq = want;                             // optimistic: chips update now
+      writes++;
+      MT.repo.updateMatch(id, { seq: want })
+        .catch(e => MT.toastError(e, "Speichern fehlgeschlagen"));
+    });
+    renderList();
+    return writes;
+  }
+
+  function moveMatch(id, delta) {
+    const ids = orderedMatches().map(m => m.id);
+    const from = ids.indexOf(id);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= ids.length) return;
+    ids.splice(to, 0, ids.splice(from, 1)[0]);
+    applyOrder(ids);
+  }
+
+  /* Drop `id` at list position `pos` (index in the pre-move ordering). */
+  function dropMatch(id, pos) {
+    const ids = orderedMatches().map(m => m.id);
+    const from = ids.indexOf(id);
+    if (from < 0) return;
+    let to = pos;
+    if (to > from) to--;                        // removing the source shifts the target
+    if (to === from || to < 0 || to > ids.length) return;
+    ids.splice(to, 0, ids.splice(from, 1)[0]);
+    applyOrder(ids);
+  }
+
   function startWatch(session) {
     stopWatch();
     state.session = session;
@@ -709,7 +786,8 @@ Object.assign(EN, {
     if (kept) { const inp = host.querySelector(".mt-add-loc input"); if (inp) inp.value = kept; }
   }
 
-  function matchLine(m) {
+  function matchLine(m, idx, total) {
+    const no = idx + 1;
     const games = Array.isArray(m.games) ? m.games : [];
     const winner = m.status === "finished" ? m.winnerSide : null;
     const cells = side => games.map(g =>
@@ -727,8 +805,13 @@ Object.assign(EN, {
     const trnHtml =
       (round ? '<span class="mt-badge trn">' + esc(t(round)) + "</span>" : "") +
       (club ? '<span class="mt-badge trn">' + esc(club) + "</span>" : "");
-    return '<li class="mt-match" data-id="' + esc(m.id) + '">' +
+    /* draggable="true" only on the card: the buttons inside stay tappable
+       because a drag has to start on the card surface, not on a control */
+    return '<li class="mt-match" draggable="true" data-id="' + esc(m.id) + '"' +
+      ' data-pos="' + idx + '">' +
       '<div class="mt-match-top">' +
+        '<span class="mt-grip" aria-hidden="true" title="' + esc(t("Reihenfolge ändern")) + '">⠿</span>' +
+        '<span class="mt-no">#' + no + "</span>" +
         '<span class="mt-badge">' + esc(disc + " · " + (m.targetScore || "")) + "</span>" +
         trnHtml +
         statusHtml +
@@ -740,6 +823,15 @@ Object.assign(EN, {
       '<div class="mt-match-actions">' +
         '<button type="button" class="btn small" data-act="edit" data-id="' + esc(m.id) + '">' + esc(t("Bearbeiten")) + "</button>" +
         '<button type="button" class="btn small" data-act="del" data-id="' + esc(m.id) + '">' + esc(t("Löschen")) + "</button>" +
+        /* the nudges are the touch path — drag is a desktop convenience */
+        '<span class="mt-nudge">' +
+          '<button type="button" class="btn mt-move" data-act="moveup" data-id="' + esc(m.id) + '"' +
+            (no === 1 ? " disabled" : "") +
+            ' aria-label="' + esc(tt("Spiel {0} nach oben", no)) + '">▲</button>' +
+          '<button type="button" class="btn mt-move" data-act="movedown" data-id="' + esc(m.id) + '"' +
+            (no === total ? " disabled" : "") +
+            ' aria-label="' + esc(tt("Spiel {0} nach unten", no)) + '">▼</button>' +
+        "</span>" +
       "</div>" +
     "</li>";
   }
@@ -759,13 +851,14 @@ Object.assign(EN, {
         '<div class="mt-card-actions"><button type="button" class="btn" data-act="reload">' + esc(t("Erneut prüfen")) + "</button></div></section>";
       return;
     }
-    const list = state.matches;
+    const list = orderedMatches();
     const addLabel = state.justSaved && list.length ? t("Noch ein Spiel") : t("+ Spiel");
     host.innerHTML =
       '<section class="panel mt-matches">' +
         "<h2>" + esc(t("Spiele heute")) + ' <span class="seg-count">' + list.length + "</span></h2>" +
         (list.length
-          ? '<ul class="mt-match-list">' + list.map(matchLine).join("") + "</ul>"
+          ? '<ul class="mt-match-list">' +
+              list.map((m, i) => matchLine(m, i, list.length)).join("") + "</ul>"
           : '<p class="empty-note">' + esc(t("Noch keine Spiele heute — tippe auf „+ Spiel“.")) + "</p>") +
         '<button type="button" class="btn primary mt-big" data-act="newmatch">' + esc(addLabel) + "</button>" +
       "</section>";
@@ -1058,7 +1151,10 @@ Object.assign(EN, {
 
   /* ================= draft actions ================= */
   function newDraft(prefill) {
-    const last = prefill && state.matches.length ? state.matches[state.matches.length - 1] : null;
+    /* "the previous match" is the last one in the list as shown, which after a
+       manual reorder is not the last one written */
+    const shown = prefill ? orderedMatches() : [];
+    const last = shown.length ? shown[shown.length - 1] : null;
     const me = meePlayer();
     const disc = last ? normDiscipline(last.discipline) : "singles";
     const d = {
@@ -1252,6 +1348,8 @@ Object.assign(EN, {
         await MT.repo.updateMatch(d.id, patch);
         if (finish) await MT.repo.finishMatch(d.id, fields);
       } else {
+        /* a new match lands at the end of today's list */
+        const seq = nextSeq();
         const payload = Object.assign({}, fields, { status: finish ? "finished" : "in_progress" });
         let newId = null;
         if (state.session) {
@@ -1268,10 +1366,13 @@ Object.assign(EN, {
           startWatch(res.session);
         }
         /* matchDoc() in the core builds a fixed shape and drops unknown keys,
-           so the denormalised `tournament` object needs its own queued write.
-           Training never reaches this — fields.tournament is undefined there. */
-        if (newId && fields.tournament) {
-          await MT.repo.updateMatch(newId, { tournament: fields.tournament });
+           so the denormalised `tournament` object and the list position both
+           need a follow-up write. They share ONE patch so a new match still
+           costs at most one extra queued write. */
+        if (newId) {
+          const post = { seq: seq };
+          if (fields.tournament) post.tournament = fields.tournament;
+          await MT.repo.updateMatch(newId, post);
         }
       }
       toast(t(finish ? "Spiel gespeichert" : "Als offen gespeichert"));
@@ -1386,6 +1487,8 @@ Object.assign(EN, {
     if (act === "newmatch") { newDraft(true); return; }
     if (act === "edit") { openDraftFromMatch(btn.dataset.id); return; }
     if (act === "del") { removeMatch(btn.dataset.id); return; }
+    if (act === "moveup") { moveMatch(btn.dataset.id, -1); return; }
+    if (act === "movedown") { moveMatch(btn.dataset.id, 1); return; }
     if (act === "player") { MT.openPlayerProfile(btn.dataset.id); return; }
     if (!d) return;
 
@@ -1510,6 +1613,67 @@ Object.assign(EN, {
     if (e.target.closest(".mt-suggest")) e.preventDefault();
   }
 
+  /* ================= drag to reorder (desktop) =================
+     Same idiom as the Rangliste tab: mark the dragged row, paint a drop-above
+     or drop-below edge on the row under the pointer, drop by midpoint. Phones
+     never see this — the ▲/▼ nudges are the touch path. */
+  let dragId = null;
+
+  function clearDropMarks() {
+    if (!state.host) return;
+    state.host.querySelectorAll(".drop-above,.drop-below")
+      .forEach(x => x.classList.remove("drop-above", "drop-below"));
+  }
+
+  function rowUnder(e) {
+    return e.target && typeof e.target.closest === "function"
+      ? e.target.closest("li.mt-match") : null;
+  }
+
+  function onDragStart(e) {
+    const row = rowUnder(e);
+    if (!row) return;
+    /* never start a drag from a control inside the card */
+    if (e.target.closest("button")) { e.preventDefault(); return; }
+    dragId = row.dataset.id;
+    row.classList.add("dragging");
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", dragId); } catch (err) {}
+    }
+  }
+
+  function onDragEnd() {
+    dragId = null;
+    if (state.host) state.host.querySelectorAll(".dragging").forEach(x => x.classList.remove("dragging"));
+    clearDropMarks();
+  }
+
+  function onDragOver(e) {
+    if (!dragId) return;
+    const row = rowUnder(e);
+    if (!row) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+    clearDropMarks();
+    const rect = row.getBoundingClientRect();
+    const below = e.clientY > rect.top + rect.height / 2;
+    row.classList.add(below ? "drop-below" : "drop-above");
+  }
+
+  function onDrop(e) {
+    if (!dragId) return;
+    const row = rowUnder(e);
+    if (!row) return;
+    e.preventDefault();
+    const rect = row.getBoundingClientRect();
+    const below = e.clientY > rect.top + rect.height / 2;
+    const pos = Number(row.dataset.pos) + (below ? 1 : 0);
+    const id = dragId;
+    onDragEnd();
+    dropMatch(id, pos);
+  }
+
   function onKeyDown(e) {
     const el2 = e.target;
     if (!el2 || !el2.classList || !el2.classList.contains("mt-slot-input")) return;
@@ -1601,6 +1765,10 @@ Object.assign(EN, {
       host.addEventListener("focusout", onFocusOut);
       host.addEventListener("mousedown", onMouseDown);
       host.addEventListener("keydown", onKeyDown);
+      host.addEventListener("dragstart", onDragStart);
+      host.addEventListener("dragend", onDragEnd);
+      host.addEventListener("dragover", onDragOver);
+      host.addEventListener("drop", onDrop);
       renderAll();
       if (!state.loaded) load();
       else {
@@ -1618,6 +1786,10 @@ Object.assign(EN, {
         state.host.removeEventListener("focusout", onFocusOut);
         state.host.removeEventListener("mousedown", onMouseDown);
         state.host.removeEventListener("keydown", onKeyDown);
+        state.host.removeEventListener("dragstart", onDragStart);
+        state.host.removeEventListener("dragend", onDragEnd);
+        state.host.removeEventListener("dragover", onDragOver);
+        state.host.removeEventListener("drop", onDrop);
       }
       state.host = null;
     },
