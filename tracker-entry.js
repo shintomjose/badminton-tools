@@ -38,6 +38,8 @@ Object.assign(EN, {
   "Spiel bearbeiten": "Edit match",
   "Einzel": "Singles",
   "Doppel": "Doubles",
+  /* Mixed reads the same in both languages; the app's abbreviation is GD → XD */
+  "Mixed": "Mixed",
   "Disziplin": "Discipline",
   "Ziel": "Target",
   "Seite A": "Side A",
@@ -253,8 +255,23 @@ Object.assign(EN, {
     return Object.keys(seen).sort((a, b) => a.localeCompare(b, DATE_LOCALE));
   }
 
-  function slotCount(d) { return d.discipline === "doubles" ? 2 : 1; }
-  function defaultTarget(disc) { return disc === "doubles" ? 21 : 11; }
+  /* Shared convention with the core: anything that is not doubles or mixed
+     normalises to singles. Mixed is a doubles shape with its own label —
+     two players a side, target 21. */
+  const DISCIPLINES = [
+    ["singles", "Einzel"],
+    ["doubles", "Doppel"],
+    ["mixed", "Mixed"],
+  ];
+  function normDiscipline(v) {
+    return (v === "doubles" || v === "mixed") ? v : "singles";
+  }
+  function disciplineLabel(v) {
+    const hit = DISCIPLINES.find(x => x[0] === normDiscipline(v));
+    return t(hit[1]);
+  }
+  function slotCount(d) { return normDiscipline(d.discipline) === "singles" ? 1 : 2; }
+  function defaultTarget(disc) { return normDiscipline(disc) === "singles" ? 11 : 21; }
   function playerById(id) { return state.players.find(p => p.id === id) || null; }
   function playerName(id) { const p = playerById(id); return p ? p.name : "—"; }
   function meePlayer() { return state.players.find(p => p.isMe) || null; }
@@ -697,7 +714,7 @@ Object.assign(EN, {
     const winner = m.status === "finished" ? m.winnerSide : null;
     const cells = side => games.map(g =>
       '<span class="mt-sg-val">' + esc(String(side === "A" ? (g.a || 0) : (g.b || 0))) + "</span>").join("");
-    const disc = m.discipline === "doubles" ? t("Doppel") : t("Einzel");
+    const disc = disciplineLabel(m.discipline);
     /* Only an actual winner earns the green pill — a finished match without one
        (retired, abandoned) stays neutral. */
     const statusHtml = m.status === "finished"
@@ -972,8 +989,10 @@ Object.assign(EN, {
 
         '<div class="mt-opt-row">' +
           '<div class="mt-toggle" role="group" aria-label="' + esc(t("Disziplin")) + '">' +
-            '<button type="button" data-act="disc" data-v="singles" aria-pressed="' + (d.discipline === "singles") + '">' + esc(t("Einzel")) + "</button>" +
-            '<button type="button" data-act="disc" data-v="doubles" aria-pressed="' + (d.discipline === "doubles") + '">' + esc(t("Doppel")) + "</button>" +
+            DISCIPLINES.map(x =>
+              '<button type="button" data-act="disc" data-v="' + x[0] + '"' +
+              ' aria-pressed="' + (normDiscipline(d.discipline) === x[0]) + '">' + esc(t(x[1])) + "</button>"
+            ).join("") +
           "</div>" +
           '<div class="mt-toggle" role="group" aria-label="' + esc(t("Ziel")) + '">' +
             TARGETS.map(v => '<button type="button" data-act="target" data-v="' + v + '" aria-pressed="' + (d.targetScore === v) + '">' + v + "</button>").join("") +
@@ -1041,7 +1060,7 @@ Object.assign(EN, {
   function newDraft(prefill) {
     const last = prefill && state.matches.length ? state.matches[state.matches.length - 1] : null;
     const me = meePlayer();
-    const disc = last ? (last.discipline === "doubles" ? "doubles" : "singles") : "singles";
+    const disc = last ? normDiscipline(last.discipline) : "singles";
     const d = {
       id: null,
       discipline: disc,
@@ -1077,7 +1096,7 @@ Object.assign(EN, {
     if (!m) return;
     const d = {
       id: m.id,
-      discipline: m.discipline === "doubles" ? "doubles" : "singles",
+      discipline: normDiscipline(m.discipline),
       targetScore: m.targetScore || defaultTarget(m.discipline),
       sideA: ((m.sideA && m.sideA.playerIds) || []).slice(),
       sideB: ((m.sideB && m.sideB.playerIds) || []).slice(),
@@ -1371,12 +1390,18 @@ Object.assign(EN, {
     if (!d) return;
 
     if (act === "disc") {
-      const v = btn.dataset.v === "doubles" ? "doubles" : "singles";
-      if (v === d.discipline) return;
+      const v = normDiscipline(btn.dataset.v);
+      if (v === normDiscipline(d.discipline)) return;
+      const wasSingles = normDiscipline(d.discipline) === "singles";
       d.discipline = v;
-      d.targetScore = defaultTarget(v);
+      /* Doppel ⇄ Mixed keeps the pairing and the target — only the shape
+         change to or from singles resets them. */
+      if (wasSingles !== (v === "singles")) d.targetScore = defaultTarget(v);
       normalizeSlots(d);
       state.activeSlot = firstEmptySlot(d);
+      /* the slot that was being typed into may not exist any more */
+      state.pickOpen = null;
+      state.pickQuery = "";
       saveDraftLocal(); renderEditor();
       return;
     }

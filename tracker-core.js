@@ -364,8 +364,8 @@ const MT = (function () {
   function matchDoc(match, ctx, owner) {
     const m = match || {};
     const sideA = side(m.sideA), sideB = side(m.sideB);
-    const discipline = m.discipline === "doubles" ? "doubles" : "singles";
-    const targetScore = Number(m.targetScore) || (discipline === "doubles" ? 21 : 11);
+    const discipline = (m.discipline === "doubles" || m.discipline === "mixed") ? m.discipline : "singles";
+    const targetScore = Number(m.targetScore) || (discipline === "singles" ? 11 : 21);
     const games = (Array.isArray(m.games) ? m.games : []).map(g => ({
       a: Math.max(0, Number(g && g.a) || 0),
       b: Math.max(0, Number(g && g.b) || 0),

@@ -37,6 +37,8 @@
       /* filters */
       "Einzel": "Singles",
       "Doppel": "Doubles",
+      /* "GD" -> "XD" is already in app.js's EN map; do not redeclare it here */
+      "Mixed": "Mixed",
       "Training": "Training",
       "Turnier": "Tournament",
       "Disziplin": "Discipline",
@@ -221,7 +223,24 @@
   }
 
   /** Spec default when a match has no explicit targetScore. Mirrors the entry view. */
-  function defaultTarget(discipline) { return discipline === "doubles" ? 21 : 11; }
+  /* Two players a side play to 21, singles to 11. An unknown/missing discipline
+     keeps the old 11 fallback rather than silently changing on malformed docs. */
+  function defaultTarget(discipline) {
+    return (discipline === "doubles" || discipline === "mixed") ? 21 : 11;
+  }
+
+  /* Chip text: literal for singles/doubles, the app-wide GD/XD abbreviation for mixed. */
+  function discAbbr(discipline) {
+    if (discipline === "singles") return "1v1";
+    if (discipline === "mixed") return T("GD");
+    return "2v2";
+  }
+
+  function discName(discipline) {
+    if (discipline === "singles") return T("Einzel");
+    if (discipline === "mixed") return T("Mixed");
+    return T("Doppel");
+  }
 
   /** Prefer the core helper so history and entry can never disagree on a game. */
   function gameWinnerOf(game, target) {
@@ -429,7 +448,8 @@
     var f = state.filters;
 
     var disc = opt("singles", T("Einzel"), f.discipline) +
-               opt("doubles", T("Doppel"), f.discipline);
+               opt("doubles", T("Doppel"), f.discipline) +
+               opt("mixed", T("Mixed"), f.discipline);
 
     var typ = opt("training", T("Training"), f.type) +
               opt("tournament", T("Turnier"), f.type);
@@ -565,11 +585,11 @@
   }
 
   function leadCol(match, showDate) {
-    var disc = match.discipline === "singles" ? "1v1" : "2v2";
-    var discLabel = match.discipline === "singles" ? T("Einzel") : T("Doppel");
+    var disc = discAbbr(match.discipline);
+    var discLabel = discName(match.discipline);
     var venue = match.locationName || "";
     return '<div class="mth-lead">' +
-      '<span class="mth-disc" title="' + ESC(discLabel) + '" aria-label="' + ESC(discLabel) + '">' + disc + "</span>" +
+      '<span class="mth-disc" title="' + ESC(discLabel) + '" aria-label="' + ESC(discLabel) + '">' + ESC(disc) + "</span>" +
       (showDate ? '<span class="mth-rowdate">' + ESC(rowDate(match.dateKey)) + "</span>" : "") +
       (venue ? '<span class="mth-loc" title="' + ESC(venue) + '">' + ESC(venue) + "</span>" : "") +
     "</div>";

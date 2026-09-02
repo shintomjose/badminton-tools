@@ -32,6 +32,7 @@
       "Turnier": "Tournament",
       "Einzel": "Singles",
       "Doppel": "Doubles",
+      "Mixed": "Mixed",         /* abbreviation "GD" -> "XD" already lives in app.js */
       "Spiele": "Matches",
       "Spiel": "Match",
       "Bilanz": "Record",
@@ -212,7 +213,7 @@
   function aggregate(matches, meId, type) {
     var out = {
       n: 0,
-      total: blank(), singles: blank(), doubles: blank(),
+      total: blank(), singles: blank(), doubles: blank(), mixed: blank(),
       seq: [],                                  // date desc, true = win
       day: new Map(), week: new Map(), year: new Map(),
       partners: new Map(), opponents: new Map()
@@ -230,13 +231,15 @@
       if (!mine) continue;
 
       var won = m.winnerSide === mine;
-      var isDoubles = m.discipline === "doubles";
+      var disc = m.discipline;
       var mySide = mine === "A" ? A : B;
       var oppSide = mine === "A" ? B : A;
 
       out.n++;
       bump(out.total, won);
-      bump(isDoubles ? out.doubles : out.singles, won);
+      // Three disciplines, each its own story. Anything unrecognised falls in
+      // with doubles so that singles + doubles + mixed always equals total.
+      bump(disc === "singles" ? out.singles : disc === "mixed" ? out.mixed : out.doubles, won);
       out.seq.push(won);
 
       var d = toDate(m.date);
@@ -249,12 +252,16 @@
       bumpKey(out.week, wkKey, won);
       bumpKey(out.year, yrKey, won);
 
-      if (isDoubles) {
-        var pIds = mySide.playerIds || [], pNames = mySide.playerNames || mySide.names || [];
+      // A partner is whoever else stands on my side of a 2v2 — doubles OR mixed.
+      // Keyed off the actual side size rather than the discipline string, so any
+      // future 2v2 format is covered without another branch here.
+      var pIds = mySide.playerIds || [], pNames = mySide.playerNames || mySide.names || [];
+      if (pIds.length > 1) {
         for (var j = 0; j < pIds.length; j++) {
           if (pIds[j] !== meId) bumpPerson(out.partners, pIds[j], pNames[j], won);
         }
       }
+      // Opponents already span every discipline — singles, doubles and mixed alike.
       var oIds = oppSide.playerIds || [], oNames = oppSide.playerNames || oppSide.names || [];
       for (var k = 0; k < oIds.length; k++) bumpPerson(out.opponents, oIds[k], oNames[k], won);
     }
@@ -277,9 +284,10 @@
     var n = agg.total.w + agg.total.l;
     return '<section class="mts-card">' +
       '<h3 class="mts-h">' + H(t("Bilanz")) + "</h3>" +
-      '<div class="mts-split">' +
+      '<div class="mts-split mts-split-3">' +
         discTile("Einzel", agg.singles) +
         discTile("Doppel", agg.doubles) +
+        discTile("Mixed", agg.mixed) +
       "</div>" +
       '<p class="mts-combined">' +
         H(tt("Zusammen: {0} Spiele · {1}–{2}", n, agg.total.w, agg.total.l)) +

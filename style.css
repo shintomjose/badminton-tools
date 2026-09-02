@@ -1339,6 +1339,15 @@
     .mt-sticky { bottom: calc(96px + env(safe-area-inset-bottom)); }
   }
 
+  /* Three disciplines plus three target scores no longer fit one phone row:
+     give each group its own full-width row with equal, still 44px-tall keys
+     rather than letting them shrink below the thumb. */
+  @media (max-width: 480px) {
+    .mt-opt-row { gap: 8px; }
+    .mt-opt-row .mt-toggle { flex: 1 1 100%; }
+    .mt-opt-row .mt-toggle button { flex: 1 1 0; min-width: 0; padding: 8px 6px; }
+  }
+
   /* --- Turnier-Modus: Tagesangaben einmalig, Spielangaben kompakt ---
      Deliberately quiet: the tournament flow reuses the training card and
      only adds a labelled-field pattern on top of it. */

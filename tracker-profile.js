@@ -50,6 +50,10 @@
     "Turnier": "Tournament",
     "Einzel": "Singles",
     "Doppel": "Doubles",
+    /* Mixed reads the same in both languages; listed so the set stays auditable.
+       The abbreviation "GD" -> "XD" is already registered by app.js — do not
+       redefine it here or the two maps could drift apart. */
+    "Mixed": "Mixed",
     "Gesamt": "Total",
     "Keine gewerteten Spiele": "No counted matches",
     "Laufende und abgebrochene Spiele zählen nicht in die Bilanz.":
@@ -366,8 +370,8 @@
 
   function buildRecords(matches, playerId) {
     var out = {
-      training: { total: emptyRec(), singles: emptyRec(), doubles: emptyRec(), seen: 0 },
-      tournament: { total: emptyRec(), singles: emptyRec(), doubles: emptyRec(), seen: 0 },
+      training: { total: emptyRec(), singles: emptyRec(), doubles: emptyRec(), mixed: emptyRec(), seen: 0 },
+      tournament: { total: emptyRec(), singles: emptyRec(), doubles: emptyRec(), mixed: emptyRec(), seen: 0 },
       openCount: 0,
     };
     matches.forEach(function (m) {
@@ -380,6 +384,9 @@
       addRec(bucket.total, won);
       if (m.discipline === "singles") addRec(bucket.singles, won);
       else if (m.discipline === "doubles") addRec(bucket.doubles, won);
+      else if (m.discipline === "mixed") addRec(bucket.mixed, won);
+      /* An unknown discipline still counts toward the total — better a correct
+         total with a missing split than a silently dropped match. */
     });
     return out;
   }
@@ -443,6 +450,7 @@
     var rows = statRowHtml(T("Gesamt"), bucket.total);
     if (bucket.singles.n) rows += statRowHtml(T("Einzel"), bucket.singles);
     if (bucket.doubles.n) rows += statRowHtml(T("Doppel"), bucket.doubles);
+    if (bucket.mixed.n) rows += statRowHtml(T("Mixed"), bucket.mixed);
     if (!bucket.total.n) rows = '<p class="mtp-note">' + E(T("Keine gewerteten Spiele")) + "</p>";
     return (
       '<div class="mtp-block">' +
@@ -494,12 +502,20 @@
     }).join("");
   }
 
+  /* Per-row discipline label. Mixed uses the app-wide abbreviation t("GD")
+     (EN "XD"); .mtp-m-disc uppercases all three, so the registers match. */
+  function discLabel(discipline) {
+    if (discipline === "singles") return T("Einzel");
+    if (discipline === "mixed") return T("GD");
+    return T("Doppel");
+  }
+
   function matchRowHtml(match, playerId) {
     var counted = isCounted(match);
     var mySide = sideOf(match, playerId);
     var metaBits =
       '<span class="mtp-m-date">' + E(fmtDate(match.date)) + "</span>" +
-      '<span class="mtp-m-disc">' + E(match.discipline === "singles" ? T("Einzel") : T("Doppel")) + "</span>";
+      '<span class="mtp-m-disc">' + E(discLabel(match.discipline)) + "</span>";
     if (match.type === "tournament") {
       var tname = match.tournament && match.tournament.name ? match.tournament.name : T("Turnier");
       metaBits += '<span class="mtp-badge mtp-badge-tour">' + E(tname) + "</span>";

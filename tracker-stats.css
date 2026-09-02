@@ -14,7 +14,19 @@
   align-items: flex-end;
   margin-bottom: 16px;
 }
-.mts-seg { margin: 2px 0 0; flex: 0 1 auto; }
+/* The button labels are nowrap, so without min-width:0 the strip cannot shrink
+   below its content width — it would widen <body> and push every card past the
+   viewport on a narrow phone. Scroll the strip instead, matching the
+   affordance the app's main .tabs bar already uses. */
+.mts-seg {
+  margin: 2px 0 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.mts-seg::-webkit-scrollbar { display: none; }
 
 /* the type toggle is the primary scope switch — give it more weight */
 .mts-bar-top .mts-seg:first-child button { font-size: 1.05rem; }
@@ -36,7 +48,7 @@
 /* ---------- cards ---------------------------------------------------- */
 .mts-body {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);   /* minmax(0,…) so a wide child cannot blow out the grid */
   gap: 16px;
   align-items: start;
 }
@@ -84,9 +96,13 @@
 /* ---------- totals: singles / doubles side by side ------------------- */
 .mts-split {
   display: grid;
-  grid-template-columns: 1fr 1fr;   /* stays 2-up on phones — the comparison is the point */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
+/* Einzel / Doppel / Mixed stay side by side on phones — comparing the three
+   records at a glance is the whole point of this section, so they compact
+   rather than stack. minmax(0,…) keeps a long value from forcing overflow. */
+.mts-split-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .mts-tile {
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -119,6 +135,27 @@
   margin-bottom: 8px;
 }
 .mts-tile-row { margin-top: 3px; }
+
+/* Narrow phones: tighten the three-up tiles instead of stacking them.
+   At a 360px viewport this leaves ~77px of content per tile, which fits the
+   widest realistic value ("100 % (34)") with room to spare. */
+@media (max-width: 460px) {
+  .mts-split-3 { gap: 6px; }
+  .mts-split-3 .mts-tile { padding: 8px 8px 10px; }
+  .mts-split-3 .mts-tile-head { font-size: 0.74rem; letter-spacing: 0.05em; }
+  .mts-split-3 .mts-tile-num { font-size: clamp(1.75rem, 1rem + 5vw, 2.6rem); }
+  .mts-split-3 .mts-tile-unit { font-size: 0.7em; }
+  .mts-split-3 .mts-wl { font-size: 1.02em; }
+  .mts-split-3 .mts-pct { font-size: 0.82em; }
+}
+/* Very small phones (~320px): the widest realistic value is a percentage with a
+   three-digit count ("55 % (231)"). Trim padding and the percentage a touch more
+   so it keeps a real margin instead of sitting a pixel from the edge. */
+@media (max-width: 360px) {
+  .mts-split-3 .mts-tile { padding: 7px 6px 9px; }
+  .mts-split-3 .mts-tile-head { letter-spacing: 0.02em; }
+  .mts-split-3 .mts-pct { font-size: 0.76em; }
+}
 
 .mts-combined {
   color: var(--text-muted);
