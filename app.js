@@ -172,7 +172,7 @@ const STATIC_EN_ATTR = [
 ];
 function applyStaticEn() {
   if (LANG !== "en") return;
-  document.title = "Badminton Tools — TSG - Heilbronn";
+  document.title = "Badminton Tools — TSG Heilbronn";
   STATIC_EN.forEach(([sel, txt]) => {
     const el = document.querySelector(sel);
     if (el) el.textContent = txt;
