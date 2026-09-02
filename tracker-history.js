@@ -72,6 +72,10 @@
       "{0} Spiele": "{0} matches",
       "1 Spiel": "1 match",
       "Spiel {0}": "Match {0}",
+      /* identical to the entry view's reorder keys */
+      "Reihenfolge ändern": "Reorder",
+      "Spiel {0} nach oben": "Move match {0} up",
+      "Spiel {0} nach unten": "Move match {0} down",
       "{0} % ({1})": "{0}% ({1})",
       /* identical to the entry view's keys so both tabs read the same */
       "Spiele {0}–{1}": "Matches {0}–{1}",
@@ -144,6 +148,9 @@
   var pendingDelete = null;   // match id armed for the second delete tap
   var pendingBtn = null;
   var pendingTimer = null;
+  var dayPos = Object.create(null);   // match id -> { pos, total, day }, per render
+  var dragId = null;                  // id of the row being dragged
+  var dragDay = null;                 // its dateKey — drops outside it are rejected
 
   /* ================= date helpers (display + range plumbing) ================= */
 
@@ -585,13 +592,15 @@
     return "";
   }
 
-  function leadCol(match, showDate) {
+  function leadCol(match, showDate, canOrder) {
     var disc = discAbbr(match.discipline);
     var discLabel = discName(match.discipline);
     var venue = match.locationName || "";
     var seq = seqOf(match);
     return '<div class="mth-lead">' +
       '<div class="mth-leadtop">' +
+        // Desktop drag handle; hidden on touch, where the ▲/▼ nudges are the path.
+        (canOrder ? '<span class="mth-grip" aria-hidden="true" title="' + ESC(T("Reihenfolge ändern")) + '">⠿</span>' : "") +
         '<span class="mth-disc" title="' + ESC(discLabel) + '" aria-label="' + ESC(discLabel) + '">' + ESC(disc) + "</span>" +
         // Read-only reflection of the entry view's manual order; legacy docs show none.
         (seq !== null
@@ -603,8 +612,22 @@
     "</div>";
   }
 
-  function rowActions(match) {
+  /* The nudges join the actions cluster rather than the 92px lead column: that
+     column is already carrying grip + chip + serial + date + venue, and two more
+     44px targets would not fit without widening every row. */
+  function rowActions(match, pos, canOrder) {
+    var no = pos.pos + 1;
     return '<div class="mth-rowacts">' +
+      (canOrder
+        ? '<span class="mth-nudge">' +
+            '<button type="button" class="mth-move" data-act="moveup" data-id="' + ESC(match.id) + '"' +
+              (pos.pos === 0 ? " disabled" : "") +
+              ' aria-label="' + ESC(TT("Spiel {0} nach oben", no)) + '">▲</button>' +
+            '<button type="button" class="mth-move" data-act="movedown" data-id="' + ESC(match.id) + '"' +
+              (pos.pos === pos.total - 1 ? " disabled" : "") +
+              ' aria-label="' + ESC(TT("Spiel {0} nach unten", no)) + '">▼</button>' +
+          "</span>"
+        : "") +
       '<button type="button" class="mth-editbtn" data-act="edit" data-id="' + ESC(match.id) + '">' +
         ESC(T("Bearbeiten")) + "</button>" +
       '<button type="button" class="mth-del" data-act="del" data-id="' + ESC(match.id) + '">' +
@@ -616,12 +639,15 @@
   function renderMatch(match, showDate) {
     var isEditing = !!(editing && editing.id === match.id);
     var score = scoreText(match);
+    var pos = dayPos[match.id] || { pos: 0, total: 1, day: match.dateKey || "" };
+    // A one-match day has nothing to reorder, and an open editor owns the row.
+    var canOrder = reorderEnabled() && pos.total > 1 && !isEditing;
 
     // Editing drops the ledger grid entirely and stacks: context line, then the form.
     if (isEditing) {
       return '<article class="mth-row editing" data-mid="' + ESC(match.id) + '">' +
         '<div class="mth-editctx">' +
-          leadCol(match, true) +
+          leadCol(match, true, false) +
           '<div class="mth-editnames">' +
             ESC(sideNames(match, "A").join(" / ")) +
             '<span class="mth-vs-lite"> vs </span>' +
@@ -639,8 +665,10 @@
     }
     var cap = verdict(match);
 
-    return '<article class="mth-row" data-mid="' + ESC(match.id) + '">' +
-      leadCol(match, showDate) +
+    return '<article class="mth-row" data-mid="' + ESC(match.id) + '"' +
+        ' data-day="' + ESC(pos.day) + '" data-pos="' + pos.pos + '"' +
+        (canOrder ? ' draggable="true"' : "") + ">" +
+      leadCol(match, showDate, canOrder) +
       teamBlock(match, "A", match.winnerSide) +
       '<div class="mth-score">' +
         '<div class="mth-games">' +
@@ -649,7 +677,7 @@
         ((cap || trn) ? '<div class="mth-cap">' + cap + trn + "</div>" : "") +
       "</div>" +
       teamBlock(match, "B", match.winnerSide) +
-      rowActions(match) +
+      rowActions(match, pos, canOrder) +
     "</article>";
   }
 
@@ -686,6 +714,10 @@
     // Defaults are decided on the unfiltered set so filtering never silently
     // reopens or recloses a group the user has already toggled.
     applyDefaultExpansion(mode, groupFlat(source, mode));
+
+    // Positions come from the UNFILTERED pool so "first/last of the day" — and
+    // therefore the disabled nudges — reflect the real day, not the view.
+    dayPos = buildDayPos(source);
 
     var showDate = !isRange;                       // range groups by day already
     var out = [];
@@ -727,6 +759,10 @@
       var host = root.querySelector(".mth");
       host.addEventListener("click", onClick);
       host.addEventListener("change", onChange);
+      host.addEventListener("dragstart", onDragStart);
+      host.addEventListener("dragend", onDragEnd);
+      host.addEventListener("dragover", onDragOver);
+      host.addEventListener("drop", onDrop);
     }
     root.querySelector(".mth-modebar").innerHTML = renderModes();
     root.querySelector(".mth-filterbar").innerHTML = renderRangeBar() + renderFilters();
@@ -736,6 +772,69 @@
   }
 
   /* ================= interaction ================= */
+
+  /* ---------- drag to reorder (desktop; touch uses the ▲/▼ nudges) ---------- */
+
+  function rowUnder(e) {
+    return (e.target && typeof e.target.closest === "function")
+      ? e.target.closest("article.mth-row") : null;
+  }
+
+  function clearDropMarks() {
+    if (!listEl) return;
+    var marked = listEl.querySelectorAll(".drop-above,.drop-below");
+    for (var i = 0; i < marked.length; i++) marked[i].classList.remove("drop-above", "drop-below");
+  }
+
+  function onDragStart(e) {
+    var row = rowUnder(e);
+    if (!row || !row.getAttribute("draggable")) return;
+    // a drag must start on the row surface, never on one of its controls
+    if (e.target.closest && e.target.closest("button")) { e.preventDefault(); return; }
+    dragId = row.dataset.mid;
+    dragDay = row.dataset.day;
+    row.classList.add("dragging");
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+      try { e.dataTransfer.setData("text/plain", dragId); } catch (err) {}
+    }
+  }
+
+  function onDragEnd() {
+    dragId = null;
+    dragDay = null;
+    if (listEl) {
+      var d = listEl.querySelectorAll(".dragging");
+      for (var i = 0; i < d.length; i++) d[i].classList.remove("dragging");
+    }
+    clearDropMarks();
+  }
+
+  function onDragOver(e) {
+    if (!dragId) return;
+    var row = rowUnder(e);
+    if (!row) return;
+    clearDropMarks();
+    // No drop affordance outside the source row's day — reordering is intra-day.
+    if (row.dataset.day !== dragDay) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+    var rect = row.getBoundingClientRect();
+    row.classList.add(e.clientY > rect.top + rect.height / 2 ? "drop-below" : "drop-above");
+  }
+
+  function onDrop(e) {
+    if (!dragId) return;
+    var row = rowUnder(e);
+    if (!row) return;
+    e.preventDefault();
+    var id = dragId, day = dragDay;
+    if (row.dataset.day !== day) { onDragEnd(); return; }   // cross-day drop: no-op
+    var rect = row.getBoundingClientRect();
+    var pos = Number(row.dataset.pos) + (e.clientY > rect.top + rect.height / 2 ? 1 : 0);
+    onDragEnd();
+    dropMatch(id, day, pos);
+  }
 
   function clearPending(skipRestore) {
     if (pendingTimer) { clearTimeout(pendingTimer); pendingTimer = null; }
@@ -865,6 +964,9 @@
       return;
     }
 
+    if (act === "moveup") { moveMatch(btn.dataset.id, -1); return; }
+    if (act === "movedown") { moveMatch(btn.dataset.id, 1); return; }
+
     if (act === "save") { saveScores(btn.dataset.id); return; }
 
     if (act === "del") {
@@ -959,6 +1061,94 @@
   function seqOf(m) {
     var v = Number(m && m.seq);
     return isFinite(v) && v > 0 ? v : null;
+  }
+
+  /* ================= manual reordering (within one day only) =================
+     Same idiom as the entry view: ▲/▼ nudges are the touch path, HTML5 drag is
+     the desktop convenience. A reorder renumbers that day 1..n, so the
+     "numbered before unnumbered" fallback collapses for that day on first use —
+     exactly what entry does. Reordering never crosses a dateKey boundary. */
+
+  function activePool() {
+    return state.mode === "range" ? (state.range.matches || []) : state.matches;
+  }
+
+  /** id -> { pos, total, day } computed per day over the UNFILTERED pool. */
+  function buildDayPos(pool) {
+    var byDay = Object.create(null), map = Object.create(null);
+    pool.forEach(function (m) {
+      var dk = m.dateKey || "";
+      (byDay[dk] || (byDay[dk] = [])).push(m.id);
+    });
+    Object.keys(byDay).forEach(function (dk) {
+      var arr = byDay[dk];
+      arr.forEach(function (id, i) { map[id] = { pos: i, total: arr.length, day: dk }; });
+    });
+    return map;
+  }
+
+  /**
+   * Reordering is offered only on an unfiltered list. With a filter on, a nudge
+   * would swap the row past a hidden neighbour: the seq changes but the visible
+   * position does not, which reads as a broken button. Better to withhold the
+   * control than to ship a move that looks like it did nothing.
+   */
+  function reorderEnabled() { return !filtersActive(); }
+
+  function dayIdsOf(dateKey) {
+    return activePool()
+      .filter(function (m) { return (m.dateKey || "") === dateKey; })
+      .map(function (m) { return m.id; });
+  }
+
+  function resortPools() {
+    state.matches = sortDesc(state.matches);
+    if (state.range.matches) state.range.matches = sortDesc(state.range.matches);
+  }
+
+  /** Renumber one day 1..n; write only the docs whose number actually moved. */
+  function applyOrder(ids) {
+    var writes = 0;
+    ids.forEach(function (id, idx) {
+      var m = findMatch(id);
+      if (!m) return;
+      var want = idx + 1;
+      if (seqOf(m) === want) return;
+      applyToAll(id, function (x) { x.seq = want; });      // optimistic, both pools
+      writes++;
+      Promise.resolve(MT.repo.updateMatch(id, { seq: want })).catch(function (err) {
+        MT.toastError(err, "Speichern fehlgeschlagen");
+      });
+    });
+    if (writes) { resortPools(); render(); }
+    return writes;
+  }
+
+  function moveMatch(id, delta) {
+    if (!reorderEnabled()) return;
+    var m = findMatch(id);
+    if (!m) return;
+    var ids = dayIdsOf(m.dateKey || "");
+    var from = ids.indexOf(id);
+    var to = from + delta;
+    if (from < 0 || to < 0 || to >= ids.length) return;
+    ids.splice(to, 0, ids.splice(from, 1)[0]);
+    applyOrder(ids);
+  }
+
+  /** Drop `id` at position `pos` within `dateKey`. A different day is a no-op. */
+  function dropMatch(id, dateKey, pos) {
+    if (!reorderEnabled()) return;
+    var m = findMatch(id);
+    if (!m || (m.dateKey || "") !== dateKey) return;       // never reorder across days
+    var ids = dayIdsOf(dateKey);
+    var from = ids.indexOf(id);
+    if (from < 0) return;
+    var to = pos;
+    if (to > from) to--;                                   // removing the source shifts the target
+    if (to === from || to < 0 || to > ids.length) return;
+    ids.splice(to, 0, ids.splice(from, 1)[0]);
+    applyOrder(ids);
   }
 
   function sortDesc(list) {

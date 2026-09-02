@@ -148,6 +148,17 @@ button.mth-reset { flex: 0 0 auto; }
 /* left column */
 .mth-lead { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
 .mth-leadtop { display: flex; align-items: center; gap: 5px; min-width: 0; }
+/* desktop drag handle; the ▲/▼ nudges are the touch path (hidden below 560px) */
+.mth-grip {
+  color: var(--text-muted);
+  font-size: 0.9em; line-height: 1;
+  cursor: grab;
+  flex: 0 0 auto;
+}
+.mth-row.dragging { opacity: 0.4; }
+.mth-row.dragging .mth-grip { cursor: grabbing; }
+.mth-row.drop-above { box-shadow: inset 0 3px 0 0 var(--brand-teal); }
+.mth-row.drop-below { box-shadow: inset 0 -3px 0 0 var(--brand-teal); }
 /* read-only serial from the entry view's manual per-day order */
 .mth-seq {
   font-family: var(--font-disp);
@@ -231,6 +242,18 @@ button.mth-reset { flex: 0 0 auto; }
 
 /* right-hand actions */
 .mth-rowacts { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+.mth-nudge { display: flex; gap: 2px; margin-right: 2px; }
+.mth-move {
+  font: inherit; font-size: 0.72em; line-height: 1;
+  cursor: pointer;
+  width: 30px; min-height: 36px; padding: 0;
+  background: transparent; color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+.mth-move:hover:not([disabled]) { background: var(--row-hover); color: var(--text-strong); }
+.mth-move:focus-visible { outline: none; box-shadow: var(--ring); }
+.mth-move[disabled] { opacity: 0.3; cursor: not-allowed; }
 .mth-editbtn, .mth-del {
   font: inherit; font-size: 0.8em;
   cursor: pointer;
@@ -332,17 +355,23 @@ button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
        [chip · date · venue ................ edit  delete]
        [    side A     |  score  |     side B        ]
      Names wrap rather than truncate, so nothing needs horizontal scroll. */
+  /* Three lines here, not two: the ▲/▼ nudges add two more 44px targets, and
+     lead + 4 controls cannot share one line at 360px without scrolling. */
   .mth-row {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     grid-template-areas:
-      "lead  lead  acts"
-      "teama score teamb";
+      "lead  lead  lead"
+      "teama score teamb"
+      "acts  acts  acts";
     align-items: start;
     gap: 8px;
     padding: 12px 2px;
   }
   .mth-lead   { grid-area: lead; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 6px; }
-  .mth-rowacts{ grid-area: acts; justify-content: flex-end; }
+  .mth-rowacts{ grid-area: acts; justify-content: flex-end; flex-wrap: wrap; }
+  /* HTML5 drag never fires on touch — nudges only */
+  .mth-grip { display: none; }
+  .mth-move { width: 44px; min-height: 44px; font-size: 0.8em; }
   .mth-team-a { grid-area: teama; }
   .mth-score  { grid-area: score; min-width: 0; }
   .mth-team-b { grid-area: teamb; }
