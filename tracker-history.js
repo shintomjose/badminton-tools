@@ -71,6 +71,7 @@
       "KW {0}": "Week {0}",
       "{0} Spiele": "{0} matches",
       "1 Spiel": "1 match",
+      "Spiel {0}": "Match {0}",
       "{0} % ({1})": "{0}% ({1})",
       /* identical to the entry view's keys so both tabs read the same */
       "Spiele {0}–{1}": "Matches {0}–{1}",
@@ -588,8 +589,15 @@
     var disc = discAbbr(match.discipline);
     var discLabel = discName(match.discipline);
     var venue = match.locationName || "";
+    var seq = seqOf(match);
     return '<div class="mth-lead">' +
-      '<span class="mth-disc" title="' + ESC(discLabel) + '" aria-label="' + ESC(discLabel) + '">' + ESC(disc) + "</span>" +
+      '<div class="mth-leadtop">' +
+        '<span class="mth-disc" title="' + ESC(discLabel) + '" aria-label="' + ESC(discLabel) + '">' + ESC(disc) + "</span>" +
+        // Read-only reflection of the entry view's manual order; legacy docs show none.
+        (seq !== null
+          ? '<span class="mth-seq" title="' + ESC(TT("Spiel {0}", seq)) + '">#' + seq + "</span>"
+          : "") +
+      "</div>" +
       (showDate ? '<span class="mth-rowdate">' + ESC(rowDate(match.dateKey)) + "</span>" : "") +
       (venue ? '<span class="mth-loc" title="' + ESC(venue) + '">' + ESC(venue) + "</span>" : "") +
     "</div>";
@@ -941,12 +949,30 @@
 
   /* ================= data loading (one-time reads only, never onSnapshot) ================= */
 
+  /**
+   * Days stay newest-first, but WITHIN one day the rows follow the manual order
+   * the entry view writes: numeric `seq` ascending (Spiel 1 first), then legacy
+   * documents that have no seq, in the order the repo handed them over.
+   * seqOf mirrors the entry view's version exactly — the `v > 0` guard is what
+   * turns undefined/null/"" on legacy docs into "unnumbered" rather than 0.
+   */
+  function seqOf(m) {
+    var v = Number(m && m.seq);
+    return isFinite(v) && v > 0 ? v : null;
+  }
+
   function sortDesc(list) {
-    return list.slice().sort(function (a, b) {
-      var ak = a.dateKey || "", bk = b.dateKey || "";
-      if (ak !== bk) return ak < bk ? 1 : -1;
-      return 0;
-    });
+    return list
+      .map(function (m, i) { return { m: m, i: i, s: seqOf(m) }; })
+      .sort(function (a, b) {
+        var ak = a.m.dateKey || "", bk = b.m.dateKey || "";
+        if (ak !== bk) return ak < bk ? 1 : -1;        // days: newest first
+        if (a.s !== null && b.s !== null) return a.s - b.s || a.i - b.i;
+        if (a.s !== null) return -1;                   // numbered before unnumbered
+        if (b.s !== null) return 1;
+        return a.i - b.i;                              // both legacy: keep incoming order
+      })
+      .map(function (x) { return x.m; });
   }
 
   function loadInitial() {
