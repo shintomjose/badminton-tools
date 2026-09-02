@@ -416,6 +416,10 @@
   }
   .badge-ha.h { background: color-mix(in srgb, var(--brand-teal) 22%, transparent); color: var(--teal-ink); }
   .badge-ha.a { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+  /* #avStatus is float:right inside the heading; without containment the escaped
+     float makes .avail-scroll (a BFC via overflow-x) shrink sideways and squeeze
+     the table. flow-root keeps the float inside the heading. */
+  #avPanel > h2 { display: flow-root; }
   #tab-termine .avail-scroll { overflow-x: auto; }
   .avail-table { border-collapse: collapse; width: 100%; }
   .avail-table th, .avail-table td {
