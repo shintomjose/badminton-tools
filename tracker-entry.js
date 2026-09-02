@@ -116,7 +116,8 @@ Object.assign(EN, {
   /* --- day-wise totals ---
      Percentage keys mirror tracker-stats.js verbatim so both views read the
      same; assigning an identical value twice is harmless. */
-  "Bilanz der letzten Tage": "Last few days",
+  /* not "the last few days" — a row can be weeks old if that is when you last played */
+  "Letzte Spieltage": "Last match days",
   "Noch keine Spiele erfasst": "No matches logged yet",
   "Bilanz nicht ladbar": "Record could not be loaded",
   "{0} % ({1})": "{0}% ({1})",
@@ -133,8 +134,10 @@ Object.assign(EN, {
   const RECENT_DAYS = 90;
   const MAX_SCORE = 30;
   const SUGGEST_MAX = 8;     // rows in the type-ahead dropdown
-  const SUMMARY_DAYS = 14;   // look-back window for the day-wise totals
-  const SUMMARY_ROWS = 5;    // today + the last few days with play
+  /* Current form is "the last days I actually played", not "the days I played
+     inside the last fortnight" — a fortnight off would empty the panel. */
+  const SUMMARY_DAYS = 90;   // look-back window for the day-wise totals
+  const SUMMARY_ROWS = 5;    // how many play days to show
   const SMALL_N = 5;         // below this a percentage is flagged as thin evidence
   /* Stored verbatim on the match — the codes are the data, t() only labels them. */
   const ROUNDS = ["Gruppe", "R32", "R16", "VF", "HF", "Finale"];
@@ -375,13 +378,15 @@ Object.assign(EN, {
   }
 
   /* Day-wise totals for the courtside glance. ONE ranged read, no snapshot —
-     today's row is recomputed from the live session so it updates instantly. */
+     today's row is recomputed from the live session so it updates instantly.
+     The window is wide but only the newest few play days are ever rendered;
+     getMatches orders by date desc, so the cap can only drop the oldest. */
   async function loadSummary() {
     const wanted = state.type;
     try {
       const from = new Date();
       from.setDate(from.getDate() - (SUMMARY_DAYS - 1));
-      const list = await MT.repo.getMatches({ from: from, to: new Date(), limit: 500 });
+      const list = await MT.repo.getMatches({ from: from, to: new Date(), limit: 800 });
       if (state.type !== wanted) return;                 // mode switched meanwhile
       state.summary = groupByDay(list.filter(m => m.type === wanted));
       state.summaryError = false;
@@ -447,11 +452,22 @@ Object.assign(EN, {
     return rec;
   }
 
-  /* Today always shows; older days come from the ranged read above. */
+  /* The newest SUMMARY_ROWS days on which there was actually play — every row
+     is a real play day, so a fortnight off shows form rather than blanks.
+     Today only earns a row when it has matches; the header meta already states
+     today's record either way, so an empty row would just cost a slot. */
   function summaryRows() {
     const today = todayRecord();
-    const past = state.summary.filter(r => r.dateKey !== today.dateKey && r.n > 0);
-    return [today].concat(past).slice(0, SUMMARY_ROWS);
+    const rows = state.summary.filter(r => r.dateKey !== today.dateKey && r.n > 0);
+    if (today.n) {
+      rows.unshift(today);                     // live, and always the newest day
+    } else {
+      /* No live session attached yet (first paint, or tournament mode before
+         the day is named) — fall back to what the ranged read saw for today. */
+      const fetched = state.summary.find(r => r.dateKey === today.dateKey && r.n > 0);
+      if (fetched) rows.unshift(fetched);
+    }
+    return rows.slice(0, SUMMARY_ROWS);
   }
 
   function startWatch(session) {
@@ -579,7 +595,8 @@ Object.assign(EN, {
       return '<p class="mt-muted">' + esc(t("Bilanz nicht ladbar")) + "</p>";
     }
     const rows = summaryRows();
-    if (!rows.length || (rows.length === 1 && !rows[0].n)) {
+    /* every row is a real play day now, so "empty" simply means none found */
+    if (!rows.length) {
       return '<p class="mt-muted">' + esc(t("Noch keine Spiele erfasst")) + "</p>";
     }
     const todayKey = MT.keys(new Date()).dateKey;
@@ -627,7 +644,7 @@ Object.assign(EN, {
     if (isTournament() && (!state.session || state.trnEdit)) { host.innerHTML = ""; return; }
     host.innerHTML =
       '<section class="panel mt-summary">' +
-        "<h2>" + esc(t("Bilanz der letzten Tage")) + "</h2>" +
+        "<h2>" + esc(t("Letzte Spieltage")) + "</h2>" +
         summaryHtml() +
       "</section>";
   }
