@@ -67,6 +67,11 @@ const MT = (function () {
   const DEFAULT_LOCATION = "TSG Heilbronn Hall";
   const COL = { sessions: "sessions", matches: "matches", players: "players", locations: "locations" };
   const OWNER_UID_PLACEHOLDER = "PASTE_OWNER_UID_HERE";
+  /* Demo mode (?demo=1): tracker-demo.js swaps the repo for an in-memory copy of
+     demo-data.json. The core only (a) waives the owner/access gate and (b) refuses
+     every Firestore access, so a method the shim forgot to replace fails loudly
+     instead of writing real data. */
+  const DEMO_MODE = /[?&]demo=1(&|$)/.test(location.search);
 
   /* ================= tiny helpers ================= */
   function pad2(n) { return String(n).padStart(2, "0"); }
@@ -241,6 +246,7 @@ const MT = (function () {
     catch (e) { return null; }
   }
   function isOwner() {
+    if (DEMO_MODE) return true;
     const u = currentUser();
     return !!(u && !u.isAnonymous);
   }
@@ -330,6 +336,7 @@ const MT = (function () {
   function docData(d) { const o = d.data() || {}; o.id = d.id; return o; }
 
   async function need() {
+    if (DEMO_MODE) throw Object.assign(new Error("Demo-Modus: kein Datenbankzugriff"), { code: "demo" });
     const r = await ready;
     if (!r.db) throw Object.assign(new Error("Firestore nicht verfügbar"), { code: "unavailable" });
     if (!uid()) throw Object.assign(new Error("Nicht angemeldet"), { code: "unauthenticated" });
@@ -901,6 +908,7 @@ const MT = (function () {
   }
 
   async function checkAccess() {
+    if (DEMO_MODE) { state.access = "ok"; return state.access; }
     if (!state.db || !isOwner()) { state.access = "unknown"; return state.access; }
     try {
       await state.db.collection(COL.players).limit(1).get();
@@ -1075,6 +1083,7 @@ const MT = (function () {
   api.DEFAULT_LOCATION = DEFAULT_LOCATION;
   api.PIN_TIMEOUT_MIN = MT_PIN_TIMEOUT_MIN;
   api.COL = COL;
+  api.DEMO_MODE = DEMO_MODE;
 
   return api;
 })();

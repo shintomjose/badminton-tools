@@ -31,6 +31,7 @@ data sync between them in both directions.
 | `app.js` | i18n (DE default / EN dictionary), theme, tabs, PIN, tabs 1–5 |
 | `tracker-core.js` | Match tracker: Firestore layer, Google owner auth, PIN gate, view registry (`MT`) |
 | `tracker-entry.js` | Match tracker: training entry flow |
+| `tracker-demo.js` / `demo-data.json` | Match tracker demo mode (`?demo=1`): in-memory fixture, nothing persisted |
 | `style.css` | Design tokens and all styling |
 | `sw.js` / `pwa.js` | Service worker and PWA bootstrap |
 | `firestore.rules` | Security rules for the match tracker collections |
@@ -86,6 +87,12 @@ Do these four steps once:
   (`localStorage` keys `mt-pin-unlock` / `mt-pin-last`) and re-locks after 30
   minutes of inactivity (`MT_PIN_TIMEOUT_MIN` in `tracker-core.js`; set
   `MT_PIN_DISABLED = true` there to bypass it during development).
+- **Demo mode for UI work:** open <http://localhost:8010/?demo=1#tracker>. No
+  sign-in needed; `tracker-demo.js` swaps the repository for an in-memory copy
+  of `demo-data.json` (two years of training + tournament matches, one
+  `isMe` player, dummy opponents). Every write stays in memory and is gone on
+  reload — the core refuses all Firestore access while the flag is set, so a
+  repo method the shim does not cover fails loudly instead of persisting.
 - Collections: `sessions`, `matches`, `players`, `locations` — flat and
   top-level, so history and stats can query across everything without
   collection-group queries.
