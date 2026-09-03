@@ -111,6 +111,8 @@ Object.assign(EN, {
   "{0} Spiel": "{0} match",
   "{0} Spiele": "{0} matches",
   "Sätze {0}–{1}": "Sets {0}–{1}",
+  "{0} Sätze": "{0} sets",
+  "1 Satz": "1 set",
   /* abbreviated for the narrow summary rows; the long form rides along as a title */
   "S {0}–{1}": "S {0}–{1}",
   "Spiele {0}–{1}": "Matches {0}–{1}",
@@ -421,12 +423,21 @@ Object.assign(EN, {
   }
 
   function blankRec(dateKey, date) {
-    return { dateKey: dateKey, date: date, n: 0, w: 0, l: 0, sw: 0, sl: 0 };
+    return { dateKey: dateKey, date: date, n: 0, sp: 0, w: 0, l: 0, sw: 0, sl: 0 };
+  }
+
+  /* Every decided game of one match, whoever played it — the volume counterpart
+     to `n`. Undecided or half-entered games are skipped by MT.gameWinner. */
+  function decidedGames(m) {
+    const target = Number(m.targetScore) || defaultTarget(m.discipline);
+    return (Array.isArray(m.games) ? m.games : [])
+      .filter(g => !!MT.gameWinner(g, target)).length;
   }
 
   /* Attribution rules — deliberately the same for matches and for games, so a
      row never mixes two definitions of "played":
-       - every match of the day counts towards `n`, mine or not;
+       - every match of the day counts towards `n`, and every decided game
+         towards `sp`, mine or not;
        - only FINISHED matches I was on court for feed W–L and Sätze. A match
          still in progress contributes nothing beyond `n`, even if its first
          game is already decided;
@@ -436,6 +447,7 @@ Object.assign(EN, {
          undecided or half-entered games are skipped by that function. */
   function tallyDay(rec, m, meId) {
     rec.n++;
+    rec.sp += decidedGames(m);
     if (!meId || m.status !== "finished") return;
     const inA = ((m.sideA && m.sideA.playerIds) || []).indexOf(meId) >= 0;
     const inB = ((m.sideB && m.sideB.playerIds) || []).indexOf(meId) >= 0;
@@ -648,6 +660,10 @@ Object.assign(EN, {
     return n === 1 ? tt("{0} Spiel", n) : tt("{0} Spiele", n);
   }
 
+  function setCountLabel(n) {
+    return n === 1 ? t("1 Satz") : tt("{0} Sätze", n);
+  }
+
   function hasRecord(rec) { return !!(rec.w + rec.l + rec.sw + rec.sl); }
 
   /* App-wide convention: wins green, losses red, separator neutral.
@@ -658,10 +674,12 @@ Object.assign(EN, {
   function lossNum(n) { return '<span class="mt-l">' + (Number(n) || 0) + "</span>"; }
   function wlPair(w, l) { return winNum(w) + "–" + lossNum(l); }
 
-  /* "3 Spiele · 2–1 · Sätze 5–3" — the W–L parts appear only once the isMe
-     player has actually played something that day. Returns HTML. */
+  /* "3 Spiele · 8 Sätze · 2–1 · Sätze 5–3" — the counts are everybody's, the
+     W–L parts appear only once the isMe player has actually played something
+     that day. Returns HTML. */
   function metaTailHtml(rec) {
     const parts = [esc(matchCountLabel(rec.n))];
+    if (rec.sp) parts.push(esc(setCountLabel(rec.sp)));
     if (rec.w + rec.l) parts.push(wlPair(rec.w, rec.l));
     if (rec.sw + rec.sl) parts.push(tt("Sätze {0}–{1}", winNum(rec.sw), lossNum(rec.sl)));
     return parts.join(" · ");
@@ -703,6 +721,7 @@ Object.assign(EN, {
         '<span class="mt-day-date">' + esc(isToday ? t("Heute") : shortDate(r.date)) + "</span>" +
         '<span class="mt-day-stats">' +
           '<span class="mt-day-n">' + esc(matchCountLabel(r.n)) + "</span>" +
+          (r.sp ? '<span class="mt-day-n">' + esc(setCountLabel(r.sp)) + "</span>" : "") +
           (played
             ? '<span class="mt-day-wl" title="' + esc(tt("Spiele {0}–{1}", r.w, r.l)) + '">' +
                 wlPair(r.w, r.l) + "</span>" +
