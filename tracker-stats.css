@@ -147,6 +147,7 @@
   .mts-split-3 .mts-tile-unit { font-size: 0.7em; }
   .mts-split-3 .mts-wl { font-size: 1.02em; }
   .mts-split-3 .mts-pct { font-size: 0.82em; }
+  .mts-split-3 .mts-sets { font-size: 0.72em; }
 }
 /* Very small phones (~320px): the widest realistic value is a percentage with a
    three-digit count ("55 % (231)"). Trim padding and the percentage a touch more
@@ -178,6 +179,16 @@
    day/week/year rows) — the small-sample muting of percentages is a
    separate rule on .mts-pct-weak and is deliberately left untouched. */
 .mts-wl i { color: var(--text-muted); font-style: normal; margin: 0 1px; }
+/* Sets ride one step below the match record: same colour convention, smaller,
+   muted label — a supporting number, not a headline. */
+.mts-sets {
+  font-size: 0.8em;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.mts-sets i { color: var(--text-muted); font-style: normal; margin: 0 1px; }
 .mts-w { color: var(--court-green); }
 .mts-l { color: var(--danger); }
 

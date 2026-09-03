@@ -38,6 +38,8 @@
       "Bilanz": "Record",
       "Siegquote": "Win rate",
       "Zusammen: {0} Spiele · {1}–{2}": "Combined: {0} matches · {1}–{2}",
+      "Sätze {0}–{1}": "Sets {0}–{1}",
+      "Sätze": "Sets",
       "Form": "Form",
       "Aktuelle Serie": "Current streak",
       "Letzte 10": "Last 10",
@@ -177,14 +179,43 @@
            '<i>–</i><b class="mts-l">' + rec.l + "</b></span>";
   }
 
+  /* Sets won-lost. Spelled out rather than abbreviated to "S", which the form
+     badges already use for "Sieg". */
+  function setsHtml(rec) {
+    if (!rec.sw && !rec.sl) return "";
+    return '<span class="mts-sets" title="' + H(tt("Sätze {0}–{1}", rec.sw, rec.sl)) + '">' +
+           H(t("Sätze")) + " " +
+           '<b class="mts-w">' + rec.sw + "</b><i>–</i>" +
+           '<b class="mts-l">' + rec.sl + "</b></span>";
+  }
+
   function nameBtn(id, name) {
     return '<button type="button" class="mts-name" data-pid="' + H(id) + '">' +
            H(name || id) + "</button>";
   }
 
   /* ---------- one-pass aggregation ------------------------------------ */
-  function blank() { return { w: 0, l: 0 }; }
+  function blank() { return { w: 0, l: 0, sw: 0, sl: 0 }; }
   function bump(rec, won) { if (won) rec.w++; else rec.l++; return rec; }
+
+  /* Decided games of one match, split from my side's perspective. Only the
+     discipline tiles and the combined line read sw/sl — the per-day, per-week
+     and per-person maps keep counting matches only. */
+  function setSplit(m, mine) {
+    var target = Number(m.targetScore) || (m.discipline === "singles" ? 11 : 21);
+    var games = Array.isArray(m.games) ? m.games : [];
+    var out = { sw: 0, sl: 0 };
+    for (var i = 0; i < games.length; i++) {
+      var gw = (MT && typeof MT.gameWinner === "function")
+        ? MT.gameWinner(games[i], target)
+        : null;
+      if (!gw) continue;
+      if (gw === mine) out.sw++; else out.sl++;
+    }
+    return out;
+  }
+
+  function bumpSets(rec, ss) { rec.sw += ss.sw; rec.sl += ss.sl; return rec; }
 
   function bumpKey(map, key, won) {
     if (key == null || key === "") return;
@@ -239,7 +270,11 @@
       bump(out.total, won);
       // Three disciplines, each its own story. Anything unrecognised falls in
       // with doubles so that singles + doubles + mixed always equals total.
-      bump(disc === "singles" ? out.singles : disc === "mixed" ? out.mixed : out.doubles, won);
+      var discRec = disc === "singles" ? out.singles : disc === "mixed" ? out.mixed : out.doubles;
+      bump(discRec, won);
+      var ss = setSplit(m, mine);
+      bumpSets(out.total, ss);
+      bumpSets(discRec, ss);
       out.seq.push(won);
 
       var d = toDate(m.date);
@@ -277,6 +312,7 @@
       '<div class="mts-tile-unit">' + H(n === 1 ? t("Spiel") : t("Spiele")) + "</div>" +
       '<div class="mts-tile-row">' + wlHtml(rec) + "</div>" +
       '<div class="mts-tile-row">' + pctHtml(rec.w, n) + "</div>" +
+      (setsHtml(rec) ? '<div class="mts-tile-row">' + setsHtml(rec) + "</div>" : "") +
       "</div>";
   }
 
@@ -292,6 +328,7 @@
       '<p class="mts-combined">' +
         H(tt("Zusammen: {0} Spiele · {1}–{2}", n, agg.total.w, agg.total.l)) +
         " · " + pctHtml(agg.total.w, n) +
+        (setsHtml(agg.total) ? " · " + setsHtml(agg.total) : "") +
       "</p>" +
     "</section>";
   }
