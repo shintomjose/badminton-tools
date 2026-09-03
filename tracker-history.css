@@ -124,6 +124,32 @@ button.mth-reset { flex: 0 0 auto; }
 /* rows carry their own hairline separators, so no gap between them */
 .mth-gbody { display: block; padding: 2px 0 12px; }
 
+/* ---------------- day band inside a group ----------------
+   The rows no longer print their own date; every day of a year/month/week group
+   is one banded block under a date banner. Every other block gets the faint
+   tint, so two adjacent days never blur into one another. */
+.mth-day { padding: 0 8px; border-radius: var(--radius-sm); }
+.mth-day-alt { background: var(--row-hover); }
+
+.mth-dayhead {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 8px 0 5px;
+  border-bottom: 1px solid var(--border);
+}
+.mth-daylabel {
+  font-family: var(--font-disp);
+  font-size: 0.82rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex: 1 1 auto; min-width: 0;
+}
+.mth-daycount {
+  font-size: 0.74em; color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+
 /* ---------------- match card ---------------- */
 /* ---------------- match row: scoreboard ledger ----------------
    [chip+date+venue] [side A] [score] [side B] ......... [edit] [delete]
@@ -348,6 +374,7 @@ button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
   .mth-resetrow { justify-content: stretch; }
   .mth-resetrow button.mth-reset { flex: 1 1 100%; }
   .mth-gh { padding: 10px 8px; gap: 4px 8px; }
+  .mth-day { padding: 0 5px; }
   .mth-gs { flex-basis: 100%; padding-left: 1.6em; }
   .mth-gt { font-size: 0.96rem; }
 

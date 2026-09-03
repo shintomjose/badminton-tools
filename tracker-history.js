@@ -117,6 +117,9 @@
   var FMT_DM = new Intl.DateTimeFormat(LOCALE, { day: "2-digit", month: "2-digit", timeZone: "UTC" });
   var FMT_DAY = new Intl.DateTimeFormat(LOCALE, { weekday: "short", day: "2-digit", month: "2-digit", timeZone: "UTC" });
   var FMT_ROW = new Intl.DateTimeFormat(LOCALE, { day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "UTC" });
+  var FMT_DAYFULL = new Intl.DateTimeFormat(LOCALE, {
+    weekday: "short", day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "UTC"
+  });
   var FMT_MONTH = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric", timeZone: "UTC" });
   var DAY_MS = 86400000;
 
@@ -196,6 +199,13 @@
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateKey || ""));
     if (!m) return String(dateKey || "?");
     return FMT_DAY.format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])));
+  }
+
+  /** Day banner inside a year/month/week group — carries the year the group header omits. */
+  function dayHeadLabel(dateKey) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateKey || ""));
+    if (!m) return String(dateKey || "?");
+    return FMT_DAYFULL.format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])));
   }
 
   function rowDate(dateKey) {
@@ -384,6 +394,20 @@
     }
     keys.sort(function (a, b) { return a < b ? 1 : (a > b ? -1 : 0); });
     return keys.map(function (k) { return map[k]; });
+  }
+
+  /**
+   * Consecutive same-day runs inside one group body. The list is already day-sorted,
+   * so a run break is simply a change of dateKey — no second pass over the data.
+   */
+  function dayRuns(list) {
+    var runs = [], cur = null;
+    for (var i = 0; i < list.length; i++) {
+      var k = list[i].dateKey || "";
+      if (!cur || cur.key !== k) { cur = { key: k, matches: [] }; runs.push(cur); }
+      cur.matches.push(list[i]);
+    }
+    return runs;
   }
 
   function currentGroupKey(mode) {
@@ -635,8 +659,8 @@
     "</div>";
   }
 
-  /** showDate: the day level is gone in year/month/week modes, so each row carries its date. */
-  function renderMatch(match, showDate) {
+  /* Rows never carry their own date any more: the day banner above the run does. */
+  function renderMatch(match) {
     var isEditing = !!(editing && editing.id === match.id);
     var score = scoreText(match);
     var pos = dayPos[match.id] || { pos: 0, total: 1, day: match.dateKey || "" };
@@ -668,7 +692,7 @@
     return '<article class="mth-row" data-mid="' + ESC(match.id) + '"' +
         ' data-day="' + ESC(pos.day) + '" data-pos="' + pos.pos + '"' +
         (canOrder ? ' draggable="true"' : "") + ">" +
-      leadCol(match, showDate, canOrder) +
+      leadCol(match, false, canOrder) +
       teamBlock(match, "A", match.winnerSide) +
       '<div class="mth-score">' +
         '<div class="mth-games">' +
@@ -690,6 +714,21 @@
       '<span class="mth-gt">' + ESC(title) + "</span>" +
       '<span class="mth-gs">' + statsLine(list) + "</span>" +
     "</button>";
+  }
+
+  /** Day banner + its matches, banded so neighbouring days read apart at a glance. */
+  function renderDayRun(run, alt) {
+    var n = run.matches.length;
+    var out = ['<div class="mth-day' + (alt ? " mth-day-alt" : "") + '">'];
+    out.push('<div class="mth-dayhead">' +
+      '<span class="mth-daylabel">' + ESC(dayHeadLabel(run.key)) + "</span>" +
+      '<span class="mth-daycount">' +
+        ESC(n === 1 ? T("1 Spiel") : TT("{0} Spiele", n)) +
+      "</span>" +
+    "</div>");
+    run.matches.forEach(function (m) { out.push(renderMatch(m)); });
+    out.push("</div>");
+    return out.join("");
   }
 
   function note(text) { return '<p class="empty-note">' + ESC(text) + "</p>"; }
@@ -719,7 +758,8 @@
     // therefore the disabled nudges — reflect the real day, not the view.
     dayPos = buildDayPos(source);
 
-    var showDate = !isRange;                       // range groups by day already
+    // Range mode already groups by day; the other modes get a day banner per run.
+    var byDay = !isRange;
     var out = [];
     groupFlat(visible, mode).forEach(function (g) {
       var id = gid(mode, g.key);
@@ -727,7 +767,11 @@
       out.push(groupHeader(id, groupLabel(g.key, mode), g.matches));
       if (isOpen(id)) {
         out.push('<div class="mth-gbody">');
-        g.matches.forEach(function (m) { out.push(renderMatch(m, showDate)); });
+        if (byDay) {
+          dayRuns(g.matches).forEach(function (run, i) { out.push(renderDayRun(run, i % 2 === 1)); });
+        } else {
+          g.matches.forEach(function (m) { out.push(renderMatch(m)); });
+        }
         out.push("</div>");
       }
       out.push("</section>");
