@@ -330,6 +330,10 @@
     var s = aggregate(list, state.meId);
     var parts = [];
     parts.push(s.played === 1 ? ESC(T("1 Spiel")) : ESC(TT("{0} Spiele", s.played)));
+    // Sets PLAYED, next to matches played — a neutral volume count. The me-only
+    // S won–lost tally further along answers a different question.
+    var sets = setsPlayed(list);
+    if (sets > 0) parts.push(ESC(sets === 1 ? T("1 Satz") : TT("{0} Sätze", sets)));
     parts.push('<span class="mth-wl" title="' + ESC(TT("Spiele {0}–{1}", s.w, s.l)) + '">' +
       winNum(s.w) + '<span class="mth-sep">–</span>' + lossNum(s.l) + "</span>");
     if (s.sw + s.sl > 0) {
