@@ -128,11 +128,19 @@ button.mth-reset { flex: 0 0 auto; }
    The rows no longer print their own date; every day of a year/month/week group
    is one banded block under a date banner. Every other block gets the faint
    tint, so two adjacent days never blur into one another. */
-.mth-day { padding: 0 8px; border-radius: var(--radius-sm); }
+/* The closing rule is 2px and teal-tinted so it reads as "day ends here",
+   distinct from the 1px hairlines that separate rows within the day. */
+.mth-day {
+  padding: 0 8px 2px;
+  border-radius: var(--radius-sm);
+  border-bottom: 2px solid color-mix(in srgb, var(--brand-teal) 30%, var(--border));
+  margin-bottom: 6px;
+}
+.mth-day:last-child { margin-bottom: 0; }
 .mth-day-alt { background: var(--row-hover); }
 
 .mth-dayhead {
-  display: flex; align-items: baseline; gap: 8px;
+  display: flex; align-items: baseline; justify-content: center; gap: 8px;
   padding: 8px 0 5px;
   border-bottom: 1px solid var(--border);
 }
@@ -142,7 +150,7 @@ button.mth-reset { flex: 0 0 auto; }
   text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
-  flex: 1 1 auto; min-width: 0;
+  min-width: 0;
 }
 .mth-daycount {
   font-size: 0.74em; color: var(--text-muted);
