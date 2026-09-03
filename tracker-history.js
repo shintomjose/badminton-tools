@@ -71,6 +71,8 @@
       "KW {0}": "Week {0}",
       "{0} Spiele": "{0} matches",
       "1 Spiel": "1 match",
+      "{0} Sätze": "{0} sets",
+      "1 Satz": "1 set",
       "Spiel {0}": "Match {0}",
       /* identical to the entry view's reorder keys */
       "Reihenfolge ändern": "Reorder",
@@ -301,6 +303,22 @@
       }
     }
     return { played: list.length, w: w, l: l, sw: sw, sl: sl, notMe: notMe, decided: w + l };
+  }
+
+  /**
+   * Sets actually played in a group, from nobody's perspective: every decided
+   * game counts, including matches the signed-in user was not on court for.
+   * aggregate()'s sw/sl cannot serve here — those are me-only tallies.
+   */
+  function setsPlayed(list) {
+    var n = 0;
+    for (var i = 0; i < list.length; i++) {
+      var m = list[i];
+      var target = Number(m.targetScore) || defaultTarget(m.discipline);
+      var games = Array.isArray(m.games) ? m.games : [];
+      for (var g = 0; g < games.length; g++) if (gameWinnerOf(games[g], target)) n++;
+    }
+    return n;
   }
 
   /* App-wide tracker convention: wins green, losses red, separator neutral.
@@ -719,11 +737,17 @@
   /** Day banner + its matches, banded so neighbouring days read apart at a glance. */
   function renderDayRun(run, alt) {
     var n = run.matches.length;
+    var sets = setsPlayed(run.matches);
     var out = ['<div class="mth-day' + (alt ? " mth-day-alt" : "") + '">'];
     out.push('<div class="mth-dayhead">' +
       '<span class="mth-daylabel">' + ESC(dayHeadLabel(run.key)) + "</span>" +
       '<span class="mth-daycount">' +
         ESC(n === 1 ? T("1 Spiel") : TT("{0} Spiele", n)) +
+        // Sätze only once at least one game is decided — "0 Sätze" is noise.
+        (sets > 0
+          ? '<span class="mth-dot"> · </span>' +
+            ESC(sets === 1 ? T("1 Satz") : TT("{0} Sätze", sets))
+          : "") +
       "</span>" +
     "</div>");
     run.matches.forEach(function (m) { out.push(renderMatch(m)); });
