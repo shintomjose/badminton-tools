@@ -4,9 +4,12 @@ A static, build-step-free web app (plain HTML/CSS/JS + Firebase compat SDK) for
 the TSG Heilbronn badminton teams: rankings, lineup builder, fixtures with shared
 availability, directions, the VICTOR club shop — and a private match tracker.
 
-There is nothing to build: open `index.html`, or serve the folder with any
-static server. Every push to `main` deploys automatically to GitHub Pages and
-to both Firebase Hosting sites (via `.github/workflows/deploy-hosting.yml`).
+There is nothing to build: run `start-local.cmd` (serves the folder on
+<http://localhost:8010> and opens the browser), or serve it with any other static
+server. Use a real server, not `file://` — `localhost` is an authorized Firebase
+Auth domain, `file://` is not, so Google sign-in only works over http. Every push
+to `main` deploys automatically to GitHub Pages and to both Firebase Hosting sites
+(via `.github/workflows/deploy-hosting.yml`).
 
 ## App links
 
