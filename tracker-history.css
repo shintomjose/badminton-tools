@@ -128,12 +128,12 @@ button.mth-reset { flex: 0 0 auto; }
    The rows no longer print their own date; every day of a year/month/week group
    is one banded block under a date banner. Every other block gets the faint
    tint, so two adjacent days never blur into one another. */
-/* The closing rule is 2px and teal-tinted so it reads as "day ends here",
-   distinct from the 1px hairlines that separate rows within the day. */
+/* Each day is framed by a 2px teal-tinted border, distinct from the 1px
+   hairlines that separate rows within the day. */
 .mth-day {
-  padding: 0 8px 2px;
+  padding: 0 8px;
   border-radius: var(--radius-sm);
-  border-bottom: 2px solid color-mix(in srgb, var(--brand-teal) 30%, var(--border));
+  border: 2px solid color-mix(in srgb, var(--brand-teal) 30%, var(--border));
   margin-bottom: 6px;
 }
 .mth-day:last-child { margin-bottom: 0; }
