@@ -269,6 +269,15 @@
     return id;
   };
 
+  repo.deleteSession = async function (id) {
+    var n = 0;
+    store.matches = store.matches.filter(function (m) { if (m.sessionId === id) { n++; return false; } return true; });
+    var s = find(store.sessions, id);
+    if (s) store.sessions.splice(store.sessions.indexOf(s), 1);
+    notify(id);
+    return n;
+  };
+
   repo.addPlayer = async function (name, club, extra) {
     var p = Object.assign({
       id: nextId("p"), name: String(name || "").trim(), club: club || DEFAULT_CLUB,

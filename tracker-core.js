@@ -508,6 +508,18 @@ const MT = (function () {
     return id;
   };
 
+  /* Deletes a session together with every match that belongs to it, in one
+     batch — a day must never survive half-deleted. Returns the match count. */
+  repo.deleteSession = async function (id) {
+    const db = await need();
+    const snap = await db.collection(COL.matches).where("sessionId", "==", id).get();
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(db.collection(COL.sessions).doc(id));
+    trackWrite(batch.commit(), "Löschen fehlgeschlagen");
+    return snap.size;
+  };
+
   /* One-time read with an explicit range — never a live subscription. */
   repo.getMatches = async function (opts) {
     const db = await need();

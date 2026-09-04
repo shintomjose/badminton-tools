@@ -100,6 +100,11 @@ Object.assign(EN, {
   "Notiz": "Note",
   "z. B. Halle, Startzeit, Fazit": "e.g. venue, start time, takeaways",
   "Turnier gespeichert": "Tournament saved",
+  "Turnier löschen": "Delete tournament",
+  "„{0}“ löschen? Es gibt keine Spiele.": "Delete “{0}”? It has no matches.",
+  "„{0}“ mit 1 Spiel löschen? Das Spiel wird mit gelöscht.": "Delete “{0}” with 1 match? The match is deleted too.",
+  "„{0}“ mit {1} Spielen löschen? Alle Spiele werden mit gelöscht.": "Delete “{0}” with {1} matches? All of them are deleted too.",
+  "Turnier gelöscht": "Tournament deleted",
   "Runde": "Round",
   "Keine Runde": "No round",
   "Verein des Gegners": "Opponent club",
@@ -1027,6 +1032,7 @@ Object.assign(EN, {
           "</textarea>" +
         "</label>" +
         '<div class="mt-trn-actions">' +
+          (editing ? '<button type="button" class="btn mt-danger" data-act="trndelete">' + esc(t("Turnier löschen")) + "</button>" : "") +
           (editing ? '<button type="button" class="btn" data-act="trncancel">' + esc(t("Abbrechen")) + "</button>" : "") +
           '<button type="submit" class="btn primary mt-big">' +
             esc(editing ? t("Turnier speichern") : t("Turnier starten")) + "</button>" +
@@ -1676,6 +1682,34 @@ Object.assign(EN, {
     }
   }
 
+  /* Deletes the open tournament day with all its matches — after a confirm
+     that names the tournament and says how many matches go with it. */
+  async function removeTournament() {
+    const s = state.session;
+    if (!s || !isTournament()) return;
+    const name = s.tournamentName || trnName() || t("Turnier");
+    const n = state.matches.length;
+    const msg = n === 0 ? tt("„{0}“ löschen? Es gibt keine Spiele.", name)
+      : n === 1 ? tt("„{0}“ mit 1 Spiel löschen? Das Spiel wird mit gelöscht.", name)
+      : tt("„{0}“ mit {1} Spielen löschen? Alle Spiele werden mit gelöscht.", name, n);
+    if (!window.confirm(msg)) return;
+    try {
+      await MT.repo.deleteSession(s.id);
+      closeEditor(false);
+      stopWatch();
+      state.session = null;
+      state.matches = [];
+      state.trnEdit = false;
+      state.trn = { name: "", category: "", disciplines: [], partners: {}, note: "" };
+      toast(t("Turnier gelöscht"));
+      renderAll();
+      sessionFound(null);                          // refresh the "Vorhandene Turniere" list
+      loadSummary();
+    } catch (e) {
+      MT.toastError(e, "Löschen fehlgeschlagen");
+    }
+  }
+
   /* Creates (or updates) today's tournament session and stores the day-level
      fields on it. Every match of the day then inherits name + category. */
   async function saveTournament() {
@@ -1813,6 +1847,7 @@ Object.assign(EN, {
     }
     if (act === "trnedit") { state.trnEdit = true; renderSession(); renderList(); return; }
     if (act === "openrecent") { switchDay(btn.dataset.day); return; }
+    if (act === "trndelete") { removeTournament(); return; }
     if (act === "trncancel") {
       state.trnEdit = false;
       closeSuggest();
