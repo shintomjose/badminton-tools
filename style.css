@@ -1134,6 +1134,7 @@
     margin-bottom: 10px;
   }
   .mt-topbar .tab-sub { margin: 0; flex: 1 1 240px; }
+  .mt-topbar .mt-settings-btn { margin-left: auto; align-self: center; }
   .mt-sync {
     font-size: 0.78rem; font-weight: 600;
     font-variant-numeric: tabular-nums;
@@ -1460,6 +1461,35 @@
   }
   .mt-trn-list-name { font-weight: 600; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
   .mt-trn-list .btn { margin-left: auto; }
+  .mt-trn-overview .mt-trn-list-wrap { margin-top: 12px; }
+  .mt-trn-overview .mt-trn-list-wrap:last-child { margin-bottom: 0; }
+  .mt-venue { max-width: 420px; }
+
+  /* settings view: venue rows with star / rename / delete */
+  .mts-list { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 6px; }
+  .mts-row {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 6px 10px; background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+  }
+  .mts-name { flex: 1 1 auto; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+  .mts-tools { display: inline-flex; gap: 6px; margin-left: auto; }
+  .mts-tools .is-default { color: var(--brand-teal); }
+  .mts-rename { display: flex; gap: 8px; flex-wrap: wrap; flex: 1 1 auto; }
+  .mts-rename input {
+    flex: 1 1 200px; min-width: 0; font: inherit; min-height: 44px; padding: 8px 12px;
+    background: var(--surface); color: var(--text-strong);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+  }
+  .mts-rename input:focus-visible { outline: none; box-shadow: var(--ring); }
+  .mts-add { display: flex; gap: 8px; flex-wrap: wrap; max-width: 520px; }
+  .mts-add input {
+    flex: 1 1 200px; min-width: 0; font: inherit; min-height: 44px; padding: 8px 12px;
+    background: var(--surface-2); color: var(--text-strong);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+  }
+  .mts-add input:focus-visible { outline: none; box-shadow: var(--ring); }
+  .mts-add .btn { min-height: 44px; }
   .mt-trn-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
   .mt-trn-actions .btn { min-height: 50px; }
   .mt-trn-actions .mt-big { width: auto; flex: 2 1 60%; }

@@ -301,6 +301,20 @@
     store.locations.push(l);
     return l.id;
   };
+  repo.updateLocation = async function (id, patch) {
+    var l = find(store.locations, id);
+    if (l) applyPatch(l, patch);
+    return id;
+  };
+  repo.deleteLocation = async function (id) {
+    var l = find(store.locations, id);
+    if (l) store.locations.splice(store.locations.indexOf(l), 1);
+    return id;
+  };
+  repo.setDefaultLocation = async function (id) {
+    store.locations.forEach(function (l) { l.isDefault = l.id === id; l.updatedAt = now(); });
+    return id;
+  };
 
   repo.updateSession = async function (id, patch) {
     var s = find(store.sessions, id);

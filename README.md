@@ -30,7 +30,8 @@ data sync between them in both directions.
 | `index.html` | App shell, tab markup |
 | `app.js` | i18n (DE default / EN dictionary), theme, tabs, PIN, tabs 1–5 |
 | `tracker-core.js` | Match tracker: Firestore layer, Google owner auth, PIN gate, view registry (`MT`) |
-| `tracker-entry.js` | Match tracker: training entry flow |
+| `tracker-entry.js` | Match tracker: training and tournament entry flow |
+| `tracker-settings.js` | Match tracker: venue settings behind the gear button |
 | `tracker-demo.js` / `demo-data.json` | Match tracker demo mode (`?demo=1`): in-memory fixture, nothing persisted |
 | `style.css` | Design tokens and all styling |
 | `sw.js` / `pwa.js` | Service worker and PWA bootstrap |
@@ -109,17 +110,26 @@ day's session (existing matches show up, new ones land there; nothing moves).
 In **Turnier** the date is the first field of the setup card; on re-edit a
 changed date moves the whole tournament day, matches included, in one batch.
 The day list, its heading and the *Letzte Spieltage* summary follow the picked
-day. Each mode remembers its own day while the app is open, so toggling
-Training ⇄ Turnier or visiting the history tab brings you back to the same
-tournament. After a reload the tournament tab starts on today; the setup card
-then lists every tournament from 60 days back to 60 days ahead under
-*Vorhandene Turniere* — upcoming ones marked *geplant* — each with an
-**Öffnen** button, so a tournament entered ahead of its day stays one tap
-away and its date never has to be retyped.
+day. Switching modes always returns to today.
+
+**Turnier** opens on an overview: today's tournament if one exists, plus
+*Anstehende Turniere* (upcoming, nearest first) and *Letzte Turniere* (recent)
+from 90 days back to 60 days ahead, each with an **Öffnen** button. A tournament opened
+from the list carries an **Übersicht** button back. The creation card only
+appears behind **+ Turnier**, always blank.
+
+### Venues
+
+The gear button in the tracker top bar opens the venue settings: add, rename,
+delete, and star one venue as the default. The default is preselected on every
+new training day and on new tournaments; the day card and the tournament card
+carry a venue dropdown to pick another one. Renaming or deleting a venue never
+rewrites history — sessions and matches keep the venue name they were written
+with, exactly like a player's club.
 
 ### Tournament days
 
-Switch the entry tab to **Turnier**. The first thing you see is a setup card,
+Switch the entry tab to **Turnier** and tap **+ Turnier**. The setup card is
 asked once per tournament day; every match of the day inherits it:
 
 - **Datum** — defaults to today.

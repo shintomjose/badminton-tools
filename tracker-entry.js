@@ -16,7 +16,9 @@
  * list, editor, player picker and save path. Tournament adds exactly two
  * things — a one-off session header (name, disciplines played, the partner
  * per doubles discipline, class — asked once per tournament day) and two
- * optional per-match fields (round, opponent club). The header is what
+ * optional per-match fields (round, opponent club). Turnier opens on an
+ * overview (today's tournament if any, upcoming and recent ones one tap
+ * away); the creation card only appears behind "+ Turnier". The header is what
  * makes tournament entry fast: the editor only offers the disciplines of
  * the day, and picking one fills my side of the court with me + partner.
  * Nothing on the training path gained a field or a tap.
@@ -76,8 +78,12 @@ Object.assign(EN, {
   /* --- tournament flow (phase 4) --- */
   "Datum": "Date",
   "Datum wählen": "Choose a date",
-  "Vorhandene Turniere": "Existing tournaments",
-  "geplant": "planned",
+  "Anstehende Turniere": "Upcoming tournaments",
+  "Letzte Turniere": "Recent tournaments",
+  "Heute kein Turnier": "No tournament today",
+  "Kein Turnier geplant": "No tournament planned",
+  "+ Turnier": "+ Tournament",
+  "Übersicht": "Overview",
   "Öffnen": "Open",
   "Spiele am {0}": "Matches on {0}",
   "Turniername": "Tournament name",
@@ -184,7 +190,7 @@ Object.assign(EN, {
       ' aria-label="' + esc(label) + '" title="' + esc(label) + '">' + svg + "</button>";
   }
   /* window of the "existing tournaments" list on the setup card */
-  const TRN_LIST_BACK = 60, TRN_LIST_AHEAD = 60, TRN_LIST_MAX = 6;
+  const TRN_LIST_BACK = 90, TRN_LIST_AHEAD = 60, TRN_LIST_MAX = 6;
 
   const state = {
     host: null,
@@ -193,13 +199,10 @@ Object.assign(EN, {
        pick another day — a training evening logged the morning after, a
        tournament from last weekend. */
     dayKey: "",
-    /* each mode remembers its own day, so toggling Training ⇄ Turnier or
-       leaving the tab does not lose a tournament entered for another day */
-    dayKeys: { training: "", tournament: "" },
-    /* planned and recent tournaments, listed on the setup card when no
-       tournament is open — after a reload the day is not known, and a
-       tournament entered ahead of its day must stay findable */
+    /* tournaments around today for the Turnier overview — upcoming and
+       recent ones, each one tap away */
     trnList: [],
+    trnCreate: false,      // "+ Turnier" opened the creation card
     session: null,
     matches: [],
     players: [],
@@ -218,7 +221,6 @@ Object.assign(EN, {
     /* partners: { doubles: { playerId, playerName }, mixed: { … } } — one per
        doubles discipline of the day, preselected on every match of that kind */
     trnEdit: false,        // true while the session header is being re-edited
-    addLocOpen: false,     // the venue quick-add input lives behind a "+" toggle
     /* type-ahead: which slot's field is open and what has been typed into it */
     pickQuery: "",
     pickOpen: null,        // { side: "A"|"B", i: 0|1 } | null
@@ -708,6 +710,10 @@ Object.assign(EN, {
   function startWatch(session) {
     stopWatch();
     state.session = session;
+    if (session.locationId && state.locations.some(l => l.id === session.locationId)) {
+      state.locationId = session.locationId;
+      state.locationName = session.locationName || state.locationName;
+    }
     state.dayKey = sessionKey(session) === todayKey() ? "" : sessionKey(session);
     hydrateTournament(session);
     state.unwatch = MT.repo.watchSession(session.id, function (payload) {
@@ -723,22 +729,30 @@ Object.assign(EN, {
      nothing on the picked day — list the tournaments around today so the
      setup card can offer them (planned ones included). */
   function sessionFound(s) {
-    if (s) { state.trnList = []; startWatch(s); return; }
+    if (s) startWatch(s);
     if (!isTournament()) return;
-    /* No tournament on this day: the card must start blank. Keeping the
-       previous tournament's name here is how a second copy gets created. */
-    if (!state.trnEdit) {
-      state.trn = { name: "", category: "", disciplines: [], partners: {}, note: "" };
+    /* No tournament on this day: the creation card must start blank. Keeping
+       the previous tournament's name here is how a second copy gets created. */
+    if (!s && !state.trnEdit) {
+      state.trn = blankTrn();
       renderSession();
     }
+    loadTournamentList();
+  }
+
+  function blankTrn() { return { name: "", category: "", disciplines: [], partners: {}, note: "" }; }
+
+  /* Upcoming and recent tournaments for the overview — the open one excluded. */
+  function loadTournamentList() {
     const wanted = state.type, key = dayKey();
     MT.repo.listSessionsAround("tournament", TRN_LIST_BACK, TRN_LIST_AHEAD)
       .then(list => {
-        if (state.type !== wanted || state.session || dayKey() !== key) return;
-        state.trnList = (list || []).filter(r => r.dateKey !== key).slice(0, TRN_LIST_MAX);
+        if (state.type !== wanted || dayKey() !== key) return;
+        const openId = state.session ? state.session.id : null;
+        state.trnList = (list || []).filter(r => r.id !== openId && r.dateKey !== key);
         renderSession();
       })
-      .catch(() => { /* an offer only — nothing to report */ });
+      .catch(() => { /* an overview only — nothing to report */ });
   }
 
   /* Re-attach the live session watch after the view was unmounted and mounted
@@ -780,25 +794,26 @@ Object.assign(EN, {
 
   /* Venue picker — identical for both modes. The quick-add input hides behind
      a "+" toggle (same pattern as the Rangliste tab) so it costs no space. */
-  function venueBlockHtml() {
-    const addOpen = state.addLocOpen;
-    return '<div class="mt-sec-head">' +
-        '<div class="mt-label">' + esc(t("Ort")) + "</div>" +
-        '<button type="button" class="btn icon-add" data-act="addloc-toggle"' +
-          ' aria-expanded="' + addOpen + '" aria-controls="mtAddLoc"' +
-          ' title="' + esc(addOpen ? t("Schließen") : t("Ort hinzufügen")) + '">' +
-          (addOpen ? "×" : "+") + "</button>" +
-      "</div>" +
-      '<div class="mt-chips">' +
+  /* Venue as a dropdown, default preselected. Adding, renaming, deleting and
+     the default flag live in the settings view behind the gear button. */
+  function venueSelectHtml() {
+    return '<label class="mt-field mt-venue">' +
+      '<span class="mt-label">' + esc(t("Ort")) + "</span>" +
+      '<select class="mt-venue-select" aria-label="' + esc(t("Ort")) + '">' +
         state.locations.map(l =>
-          '<button type="button" class="mt-chip" data-act="loc" data-id="' + esc(l.id) + '"' +
-          ' aria-pressed="' + (l.id === state.locationId) + '">' + esc(l.name) + "</button>"
+          '<option value="' + esc(l.id) + '"' + (l.id === state.locationId ? " selected" : "") + ">" + esc(l.name) + "</option>"
         ).join("") +
-      "</div>" +
-      '<form class="add-form mt-add-loc" id="mtAddLoc"' + (addOpen ? "" : " hidden") + ">" +
-        '<input type="text" placeholder="' + esc(t("Neuer Ort")) + '" autocomplete="off" aria-label="' + esc(t("Neuer Ort")) + '">' +
-        '<button type="submit" class="btn">' + esc(t("Hinzufügen")) + "</button>" +
-      "</form>";
+      "</select>" +
+    "</label>";
+  }
+
+  /* Re-read the venues after the settings view may have changed them. */
+  async function refreshLocations() {
+    try {
+      state.locations = await MT.repo.listLocations();
+      if (!state.locations.some(l => l.id === state.locationId)) pickDefaultLocation();
+      renderSession();
+    } catch (e) { /* keep the list we have */ }
   }
 
   /* Short, glanceable date: "Mo., 01.09.2026" in DE, "Mon, 01/09/2026" in EN. */
@@ -864,6 +879,9 @@ Object.assign(EN, {
     return '<div class="mt-trn-head">' +
       "<h2>" + esc(trnName() || t("Turnier")) + "</h2>" +
       '<span class="mt-trn-tools">' +
+        (sessionKey(state.session) !== todayKey()
+          ? '<button type="button" class="btn small" data-act="trnback">' + esc(t("Übersicht")) + "</button>"
+          : "") +
         iconBtn("trnedit", t("Turnier bearbeiten"), ICON_EDIT, "") +
         iconBtn("trndelete", t("Turnier löschen"), ICON_TRASH, "mt-danger") +
       "</span>" +
@@ -968,26 +986,43 @@ Object.assign(EN, {
     "</div>";
   }
 
-  /* Existing tournaments around today, one tap to open each — a tournament
-     entered ahead of its day is marked "geplant". Nothing to retype. */
-  function tournamentListHtml(editing) {
-    const list = state.trnList;
-    if (editing || !list.length) return "";
+  /* Upcoming (nearest first) and recent (newest first) tournaments, one tap
+     to open each. Under an open tournament only the upcoming ones show. */
+  function tournamentListsHtml(upcomingOnly) {
     const today = todayKey();
-    return '<div class="mt-field mt-trn-list-wrap">' +
-      '<span class="mt-label">' + esc(t("Vorhandene Turniere")) + "</span>" +
-      '<ul class="mt-trn-list">' +
-        list.map(r =>
-          "<li>" +
-            '<span class="mt-trn-list-name">' + esc(r.tournamentName || t("Turnier")) + "</span>" +
-            '<span class="mt-muted">' + esc(shortDate(MT.toDate(r.date) || new Date())) + "</span>" +
-            (r.dateKey > today ? '<span class="mt-badge trn">' + esc(t("geplant")) + "</span>" : "") +
-            '<button type="button" class="btn small" data-act="openrecent" data-day="' + esc(r.dateKey || "") + '">' +
-              esc(t("Öffnen")) + "</button>" +
-          "</li>"
-        ).join("") +
-      "</ul>" +
-    "</div>";
+    const up = state.trnList.filter(r => r.dateKey > today)
+      .sort((a, b) => (a.dateKey < b.dateKey ? -1 : 1)).slice(0, TRN_LIST_MAX);
+    const past = upcomingOnly ? [] : state.trnList.filter(r => r.dateKey < today).slice(0, TRN_LIST_MAX);
+    if (upcomingOnly && !up.length) return "";
+    const row = r =>
+      "<li>" +
+        '<span class="mt-trn-list-name">' + esc(r.tournamentName || t("Turnier")) + "</span>" +
+        '<span class="mt-muted">' + esc(shortDate(MT.toDate(r.date) || new Date())) + "</span>" +
+        '<button type="button" class="btn small" data-act="openrecent" data-day="' + esc(r.dateKey || "") + '">' +
+          esc(t("Öffnen")) + "</button>" +
+      "</li>";
+    const block = (title, list, empty) =>
+      '<div class="mt-field mt-trn-list-wrap">' +
+        '<span class="mt-label">' + esc(title) + "</span>" +
+        (list.length
+          ? '<ul class="mt-trn-list">' + list.map(row).join("") + "</ul>"
+          : (empty ? '<p class="mt-muted">' + esc(empty) + "</p>" : "")) +
+      "</div>";
+    return block(t("Anstehende Turniere"), up, t("Kein Turnier geplant")) +
+      (past.length ? block(t("Letzte Turniere"), past, "") : "");
+  }
+
+  /* Turnier without a tournament today: the overview — today's status, the
+     lists, and "+ Turnier" as the only way into the creation card. */
+  function tournamentOverviewHtml() {
+    return '<section class="panel mt-session mt-trn-overview">' +
+      '<div class="mt-trn-head">' +
+        "<h2>" + esc(t("Turnier")) + "</h2>" +
+        '<button type="button" class="btn primary" data-act="trnnew">' + esc(t("+ Turnier")) + "</button>" +
+      "</div>" +
+      '<p class="mt-sess-meta">' + esc(shortDate(new Date())) + " · " + esc(t("Heute kein Turnier")) + "</p>" +
+      tournamentListsHtml(false) +
+    "</section>";
   }
 
   /* Asked once per tournament day: name (required), disciplines played
@@ -1000,7 +1035,6 @@ Object.assign(EN, {
     return '<section class="panel mt-session mt-trn-setup">' +
       "<h2>" + esc(t("Turnier")) + ' <span class="hint">— ' + esc(MT.fmtDate(dayDate())) + "</span></h2>" +
       '<p class="mt-muted">' + esc(t("Einmal pro Turniertag eintragen — jedes Spiel erbt diese Angaben.")) + "</p>" +
-      tournamentListHtml(editing) +
       /* novalidate: the empty-name message must come from t(), not from the
          browser's own (untranslated) validation bubble */
       '<form class="mt-trn-form" novalidate>' +
@@ -1048,19 +1082,28 @@ Object.assign(EN, {
             esc(editing ? t("Turnier speichern") : t("Turnier starten")) + "</button>" +
         "</div>" +
       "</form>" +
-      venueBlockHtml() +
+      venueSelectHtml() +
     "</section>";
   }
 
   function renderSession() {
     const host = el("mtSessionPanel");
     if (!host) return;
-    const keep = host.querySelector(".mt-add-loc input");
-    const kept = keep ? keep.value : "";
-    host.innerHTML = (isTournament() && (!state.session || state.trnEdit))
-      ? tournamentSetupHtml()
-      : '<section class="panel mt-session">' + sessionHeadHtml() + venueBlockHtml() + "</section>";
-    if (kept) { const inp = host.querySelector(".mt-add-loc input"); if (inp) inp.value = kept; }
+    if (isTournament()) {
+      if (state.session && !state.trnEdit) {
+        /* today's tournament also shows what is coming up next */
+        const upcoming = sessionKey(state.session) === todayKey() ? tournamentListsHtml(true) : "";
+        host.innerHTML =
+          '<section class="panel mt-session">' + sessionHeadHtml() + venueSelectHtml() + "</section>" +
+          (upcoming ? '<section class="panel mt-session mt-trn-overview">' + upcoming + "</section>" : "");
+      } else if (state.session || state.trnCreate) {
+        host.innerHTML = tournamentSetupHtml();
+      } else {
+        host.innerHTML = tournamentOverviewHtml();
+      }
+      return;
+    }
+    host.innerHTML = '<section class="panel mt-session">' + sessionHeadHtml() + venueSelectHtml() + "</section>";
   }
 
   function matchLine(m, idx, total) {
@@ -1710,10 +1753,10 @@ Object.assign(EN, {
       state.session = null;
       state.matches = [];
       state.trnEdit = false;
-      state.trn = { name: "", category: "", disciplines: [], partners: {}, note: "" };
+      state.trn = blankTrn();
       toast(t("Turnier gelöscht"));
       renderAll();
-      sessionFound(null);                          // refresh the "Vorhandene Turniere" list
+      sessionFound(null);                          // back to the overview
       loadSummary();
     } catch (e) {
       MT.toastError(e, "Löschen fehlgeschlagen");
@@ -1777,9 +1820,11 @@ Object.assign(EN, {
       if (state.locationId) { patch.locationId = state.locationId; patch.locationName = state.locationName; }
       await MT.repo.updateSession(s.id, patch);
       state.trnEdit = false;
+      state.trnCreate = false;
       startWatch(Object.assign({}, s, patch));
       toast(t("Turnier gespeichert"));
       renderAll();
+      loadTournamentList();
     } catch (e) {
       MT.toastError(e, "Speichern fehlgeschlagen");
     }
@@ -1791,6 +1836,8 @@ Object.assign(EN, {
   function switchDay(v) {
     if (!isDayKey(v) || v === dayKey()) return;
     state.dayKey = v === todayKey() ? "" : v;
+    state.trnCreate = false;
+    pickDefaultLocation();
     closeEditor(false);
     stopWatch();
     state.session = null;
@@ -1801,11 +1848,12 @@ Object.assign(EN, {
 
   /* Switching mode is a full reset: separate flows, separate lists. */
   function switchType(v) {
-    state.dayKeys[state.type] = state.dayKey;
     state.type = v === "tournament" ? "tournament" : "training";
-    state.dayKey = state.dayKeys[state.type] || "";
+    state.dayKey = "";                               // both modes open on today
     state.trnEdit = false;
+    state.trnCreate = false;
     state.trnList = [];
+    pickDefaultLocation();
     closeEditor(false);
     stopWatch();
     state.session = null;
@@ -1858,8 +1906,17 @@ Object.assign(EN, {
     if (act === "trnedit") { state.trnEdit = true; renderSession(); renderList(); return; }
     if (act === "openrecent") { switchDay(btn.dataset.day); return; }
     if (act === "trndelete") { removeTournament(); return; }
+    if (act === "trnnew") {
+      state.trnCreate = true;
+      state.trn = blankTrn();
+      renderSession();
+      focusIn(".mt-trn-name", true);
+      return;
+    }
+    if (act === "trnback") { switchDay(todayKey()); return; }
     if (act === "trncancel") {
       state.trnEdit = false;
+      state.trnCreate = false;
       closeSuggest();
       hydrateTournament(state.session);              // drop unsaved edits
       renderSession(); renderList();
@@ -1892,14 +1949,7 @@ Object.assign(EN, {
       focusOpenSlot();
       return;
     }
-    if (act === "addloc-toggle") {
-      state.addLocOpen = !state.addLocOpen;
-      renderSession();
-      focusIn(".mt-add-loc input", state.addLocOpen);
-      return;
-    }
     if (act === "reload") { state.loaded = false; state.loadError = null; renderList(); load(); return; }
-    if (act === "loc") { selectLocation(btn.dataset.id); return; }
     if (act === "newmatch") { newDraft(true); return; }
     if (act === "edit") { openDraftFromMatch(btn.dataset.id); return; }
     if (act === "del") { removeMatch(btn.dataset.id); return; }
@@ -1969,6 +2019,7 @@ Object.assign(EN, {
     if (!el2 || !el2.classList || !state.host || !state.host.contains(el2)) return;
     if (el2.classList.contains("mt-trn-name")) { state.trn.name = el2.value; return; }
     if (el2.classList.contains("mt-trn-date")) { state.dayKey = el2.value; return; }
+    if (el2.classList.contains("mt-venue-select")) { selectLocation(el2.value); return; }
     if (el2.classList.contains("mt-trn-note")) { state.trn.note = el2.value; return; }
     if (el2.classList.contains("mt-day-input")) { switchDay(el2.value); return; }
     if (el2.classList.contains("mt-slot-input")) {
@@ -2132,22 +2183,6 @@ Object.assign(EN, {
       return;
     }
 
-    if (form.classList.contains("mt-add-loc")) {
-      e.preventDefault();
-      const inp = form.querySelector("input");
-      const name = (inp.value || "").trim();
-      if (!name) { toast(t("Name eingeben")); return; }
-      try {
-        const id = await MT.repo.addLocation(name);
-        state.locations = state.locations.concat([{ id: id, name: name, isDefault: false }]);
-        inp.value = "";
-        state.addLocOpen = false;               // collapse again once it landed
-        await selectLocation(id);
-        toast(t("Ort hinzugefügt"));
-      } catch (err) { MT.toastError(err, "Speichern fehlgeschlagen"); }
-      return;
-    }
-
     /* No player quick-add form any more — the slot type-ahead is the add path
        (see pickByName), so a new name never costs a detour. */
   }
@@ -2160,10 +2195,10 @@ Object.assign(EN, {
       /* Spec: the mode toggle lives in memory only and every mount starts on
          Training. Coming back from Turnier therefore drops its session/draft. */
       if (state.type !== "training") {
-        state.dayKeys[state.type] = state.dayKey;
         state.type = "training";
-        state.dayKey = state.dayKeys.training || "";
+        state.dayKey = "";
         state.trnEdit = false;
+        state.trnCreate = false;
         stopWatch();
         state.session = null;
         state.matches = [];
@@ -2196,6 +2231,7 @@ Object.assign(EN, {
       renderAll();
       if (!state.loaded) load();
       else {
+        refreshLocations();                       // the settings view may have changed them
         if (!state.unwatch) resyncSession();      // re-attach after a remount
         loadSummary();
       }

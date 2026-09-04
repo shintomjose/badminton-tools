@@ -15,6 +15,7 @@
 
 Object.assign(EN, {
   "Private Spieldaten — nur mit deinem Google-Konto sichtbar.": "Private match data — visible only with your Google account.",
+  "Einstellungen": "Settings",
   "🔒 Spiele geschützt": "🔒 Matches locked",
   "PIN eingeben, um den Tracker zu öffnen.": "Enter the PIN to open the tracker.",
   "Verbinde…": "Connecting…",
@@ -666,6 +667,34 @@ const MT = (function () {
     return ref.id;
   };
 
+  repo.updateLocation = async function (id, patch) {
+    const db = await need();
+    const p = Object.assign({}, patch || {});
+    delete p.id; delete p.ownerUid; delete p.createdAt;
+    p.updatedAt = serverTs();
+    trackWrite(db.collection(COL.locations).doc(id).update(p), "Speichern fehlgeschlagen");
+    return id;
+  };
+
+  /* Sessions and matches keep their denormalised locationName — deleting a
+     venue never touches history, it just leaves the picker. */
+  repo.deleteLocation = async function (id) {
+    const db = await need();
+    trackWrite(db.collection(COL.locations).doc(id).delete(), "Löschen fehlgeschlagen");
+    return id;
+  };
+
+  /* Exactly one default: the flag is cleared on every other venue in the
+     same batch, so two venues can never both claim it. */
+  repo.setDefaultLocation = async function (id) {
+    const db = await need();
+    const snap = await db.collection(COL.locations).get();
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.update(d.ref, { isDefault: d.id === id, updatedAt: serverTs() }));
+    trackWrite(batch.commit(), "Speichern fehlgeschlagen");
+    return id;
+  };
+
   /* Equality on dateKey only → automatic single-field index, no composite needed. */
   repo.findTodaySession = async function (type, when) {
     const db = await need();
@@ -815,8 +844,9 @@ const MT = (function () {
     const host = document.getElementById("mtViewHost");
     const nav = document.getElementById("mtSubnav");
     if (!host || !nav) return;
-    if (!views.some(v => v.id === activeViewId)) activeViewId = views.length ? views[0].id : null;
-    nav.innerHTML = views.map(v =>
+    const tabs = views.filter(v => !(v.def && v.def.hidden));
+    if (!views.some(v => v.id === activeViewId)) activeViewId = tabs.length ? tabs[0].id : (views.length ? views[0].id : null);
+    nav.innerHTML = tabs.map(v =>
       '<button role="tab" type="button" data-mtview="' + esc(v.id) + '" id="mtviewbtn-' + esc(v.id) + '"' +
       ' aria-selected="' + (v.id === activeViewId) + '" aria-controls="mtViewHost">' + esc(labelOf(v)) + "</button>"
     ).join("");
@@ -845,6 +875,13 @@ const MT = (function () {
       '<div class="mt-topbar">' +
         '<p class="tab-sub" id="mtSub">' + esc(t("Private Spieldaten — nur mit deinem Google-Konto sichtbar.")) + "</p>" +
         '<span class="mt-sync" id="mtSync" role="status" aria-live="polite"></span>' +
+        '<button type="button" class="btn mt-icon-btn mt-settings-btn" data-mt="settings"' +
+          ' aria-label="' + esc(t("Einstellungen")) + '" title="' + esc(t("Einstellungen")) + '">' +
+          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+            '<circle cx="12" cy="12" r="3"/>' +
+            '<path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>' +
+          "</svg>" +
+        "</button>" +
       "</div>" +
       '<div id="mtGate"></div>';
     p.dataset.mtReady = "1";
@@ -986,6 +1023,7 @@ const MT = (function () {
       const act = btn.dataset.mt;
       if (act === "signin") { signIn(); return; }
       if (act === "signout") { signOut(); return; }
+      if (act === "settings") { showView("settings"); return; }
       if (act === "copylink") {
         const url = location.origin + location.pathname + "#tracker";
         navigator.clipboard.writeText(url)

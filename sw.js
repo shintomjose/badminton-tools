@@ -23,6 +23,7 @@ const PRECACHE = [
   "./app.js",
   "./tracker-core.js",
   "./tracker-entry.js",
+  "./tracker-settings.js",
   "./tracker-history.js",
   "./tracker-stats.js",
   "./tracker-profile.js",
