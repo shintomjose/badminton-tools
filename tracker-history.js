@@ -41,6 +41,7 @@
       "Mixed": "Mixed",
       "Training": "Training",
       "Turnier": "Tournament",
+      "Klasse {0}": "Class {0}",
       "Disziplin": "Discipline",
       "Art": "Type",
       "Filter": "Filters",
@@ -708,6 +709,12 @@
     if (match.type === "tournament") {
       var tname = (match.tournament && match.tournament.name) ? match.tournament.name : T("Turnier");
       trn = '<span class="mth-badge mth-badge-trn" title="' + ESC(tname) + '">' + ESC(tname) + "</span>";
+      /* class letter ("A" | "B") gets its label; legacy free text ("HE O35") shows as typed */
+      var cat = String(match.category || (match.tournament && match.tournament.category) || "").trim();
+      if (cat) {
+        var cls = (cat === "A" || cat === "B") ? TT("Klasse {0}", cat) : cat;
+        trn += '<span class="mth-badge mth-badge-trn" title="' + ESC(cls) + '">' + ESC(cls) + "</span>";
+      }
     }
     var cap = verdict(match);
 
