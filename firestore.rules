@@ -9,7 +9,7 @@ service cloud.firestore {
 
     function isOwner() {
       return request.auth != null
-          && request.auth.uid == "PASTE_OWNER_UID_HERE";
+          && request.auth.uid == "X24oeicEQwdi56CepWURZeHqoK93";
     }
 
     match /{col}/{doc} {
