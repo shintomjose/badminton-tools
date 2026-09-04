@@ -29,6 +29,7 @@ Object.assign(EN, {
   "Heute": "Today",
   "Spiele heute": "Matches today",
   "Noch keine Spiele heute — tippe auf „+ Spiel“.": "No matches today yet — tap “+ Match”.",
+  "Noch keine Spiele an diesem Tag — tippe auf „+ Spiel“.": "No matches on this day yet — tap “+ Match”.",
   "Neuer Ort": "New venue",
   "Hinzufügen": "Add",
   "Ort gilt ab jetzt — gespeicherte Spiele behalten ihren Ort": "The venue applies from now on — saved matches keep theirs",
@@ -73,7 +74,9 @@ Object.assign(EN, {
   "gegen": "vs",
 
   /* --- tournament flow (phase 4) --- */
-  "Turnier heute": "Tournament today",
+  "Datum": "Date",
+  "Datum wählen": "Choose a date",
+  "Spiele am {0}": "Matches on {0}",
   "Turniername": "Tournament name",
   "optional": "optional",
   "Einmal pro Turniertag eintragen — jedes Spiel erbt diese Angaben.":
@@ -166,6 +169,10 @@ Object.assign(EN, {
   const state = {
     host: null,
     type: "training",      // in-memory only; every mount starts on Training
+    /* The day being entered, "YYYY-MM-DD"; empty means today. Both modes can
+       pick another day — a training evening logged the morning after, a
+       tournament from last weekend. */
+    dayKey: "",
     session: null,
     matches: [],
     players: [],
@@ -283,6 +290,24 @@ Object.assign(EN, {
   function trnPartner(disc) {
     const p = state.trn.partners && state.trn.partners[disc];
     return p && p.playerId ? p : null;
+  }
+  function todayKey() { return MT.keys(new Date()).dateKey; }
+  function isDayKey(v) { return /^\d{4}-\d{2}-\d{2}$/.test(String(v || "").trim()); }
+  function dayKey() { return isDayKey(state.dayKey) ? String(state.dayKey).trim() : todayKey(); }
+  /* The picked day as a Date: right now for today, local noon for any other
+     day so the grouping keys cannot slip across midnight. */
+  function dayDate() {
+    const k = dayKey();
+    if (k === todayKey()) return new Date();
+    const p = k.split("-").map(Number);
+    return new Date(p[0], p[1] - 1, p[2], 12, 0, 0, 0);
+  }
+  function sessionKey(session) {
+    return (session && session.dateKey) || MT.keys((session && MT.toDate(session.date)) || dayDate()).dateKey;
+  }
+  /* Date shown on the cards: the open session's own day, else the picked day. */
+  function sessionDate() {
+    return (state.session && MT.toDate(state.session.date)) || dayDate();
   }
   function trnClassLabel(cat) {
     const c = String(cat || "").trim();
@@ -421,7 +446,7 @@ Object.assign(EN, {
       await seedDefaults();
       pickDefaultLocation();
       await loadRecent();
-      const s = await MT.repo.findTodaySession(state.type);
+      const s = await MT.repo.findTodaySession(state.type, dayDate());
       state.loaded = true;
       restoreDraftLocal();
       if (s) startWatch(s);
@@ -548,8 +573,11 @@ Object.assign(EN, {
 
   /* Today, live from the watched session — shared by the header meta line and
      the first summary row so the two can never disagree. */
+  /* Live tally of the open day — usually today, but the day picker can open
+     any other day, and then that is the day this record describes. */
   function todayRecord() {
-    const rec = blankRec(MT.keys(new Date()).dateKey, new Date());
+    const day = sessionDate();
+    const rec = blankRec(MT.keys(day).dateKey, day);
     const me = meePlayer();
     const meId = me ? me.id : null;
     state.matches.forEach(m => tallyDay(rec, m, meId));
@@ -561,16 +589,18 @@ Object.assign(EN, {
      Today only earns a row when it has matches; the header meta already states
      today's record either way, so an empty row would just cost a slot. */
   function summaryRows() {
-    const today = todayRecord();
-    const rows = state.summary.filter(r => r.dateKey !== today.dateKey && r.n > 0);
-    if (today.n) {
-      rows.unshift(today);                     // live, and always the newest day
+    const live = todayRecord();
+    const rows = state.summary.filter(r => r.dateKey !== live.dateKey && r.n > 0);
+    if (live.n) {
+      rows.push(live);                         // the open day, tallied live
     } else {
       /* No live session attached yet (first paint, or tournament mode before
-         the day is named) — fall back to what the ranged read saw for today. */
-      const fetched = state.summary.find(r => r.dateKey === today.dateKey && r.n > 0);
-      if (fetched) rows.unshift(fetched);
+         the day is named) — fall back to what the ranged read saw for that day. */
+      const fetched = state.summary.find(r => r.dateKey === live.dateKey && r.n > 0);
+      if (fetched) rows.push(fetched);
     }
+    /* the open day is not necessarily the newest one any more */
+    rows.sort((a, b) => (a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0));
     return rows.slice(0, SUMMARY_ROWS);
   }
 
@@ -649,6 +679,7 @@ Object.assign(EN, {
   function startWatch(session) {
     stopWatch();
     state.session = session;
+    state.dayKey = sessionKey(session) === todayKey() ? "" : sessionKey(session);
     hydrateTournament(session);
     state.unwatch = MT.repo.watchSession(session.id, function (payload) {
       if (payload.session) { state.session = payload.session; hydrateTournament(payload.session); }
@@ -663,7 +694,7 @@ Object.assign(EN, {
      again (switching away to History and back would otherwise show a frozen list). */
   function resyncSession() {
     const wanted = state.type;
-    MT.repo.findTodaySession(wanted)
+    MT.repo.findTodaySession(wanted, dayDate())
       .then(s => {
         if (state.type !== wanted) return;          // toggled again meanwhile
         if (s) startWatch(s);
@@ -758,9 +789,16 @@ Object.assign(EN, {
   /* Card heading — date and today's record are the two things worth seeing at
      a glance, in both modes. */
   function sessionHeadHtml() {
-    const meta = esc(shortDate()) + " · " + metaTailHtml(todayRecord());
+    const meta = esc(shortDate(sessionDate())) + " · " + metaTailHtml(todayRecord());
     if (!isTournament()) {
-      return "<h2>" + esc(t("Heute")) + '</h2><p class="mt-sess-meta">' + meta + "</p>";
+      /* Training has no setup card, so the day is picked right here. Changing
+         it opens that day's session (or starts one with the first match). */
+      const today = dayKey() === todayKey();
+      return '<div class="mt-trn-head">' +
+        "<h2>" + esc(today ? t("Heute") : shortDate(sessionDate())) + "</h2>" +
+        '<input type="date" class="mt-day-input" aria-label="' + esc(t("Datum")) + '" value="' + esc(dayKey()) + '">' +
+      "</div>" +
+      '<p class="mt-sess-meta">' + meta + "</p>";
     }
     /* "Doppel mit Nicolas · Mixed mit Anna · Klasse A" — the day's setup at a glance */
     const bits = trnDisciplines().map(k => {
@@ -882,11 +920,16 @@ Object.assign(EN, {
     const chosen = trnDisciplines();
     const cat = trnCategory();
     return '<section class="panel mt-session mt-trn-setup">' +
-      "<h2>" + esc(t("Turnier heute")) + ' <span class="hint">— ' + esc(MT.fmtDate(new Date())) + "</span></h2>" +
+      "<h2>" + esc(t("Turnier")) + ' <span class="hint">— ' + esc(MT.fmtDate(dayDate())) + "</span></h2>" +
       '<p class="mt-muted">' + esc(t("Einmal pro Turniertag eintragen — jedes Spiel erbt diese Angaben.")) + "</p>" +
       /* novalidate: the empty-name message must come from t(), not from the
          browser's own (untranslated) validation bubble */
       '<form class="mt-trn-form" novalidate>' +
+        '<label class="mt-field">' +
+          '<span class="mt-label">' + esc(t("Datum")) + "</span>" +
+          '<input type="date" class="mt-trn-date" required' +
+            ' aria-label="' + esc(t("Datum")) + '" value="' + esc(dayKey()) + '">' +
+        "</label>" +
         '<label class="mt-field">' +
           '<span class="mt-label">' + esc(t("Turniername")) + "</span>" +
           '<input type="text" class="mt-trn-name" required autocomplete="off" enterkeyhint="done"' +
@@ -1005,11 +1048,14 @@ Object.assign(EN, {
     const addLabel = state.justSaved && list.length ? t("Noch ein Spiel") : t("+ Spiel");
     host.innerHTML =
       '<section class="panel mt-matches">' +
-        "<h2>" + esc(t("Spiele heute")) + ' <span class="seg-count">' + list.length + "</span></h2>" +
+        "<h2>" + esc(dayKey() === todayKey() ? t("Spiele heute") : tt("Spiele am {0}", shortDate(sessionDate()))) +
+          ' <span class="seg-count">' + list.length + "</span></h2>" +
         (list.length
           ? '<ul class="mt-match-list">' +
               list.map((m, i) => matchLine(m, i, list.length)).join("") + "</ul>"
-          : '<p class="empty-note">' + esc(t("Noch keine Spiele heute — tippe auf „+ Spiel“.")) + "</p>") +
+          : '<p class="empty-note">' + esc(dayKey() === todayKey()
+              ? t("Noch keine Spiele heute — tippe auf „+ Spiel“.")
+              : t("Noch keine Spiele an diesem Tag — tippe auf „+ Spiel“.")) + "</p>") +
         '<button type="button" class="btn primary mt-big" data-act="newmatch">' + esc(addLabel) + "</button>" +
       "</section>";
   }
@@ -1525,7 +1571,7 @@ Object.assign(EN, {
         } else {
           const res = await MT.repo.createSessionWithMatch({
             type: state.type,
-            date: new Date(),
+            date: dayDate(),
             locationId: state.locationId,
             locationName: state.locationName,
             tournamentName: trnName() || null,
@@ -1587,14 +1633,32 @@ Object.assign(EN, {
       const p = discs.indexOf(k) >= 0 ? trnPartner(k) : null;
       partners[k] = p ? { playerId: p.playerId, playerName: p.playerName } : null;
     });
+    const dateInp = state.host && state.host.querySelector(".mt-trn-date");
+    if (dateInp) state.dayKey = dateInp.value;
+    if (String(state.dayKey || "").trim() && !isDayKey(state.dayKey)) {
+      toast(t("Datum wählen"));
+      if (dateInp) dateInp.focus();
+      return;
+    }
+    const when = dayDate();
     try {
-      const s = await MT.repo.getOrCreateTodaySession("tournament", state.locationId);
       const patch = {
         tournamentName: name,
         tournamentCategory: trnCategory() || null,
         tournamentDisciplines: discs,
         tournamentPartners: partners,
       };
+      let s = state.session;
+      if (s) {
+        /* re-edit with another date: the whole day moves, matches included */
+        if (sessionKey(s) !== dayKey()) {
+          await MT.repo.moveSession(s.id, when);
+          const k = MT.keys(when);
+          Object.assign(patch, { date: when, dateKey: k.dateKey, weekKey: k.weekKey, yearKey: k.yearKey });
+        }
+      } else {
+        s = await MT.repo.getOrCreateSession("tournament", state.locationId, when);
+      }
       if (state.locationId) { patch.locationId = state.locationId; patch.locationName = state.locationName; }
       await MT.repo.updateSession(s.id, patch);
       state.trnEdit = false;
@@ -1606,10 +1670,25 @@ Object.assign(EN, {
     }
   }
 
+  /* Training: picking another day opens that day's session — nothing moves,
+     the list simply shows what was logged on that day and new matches land
+     there. Unsaved draft is dropped, like on a mode switch. */
+  function switchDay(v) {
+    if (!isDayKey(v) || v === dayKey()) return;
+    state.dayKey = v === todayKey() ? "" : v;
+    closeEditor(false);
+    stopWatch();
+    state.session = null;
+    state.matches = [];
+    renderAll();
+    resyncSession();
+  }
+
   /* Switching mode is a full reset: separate flows, separate lists. */
   function switchType(v) {
     state.type = v === "tournament" ? "tournament" : "training";
     state.trnEdit = false;
+    state.dayKey = "";
     closeEditor(false);
     stopWatch();
     state.session = null;
@@ -1770,6 +1849,8 @@ Object.assign(EN, {
     const el2 = e.target;
     if (!el2 || !el2.classList || !state.host || !state.host.contains(el2)) return;
     if (el2.classList.contains("mt-trn-name")) { state.trn.name = el2.value; return; }
+    if (el2.classList.contains("mt-trn-date")) { state.dayKey = el2.value; return; }
+    if (el2.classList.contains("mt-day-input")) { switchDay(el2.value); return; }
     if (el2.classList.contains("mt-slot-input")) {
       state.pickQuery = el2.value;
       patchSuggest();                                 // rows only — keeps the caret

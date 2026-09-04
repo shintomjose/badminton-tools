@@ -1460,6 +1460,13 @@
   .mt-trn-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .mt-trn-head h2 { margin: 0; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
   .mt-trn-head .btn { flex: none; }
+  /* training card: the day picker sits where the tournament card has its edit button */
+  .mt-trn-head .mt-day-input {
+    flex: none; font: inherit; min-height: 40px; padding: 6px 10px;
+    background: var(--surface-2); color: var(--text-strong);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+  }
+  .mt-trn-head .mt-day-input:focus-visible { outline: none; box-shadow: var(--ring); }
 
   /* per-match extras: two compact fields side by side, never in the way */
   .mt-trn-extras {

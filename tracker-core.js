@@ -666,8 +666,11 @@ const MT = (function () {
     return hit || null;
   };
 
-  repo.getOrCreateTodaySession = async function (type, locationId) {
-    const existing = await repo.findTodaySession(type);
+  /* Session of the given type on the given day — reused when one exists,
+     created otherwise. The entry view lets both modes pick the day. */
+  repo.getOrCreateSession = async function (type, locationId, when) {
+    const date = toDate(when) || new Date();
+    const existing = await repo.findTodaySession(type, date);
     if (existing) return existing;
     const db = await need();
     let locationName = DEFAULT_LOCATION;
@@ -677,12 +680,30 @@ const MT = (function () {
         if (snap.exists) locationName = snap.data().name || locationName;
       } catch (e) { console.warn("[MT] Ort konnte nicht gelesen werden:", e && e.code); }
     }
-    const date = new Date();
     const k = keys(date);
     const ref = db.collection(COL.sessions).doc();
     const data = sessionDoc({ type: type, locationId: locationId || null, locationName: locationName }, date, k, uid());
     trackWrite(ref.set(data), "Speichern fehlgeschlagen");
     return Object.assign({ id: ref.id }, data, { date: date });
+  };
+  repo.getOrCreateTodaySession = function (type, locationId) {
+    return repo.getOrCreateSession(type, locationId, new Date());
+  };
+
+  /* Moves a session to another day. Every match of the session carries the
+     date and the grouping keys denormalised, so they move in the same batch —
+     the history view must never show a day split in two. */
+  repo.moveSession = async function (id, when) {
+    const db = await need();
+    const date = toDate(when) || new Date();
+    const k = keys(date);
+    const fields = { date: ts(date), dateKey: k.dateKey, weekKey: k.weekKey, yearKey: k.yearKey, updatedAt: serverTs() };
+    const snap = await db.collection(COL.matches).where("sessionId", "==", id).get();
+    const batch = db.batch();
+    batch.update(db.collection(COL.sessions).doc(id), fields);
+    snap.docs.forEach(d => batch.update(d.ref, fields));
+    trackWrite(batch.commit(), "Speichern fehlgeschlagen");
+    return id;
   };
 
   repo.updateSession = async function (id, patch) {

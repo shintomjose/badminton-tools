@@ -100,11 +100,23 @@ Do these four steps once:
   hall with no reception. The chip in the tracker header reports the honest
   state: `● synchronisiert` / `⏳ ausstehend…` / `○ offline`.
 
+### Picking the day
+
+Entry defaults to today, but both modes can log another day — a training
+evening entered the morning after, a tournament from last weekend. In
+**Training** the date field sits in the day card: changing it opens that
+day's session (existing matches show up, new ones land there; nothing moves).
+In **Turnier** the date is the first field of the setup card; on re-edit a
+changed date moves the whole tournament day, matches included, in one batch.
+The day list, its heading and the *Letzte Spieltage* summary follow the picked
+day. Switching between Training and Turnier returns to today.
+
 ### Tournament days
 
 Switch the entry tab to **Turnier**. The first thing you see is a setup card,
 asked once per tournament day; every match of the day inherits it:
 
+- **Datum** — defaults to today.
 - **Turniername** — required.
 - **Disziplinen** — tap the disciplines you play that day (Einzel / Doppel /
   Mixed, at least one). Doppel and Mixed each reveal a **partner** field: the
@@ -116,7 +128,8 @@ After **Turnier starten** the match editor only offers the day's disciplines,
 and picking one fills side A with you plus that discipline's partner — a match
 is then opponents, score, optional round and opponent club. **Turnier
 bearbeiten** reopens the card; a changed partner applies to new matches only,
-saved matches keep their line-up.
+saved matches keep their line-up, while a changed date moves the day with all
+its matches.
 
 On the `sessions` document this lives in `tournamentName`,
 `tournamentDisciplines` (`["singles","doubles","mixed"]` subset),

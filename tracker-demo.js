@@ -176,14 +176,28 @@
     return hit ? hydrate(hit) : null;
   };
 
-  repo.getOrCreateTodaySession = async function (type, locationId) {
-    var existing = await repo.findTodaySession(type);
+  repo.getOrCreateSession = async function (type, locationId, when) {
+    var date = toDate(when) || new Date();
+    var existing = await repo.findTodaySession(type, date);
     if (existing) return existing;
     var loc = locationId ? find(store.locations, locationId) : null;
-    var date = new Date();
     var s = sessionDoc({ type: type, locationId: locationId || null, locationName: loc ? loc.name : DEFAULT_LOCATION }, date, keys(date));
     store.sessions.push(s);
     return hydrate(s);
+  };
+  repo.getOrCreateTodaySession = function (type, locationId) {
+    return repo.getOrCreateSession(type, locationId, new Date());
+  };
+
+  repo.moveSession = async function (id, when) {
+    var date = toDate(when) || new Date();
+    var k = keys(date);
+    var fields = { date: date, dateKey: k.dateKey, weekKey: k.weekKey, yearKey: k.yearKey };
+    var s = find(store.sessions, id);
+    if (s) applyPatch(s, fields);
+    store.matches.forEach(function (m) { if (m.sessionId === id) applyPatch(m, fields); });
+    notify(id);
+    return id;
   };
 
   repo.createSessionWithMatch = async function (session, match) {
