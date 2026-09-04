@@ -1452,7 +1452,14 @@
   .mt-trn-notetext { margin: 4px 0 0; color: var(--text-muted); font-size: 0.9em; white-space: pre-wrap; overflow-wrap: anywhere; }
 
   .mt-trn-setup .mt-trn-form { margin: 12px 0 4px; }
-  .mt-trn-recent { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .mt-trn-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .mt-trn-list li {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 6px 10px; background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+  }
+  .mt-trn-list-name { font-weight: 600; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+  .mt-trn-list .btn { margin-left: auto; }
   .mt-trn-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
   .mt-trn-actions .btn { min-height: 50px; }
   .mt-trn-actions .mt-big { width: auto; flex: 2 1 60%; }

@@ -111,9 +111,11 @@ changed date moves the whole tournament day, matches included, in one batch.
 The day list, its heading and the *Letzte Spieltage* summary follow the picked
 day. Each mode remembers its own day while the app is open, so toggling
 Training ⇄ Turnier or visiting the history tab brings you back to the same
-tournament. After a reload the tournament tab starts on today; if a tournament
-was played in the last two weeks, the setup card offers it as *Zuletzt: … —
-Öffnen* so you never have to retype its date.
+tournament. After a reload the tournament tab starts on today; the setup card
+then lists every tournament from 60 days back to 60 days ahead under
+*Vorhandene Turniere* — upcoming ones marked *geplant* — each with an
+**Öffnen** button, so a tournament entered ahead of its day stays one tap
+away and its date never has to be retyped.
 
 ### Tournament days
 
