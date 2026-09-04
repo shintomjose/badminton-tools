@@ -96,6 +96,8 @@ Object.assign(EN, {
   "Mixed mit {0}": "Mixed with {0}",
   "Klasse": "Class",
   "Klasse {0}": "Class {0}",
+  "Notiz": "Note",
+  "z. B. Halle, Startzeit, Fazit": "e.g. venue, start time, takeaways",
   "Turnier gespeichert": "Tournament saved",
   "Runde": "Round",
   "Keine Runde": "No round",
@@ -196,7 +198,7 @@ Object.assign(EN, {
     activeSlot: null,      // { side: "A"|"B", i: 0|1 }
     justSaved: false,
     /* tournament-day fields, asked once and inherited by every match of the day */
-    trn: { name: "", category: "", disciplines: [], partners: {} },
+    trn: { name: "", category: "", disciplines: [], partners: {}, note: "" },
     /* partners: { doubles: { playerId, playerName }, mixed: { … } } — one per
        doubles discipline of the day, preselected on every match of that kind */
     trnEdit: false,        // true while the session header is being re-edited
@@ -272,12 +274,14 @@ Object.assign(EN, {
   }
   function trnName() { return String(state.trn.name || "").trim(); }
   function trnCategory() { return String(state.trn.category || "").trim(); }
+  function trnNote() { return String(state.trn.note || "").trim(); }
 
   /* The session document is the source of truth once it exists. */
   function hydrateTournament(session) {
     if (!session || state.trnEdit) return;
     state.trn.name = session.tournamentName || "";
     state.trn.category = session.tournamentCategory || "";
+    state.trn.note = session.note || "";
     state.trn.disciplines = orderedDisciplines(session.tournamentDisciplines);
     state.trn.partners = {};
     const tp = session.tournamentPartners || {};
@@ -840,7 +844,9 @@ Object.assign(EN, {
       '<button type="button" class="btn small" data-act="trnedit">' + esc(t("Turnier bearbeiten")) + "</button>" +
     "</div>" +
     /* partner names and legacy class text are user input and stay escaped */
-    '<p class="mt-sess-meta">' + (bits.length ? esc(bits.join(" · ")) + " · " : "") + meta + "</p>";
+    '<p class="mt-sess-meta">' + (bits.length ? esc(bits.join(" · ")) + " · " : "") + meta + "</p>" +
+    /* free text, shown as typed (line breaks kept by CSS), always escaped */
+    (trnNote() ? '<p class="mt-trn-notetext">' + esc(trnNote()) + "</p>" : "");
   }
 
   /* Day-wise totals — a courtside glance, not the history tab. */
@@ -995,6 +1001,13 @@ Object.assign(EN, {
             ).join("") +
           "</div>" +
         "</div>" +
+        '<label class="mt-field">' +
+          '<span class="mt-label">' + esc(t("Notiz")) + ' <span class="mt-muted">(' + esc(t("optional")) + ")</span></span>" +
+          '<textarea class="mt-trn-note" rows="2" autocomplete="off"' +
+            ' placeholder="' + esc(t("z. B. Halle, Startzeit, Fazit")) + '" aria-label="' + esc(t("Notiz")) + '">' +
+            esc(state.trn.note || "") +
+          "</textarea>" +
+        "</label>" +
         '<div class="mt-trn-actions">' +
           (editing ? '<button type="button" class="btn" data-act="trncancel">' + esc(t("Abbrechen")) + "</button>" : "") +
           '<button type="submit" class="btn primary mt-big">' +
@@ -1686,6 +1699,7 @@ Object.assign(EN, {
         tournamentCategory: trnCategory() || null,
         tournamentDisciplines: discs,
         tournamentPartners: partners,
+        note: trnNote(),
       };
       let s = state.session;
       if (s) {
@@ -1892,6 +1906,7 @@ Object.assign(EN, {
     if (!el2 || !el2.classList || !state.host || !state.host.contains(el2)) return;
     if (el2.classList.contains("mt-trn-name")) { state.trn.name = el2.value; return; }
     if (el2.classList.contains("mt-trn-date")) { state.dayKey = el2.value; return; }
+    if (el2.classList.contains("mt-trn-note")) { state.trn.note = el2.value; return; }
     if (el2.classList.contains("mt-day-input")) { switchDay(el2.value); return; }
     if (el2.classList.contains("mt-slot-input")) {
       state.pickQuery = el2.value;

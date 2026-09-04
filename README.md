@@ -127,6 +127,8 @@ asked once per tournament day; every match of the day inherits it:
   same type-ahead as the match editor, so a name that has no player doc yet is
   created on the fly.
 - **Klasse** — optional, A or B.
+- **Notiz** — optional free text (venue, start time, takeaways), shown under
+  the tournament header.
 
 After **Turnier starten** the match editor only offers the day's disciplines,
 and picking one fills side A with you plus that discipline's partner — a match
@@ -137,8 +139,8 @@ its matches.
 
 On the `sessions` document this lives in `tournamentName`,
 `tournamentDisciplines` (`["singles","doubles","mixed"]` subset),
-`tournamentPartners` (`{ doubles: { playerId, playerName } | null, mixed: … }`)
-and `tournamentCategory` (`"A"` / `"B"`). Each match still carries the class in
+`tournamentPartners` (`{ doubles: { playerId, playerName } | null, mixed: … }`),
+`tournamentCategory` (`"A"` / `"B"`) and the free-text `note`. Each match still carries the class in
 `category`, which the day list and the history view show as a **Klasse A/B**
 badge; days recorded before this existed keep their free-text category as
 typed.
