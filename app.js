@@ -368,6 +368,13 @@ function applyPinLocks() {
 }
 /* ---- Firebase: gemeinsame App-Initialisierung + anonymer Login ----
    Config ist öffentlich unbedenklich — Zugriff regeln die DB-Rules. */
+/* App Check (reCAPTCHA v3) site key from Firebase console → App Check → Apps.
+   Empty = App Check off. Public value, like the API key. On localhost the SDK
+   prints a debug token in the console once; register it under App Check →
+   Apps → ⋮ → "Manage debug tokens", or local writes are rejected once the
+   database enforces App Check. */
+const APP_CHECK_SITE_KEY = "";
+
 const FB_CONFIG = {
   apiKey: "AIzaSyC6ZVUwkthjkgo3HjeaNwRigH-ueK_95E0",
   /* The Firebase Hosting fansite domain: when the app is served from there,
@@ -384,6 +391,11 @@ const FB_CONFIG = {
 window.fbReady = new Promise(resolve => {
   if (!window.firebase || !firebase.initializeApp) { resolve(null); return; }
   try { firebase.initializeApp(FB_CONFIG); } catch (e) { resolve(null); return; }
+  if (APP_CHECK_SITE_KEY && firebase.appCheck) {
+    if (location.hostname === "localhost") self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    try { firebase.appCheck().activate(APP_CHECK_SITE_KEY, true); }
+    catch (e) { console.warn("[app-check] activation failed:", e); }
+  }
   /* Sign in anonymously ONLY when the first auth callback reports nobody signed
      in — an unconditional signInAnonymously() would clobber a persisted Google
      session (the match tracker signs in with Google). */
