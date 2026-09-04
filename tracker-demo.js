@@ -176,6 +176,17 @@
     return hit ? hydrate(hit) : null;
   };
 
+  repo.findRecentSession = async function (type, days, before) {
+    var end = toDate(before) || new Date();
+    var start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (Number(days) || 14));
+    var lo = keys(start).dateKey, hi = keys(end).dateKey;
+    var wanted = type === "tournament" ? "tournament" : "training";
+    var hits = store.sessions
+      .filter(function (s) { return s.type === wanted && s.dateKey >= lo && s.dateKey <= hi; })
+      .sort(function (a, b) { return a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0; });
+    return hits[0] ? hydrate(hits[0]) : null;
+  };
+
   repo.getOrCreateSession = async function (type, locationId, when) {
     var date = toDate(when) || new Date();
     var existing = await repo.findTodaySession(type, date);

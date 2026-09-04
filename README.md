@@ -109,7 +109,11 @@ day's session (existing matches show up, new ones land there; nothing moves).
 In **Turnier** the date is the first field of the setup card; on re-edit a
 changed date moves the whole tournament day, matches included, in one batch.
 The day list, its heading and the *Letzte Spieltage* summary follow the picked
-day. Switching between Training and Turnier returns to today.
+day. Each mode remembers its own day while the app is open, so toggling
+Training ⇄ Turnier or visiting the history tab brings you back to the same
+tournament. After a reload the tournament tab starts on today; if a tournament
+was played in the last two weeks, the setup card offers it as *Zuletzt: … —
+Öffnen* so you never have to retype its date.
 
 ### Tournament days
 

@@ -666,6 +666,26 @@ const MT = (function () {
     return hit || null;
   };
 
+  /* Newest session of the given type within the last `days` days up to
+     `before` (default today), or null. Two range filters on one field stay
+     on the automatic single-field index. Lets the entry view offer "open
+     last weekend's tournament" instead of asking for the date again. */
+  repo.findRecentSession = async function (type, days, before) {
+    const db = await need();
+    const end = toDate(before) || new Date();
+    const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (Number(days) || 14));
+    const wanted = type === "tournament" ? "tournament" : "training";
+    const snap = await db.collection(COL.sessions)
+      .where("dateKey", ">=", keys(start).dateKey)
+      .where("dateKey", "<=", keys(end).dateKey)
+      .get();
+    const me = uid();
+    const hits = snap.docs.map(docData)
+      .filter(s => s.type === wanted && (!s.ownerUid || s.ownerUid === me))
+      .sort((a, b) => (a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0));
+    return hits[0] || null;
+  };
+
   /* Session of the given type on the given day — reused when one exists,
      created otherwise. The entry view lets both modes pick the day. */
   repo.getOrCreateSession = async function (type, locationId, when) {

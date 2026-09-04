@@ -1447,6 +1447,7 @@
   .mt-field select:focus-visible { outline: none; box-shadow: var(--ring); }
 
   .mt-trn-setup .mt-trn-form { margin: 12px 0 4px; }
+  .mt-trn-recent { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .mt-trn-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
   .mt-trn-actions .btn { min-height: 50px; }
   .mt-trn-actions .mt-big { width: auto; flex: 2 1 60%; }

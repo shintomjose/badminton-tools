@@ -76,6 +76,8 @@ Object.assign(EN, {
   /* --- tournament flow (phase 4) --- */
   "Datum": "Date",
   "Datum wählen": "Choose a date",
+  "Zuletzt: {0}": "Last: {0}",
+  "Öffnen": "Open",
   "Spiele am {0}": "Matches on {0}",
   "Turniername": "Tournament name",
   "optional": "optional",
@@ -165,6 +167,7 @@ Object.assign(EN, {
   const ROUNDS = ["Gruppe", "R32", "R16", "VF", "HF", "Finale"];
   /* tournament class — stored as the bare letter, t("Klasse {0}") labels it */
   const CLASSES = ["A", "B"];
+  const RECENT_TRN_DAYS = 14;   // look-back for the "open last tournament" offer
 
   const state = {
     host: null,
@@ -173,6 +176,12 @@ Object.assign(EN, {
        pick another day — a training evening logged the morning after, a
        tournament from last weekend. */
     dayKey: "",
+    /* each mode remembers its own day, so toggling Training ⇄ Turnier or
+       leaving the tab does not lose a tournament entered for another day */
+    dayKeys: { training: "", tournament: "" },
+    /* newest tournament of the last two weeks, offered on the setup card
+       when no tournament is open — after a reload the day is not known */
+    recentTrn: null,
     session: null,
     matches: [],
     players: [],
@@ -449,7 +458,7 @@ Object.assign(EN, {
       const s = await MT.repo.findTodaySession(state.type, dayDate());
       state.loaded = true;
       restoreDraftLocal();
-      if (s) startWatch(s);
+      sessionFound(s);
       renderAll();
       loadSummary();                       // best effort, never blocks entry
     } catch (e) {
@@ -690,6 +699,22 @@ Object.assign(EN, {
     });
   }
 
+  /* Result of a day lookup: open the session, or — tournament mode with
+     nothing on the picked day — find out whether a recent tournament exists
+     so the setup card can offer to open it. */
+  function sessionFound(s) {
+    if (s) { state.recentTrn = null; startWatch(s); return; }
+    if (!isTournament()) return;
+    const wanted = state.type, key = dayKey();
+    MT.repo.findRecentSession("tournament", RECENT_TRN_DAYS, new Date())
+      .then(r => {
+        if (state.type !== wanted || state.session || dayKey() !== key) return;
+        state.recentTrn = r && r.dateKey !== key ? r : null;
+        renderSession();
+      })
+      .catch(() => { /* an offer only — nothing to report */ });
+  }
+
   /* Re-attach the live session watch after the view was unmounted and mounted
      again (switching away to History and back would otherwise show a frozen list). */
   function resyncSession() {
@@ -697,7 +722,7 @@ Object.assign(EN, {
     MT.repo.findTodaySession(wanted, dayDate())
       .then(s => {
         if (state.type !== wanted) return;          // toggled again meanwhile
-        if (s) startWatch(s);
+        sessionFound(s);
         renderSession();
         renderList();
       })
@@ -912,6 +937,19 @@ Object.assign(EN, {
     "</div>";
   }
 
+  /* "Zuletzt: Neckar Cup · Sa., 29.08.2026  [Öffnen]" — one tap back into a
+     tournament from another day, instead of retyping its date. */
+  function recentTournamentHtml(editing) {
+    const r = state.recentTrn;
+    if (editing || !r) return "";
+    const label = (r.tournamentName || t("Turnier")) + " · " + shortDate(MT.toDate(r.date) || new Date());
+    return '<p class="mt-muted mt-trn-recent">' +
+      esc(tt("Zuletzt: {0}", label)) + " " +
+      '<button type="button" class="btn small" data-act="openrecent" data-day="' + esc(r.dateKey || "") + '">' +
+        esc(t("Öffnen")) + "</button>" +
+    "</p>";
+  }
+
   /* Asked once per tournament day: name (required), disciplines played
      (≥ 1), a partner per doubles discipline, class (optional).
      Shown only while no tournament session exists for today, or on re-edit. */
@@ -922,6 +960,7 @@ Object.assign(EN, {
     return '<section class="panel mt-session mt-trn-setup">' +
       "<h2>" + esc(t("Turnier")) + ' <span class="hint">— ' + esc(MT.fmtDate(dayDate())) + "</span></h2>" +
       '<p class="mt-muted">' + esc(t("Einmal pro Turniertag eintragen — jedes Spiel erbt diese Angaben.")) + "</p>" +
+      recentTournamentHtml(editing) +
       /* novalidate: the empty-name message must come from t(), not from the
          browser's own (untranslated) validation bubble */
       '<form class="mt-trn-form" novalidate>' +
@@ -1686,9 +1725,11 @@ Object.assign(EN, {
 
   /* Switching mode is a full reset: separate flows, separate lists. */
   function switchType(v) {
+    state.dayKeys[state.type] = state.dayKey;
     state.type = v === "tournament" ? "tournament" : "training";
+    state.dayKey = state.dayKeys[state.type] || "";
     state.trnEdit = false;
-    state.dayKey = "";
+    state.recentTrn = null;
     closeEditor(false);
     stopWatch();
     state.session = null;
@@ -1698,10 +1739,10 @@ Object.assign(EN, {
     renderAll();
     if (!state.loaded) return;                       // load() picks up state.type
     const wanted = state.type;
-    MT.repo.findTodaySession(wanted)
+    MT.repo.findTodaySession(wanted, dayDate())
       .then(s => {
         if (state.type !== wanted) return;           // toggled again meanwhile
-        if (s) startWatch(s);
+        sessionFound(s);
         renderSession();
         renderList();
         renderSummary();
@@ -1739,6 +1780,7 @@ Object.assign(EN, {
       return;
     }
     if (act === "trnedit") { state.trnEdit = true; renderSession(); renderList(); return; }
+    if (act === "openrecent") { switchDay(btn.dataset.day); return; }
     if (act === "trncancel") {
       state.trnEdit = false;
       closeSuggest();
@@ -2040,7 +2082,9 @@ Object.assign(EN, {
       /* Spec: the mode toggle lives in memory only and every mount starts on
          Training. Coming back from Turnier therefore drops its session/draft. */
       if (state.type !== "training") {
+        state.dayKeys[state.type] = state.dayKey;
         state.type = "training";
+        state.dayKey = state.dayKeys.training || "";
         state.trnEdit = false;
         stopWatch();
         state.session = null;
