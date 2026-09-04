@@ -24,9 +24,6 @@
             },
             "gone": {
               ".validate": "newData.isBoolean()"
-            },
-            "$other": {
-              ".validate": false
             }
           }
         },
@@ -74,7 +71,7 @@
           "day": {
             ".validate": "newData.isString() && newData.val().length <= 40"
           },
-          "ts": {
+          "t": {
             ".validate": "newData.isNumber()"
           },
           "$other": {
