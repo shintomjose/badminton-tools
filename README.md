@@ -99,3 +99,29 @@ Do these four steps once:
 - Writes resolve as soon as they are queued locally, so entry keeps working in a
   hall with no reception. The chip in the tracker header reports the honest
   state: `● synchronisiert` / `⏳ ausstehend…` / `○ offline`.
+
+### Tournament days
+
+Switch the entry tab to **Turnier**. The first thing you see is a setup card,
+asked once per tournament day; every match of the day inherits it:
+
+- **Turniername** — required.
+- **Disziplinen** — tap the disciplines you play that day (Einzel / Doppel /
+  Mixed, at least one). Doppel and Mixed each reveal a **partner** field: the
+  same type-ahead as the match editor, so a name that has no player doc yet is
+  created on the fly.
+- **Klasse** — optional, A or B.
+
+After **Turnier starten** the match editor only offers the day's disciplines,
+and picking one fills side A with you plus that discipline's partner — a match
+is then opponents, score, optional round and opponent club. **Turnier
+bearbeiten** reopens the card; a changed partner applies to new matches only,
+saved matches keep their line-up.
+
+On the `sessions` document this lives in `tournamentName`,
+`tournamentDisciplines` (`["singles","doubles","mixed"]` subset),
+`tournamentPartners` (`{ doubles: { playerId, playerName } | null, mixed: … }`)
+and `tournamentCategory` (`"A"` / `"B"`). Each match still carries the class in
+`category`, which the day list and the history view show as a **Klasse A/B**
+badge; days recorded before this existed keep their free-text category as
+typed.
