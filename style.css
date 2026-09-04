@@ -1452,6 +1452,11 @@
   .mt-trn-actions .mt-big { width: auto; flex: 2 1 60%; }
   .mt-trn-actions .btn:not(.mt-big) { flex: 1 1 auto; }
 
+  /* setup card: discipline / class chips sit inside a field like any input;
+     the partner field reuses the editor's slot type-ahead */
+  .mt-trn-disc, .mt-trn-class { margin-bottom: 0; }
+  .mt-trn-partner .mt-slot-wrap { display: block; }
+
   .mt-trn-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .mt-trn-head h2 { margin: 0; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
   .mt-trn-head .btn { flex: none; }

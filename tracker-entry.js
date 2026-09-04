@@ -14,8 +14,11 @@
  *
  * Training vs. tournament: both modes drive the SAME session card, match
  * list, editor, player picker and save path. Tournament adds exactly two
- * things — a one-off session header (name + category, asked once per
- * tournament day) and two optional per-match fields (round, opponent club).
+ * things — a one-off session header (name, disciplines played, the partner
+ * per doubles discipline, class — asked once per tournament day) and two
+ * optional per-match fields (round, opponent club). The header is what
+ * makes tournament entry fast: the editor only offers the disciplines of
+ * the day, and picking one fills my side of the court with me + partner.
  * Nothing on the training path gained a field or a tap.
  * ===================================================================== */
 "use strict";
@@ -72,8 +75,6 @@ Object.assign(EN, {
   /* --- tournament flow (phase 4) --- */
   "Turnier heute": "Tournament today",
   "Turniername": "Tournament name",
-  "Kategorie": "Category",
-  "z. B. HE O35": "e.g. MS O35",
   "optional": "optional",
   "Einmal pro Turniertag eintragen — jedes Spiel erbt diese Angaben.":
     "Enter once per tournament day — every match inherits it.",
@@ -81,6 +82,15 @@ Object.assign(EN, {
   "Turnier speichern": "Save tournament",
   "Turnier bearbeiten": "Edit tournament",
   "Turniername eingeben": "Enter a tournament name",
+  "Disziplinen": "Disciplines",
+  "Mindestens eine Disziplin wählen": "Choose at least one discipline",
+  "Partner Doppel": "Doubles partner",
+  "Partner Mixed": "Mixed partner",
+  "Partner für {0} wählen": "Choose a partner for {0}",
+  "Doppel mit {0}": "Doubles with {0}",
+  "Mixed mit {0}": "Mixed with {0}",
+  "Klasse": "Class",
+  "Klasse {0}": "Class {0}",
   "Turnier gespeichert": "Tournament saved",
   "Runde": "Round",
   "Keine Runde": "No round",
@@ -150,6 +160,8 @@ Object.assign(EN, {
   const SMALL_N = 5;         // below this a percentage is flagged as thin evidence
   /* Stored verbatim on the match — the codes are the data, t() only labels them. */
   const ROUNDS = ["Gruppe", "R32", "R16", "VF", "HF", "Finale"];
+  /* tournament class — stored as the bare letter, t("Klasse {0}") labels it */
+  const CLASSES = ["A", "B"];
 
   const state = {
     host: null,
@@ -168,7 +180,9 @@ Object.assign(EN, {
     activeSlot: null,      // { side: "A"|"B", i: 0|1 }
     justSaved: false,
     /* tournament-day fields, asked once and inherited by every match of the day */
-    trn: { name: "", category: "" },
+    trn: { name: "", category: "", disciplines: [], partners: {} },
+    /* partners: { doubles: { playerId, playerName }, mixed: { … } } — one per
+       doubles discipline of the day, preselected on every match of that kind */
     trnEdit: false,        // true while the session header is being re-edited
     addLocOpen: false,     // the venue quick-add input lives behind a "+" toggle
     /* type-ahead: which slot's field is open and what has been typed into it */
@@ -248,6 +262,61 @@ Object.assign(EN, {
     if (!session || state.trnEdit) return;
     state.trn.name = session.tournamentName || "";
     state.trn.category = session.tournamentCategory || "";
+    state.trn.disciplines = orderedDisciplines(session.tournamentDisciplines);
+    state.trn.partners = {};
+    const tp = session.tournamentPartners || {};
+    PARTNER_DISCIPLINES.forEach(k => {
+      if (tp[k] && tp[k].playerId) {
+        state.trn.partners[k] = { playerId: tp[k].playerId, playerName: tp[k].playerName || "" };
+      }
+    });
+  }
+
+  /* Canonical Einzel → Doppel → Mixed order, deduplicated, so the editor
+     toggle never changes shape between two tournament days. */
+  function orderedDisciplines(list) {
+    const raw = (Array.isArray(list) ? list : []).map(normDiscipline);
+    return DISCIPLINES.map(x => x[0]).filter(k => raw.indexOf(k) >= 0);
+  }
+  function trnDisciplines() { return orderedDisciplines(state.trn.disciplines); }
+  function needsPartner(disc) { return PARTNER_DISCIPLINES.indexOf(normDiscipline(disc)) >= 0; }
+  function trnPartner(disc) {
+    const p = state.trn.partners && state.trn.partners[disc];
+    return p && p.playerId ? p : null;
+  }
+  function trnClassLabel(cat) {
+    const c = String(cat || "").trim();
+    if (!c) return "";
+    /* legacy days stored free text ("HE O35") — show it as it was typed */
+    return CLASSES.indexOf(c) >= 0 ? tt("Klasse {0}", c) : c;
+  }
+
+  /* Discipline choices offered in the editor: the tournament's own list;
+     everything for training and for tournament days recorded before the
+     list existed. */
+  function allowedDisciplines() {
+    if (!isTournament()) return DISCIPLINES;
+    const set = trnDisciplines();
+    if (!set.length) return DISCIPLINES;
+    return DISCIPLINES.filter(x => set.indexOf(x[0]) >= 0);
+  }
+
+  /* My side of the court on a tournament day: me plus the partner chosen for
+     that discipline. Singles is just me. */
+  function tournamentSideA(disc) {
+    const me = meePlayer();
+    const ids = me ? [me.id] : [];
+    const p = needsPartner(disc) ? trnPartner(disc) : null;
+    if (p && playerById(p.playerId) && ids.indexOf(p.playerId) < 0) ids.push(p.playerId);
+    return ids;
+  }
+
+  /* Ids the partner type-ahead must not offer: me, and partners already chosen. */
+  function setupUsedIds() {
+    const me = meePlayer();
+    const ids = me ? [me.id] : [];
+    PARTNER_DISCIPLINES.forEach(k => { const p = trnPartner(k); if (p) ids.push(p.playerId); });
+    return ids;
   }
 
   /* Datalist for the opponent-club field: every club we already know about,
@@ -270,6 +339,7 @@ Object.assign(EN, {
     ["doubles", "Doppel"],
     ["mixed", "Mixed"],
   ];
+  const PARTNER_DISCIPLINES = ["doubles", "mixed"];
   function normDiscipline(v) {
     return (v === "doubles" || v === "mixed") ? v : "singles";
   }
@@ -692,13 +762,22 @@ Object.assign(EN, {
     if (!isTournament()) {
       return "<h2>" + esc(t("Heute")) + '</h2><p class="mt-sess-meta">' + meta + "</p>";
     }
-    const cat = trnCategory();
+    /* "Doppel mit Nicolas · Mixed mit Anna · Klasse A" — the day's setup at a glance */
+    const bits = trnDisciplines().map(k => {
+      const p = trnPartner(k);
+      const who = p ? firstName(p.playerName || playerName(p.playerId)) : "";
+      if (k === "doubles") return who ? tt("Doppel mit {0}", who) : t("Doppel");
+      if (k === "mixed") return who ? tt("Mixed mit {0}", who) : t("Mixed");
+      return t("Einzel");
+    });
+    const cls = trnClassLabel(trnCategory());
+    if (cls) bits.push(cls);
     return '<div class="mt-trn-head">' +
       "<h2>" + esc(trnName() || t("Turnier")) + "</h2>" +
       '<button type="button" class="btn small" data-act="trnedit">' + esc(t("Turnier bearbeiten")) + "</button>" +
     "</div>" +
-    /* the category is user input and stays escaped */
-    '<p class="mt-sess-meta">' + (cat ? esc(cat) + " · " : "") + meta + "</p>";
+    /* partner names and legacy class text are user input and stay escaped */
+    '<p class="mt-sess-meta">' + (bits.length ? esc(bits.join(" · ")) + " · " : "") + meta + "</p>";
   }
 
   /* Day-wise totals — a courtside glance, not the history tab. */
@@ -762,10 +841,46 @@ Object.assign(EN, {
       "</section>";
   }
 
-  /* Asked once per tournament day: name (required) + category (optional).
+  /* Partner field for one doubles discipline — the same type-ahead as the
+     editor slots (side "P", index = discipline), so quick-add works here too. */
+  function partnerSlotHtml(disc) {
+    const label = t(disc === "mixed" ? "Partner Mixed" : "Partner Doppel");
+    const p = trnPartner(disc);
+    let body;
+    if (p) {
+      body = '<div class="mt-slot-wrap">' +
+        '<button type="button" class="mt-slot filled" data-act="pslot" data-i="' + esc(disc) + '">' +
+          esc(p.playerName || playerName(p.playerId)) +
+          '<span class="mt-slot-x" aria-hidden="true">✕</span>' +
+        "</button>" +
+      "</div>";
+    } else {
+      const open = slotIsOpen("P", disc);
+      const boxId = "mtSuggest-P-" + disc;
+      body = '<div class="mt-slot-wrap">' +
+        '<input type="text" class="mt-slot-input" data-side="P" data-i="' + esc(disc) + '"' +
+          ' autocomplete="off" autocapitalize="words" enterkeyhint="done" role="combobox"' +
+          ' aria-expanded="' + open + '" aria-autocomplete="list" aria-controls="' + boxId + '"' +
+          ' placeholder="' + esc(t("Name tippen…")) + '"' +
+          ' aria-label="' + esc(label) + '"' +
+          ' value="' + esc(open ? state.pickQuery : "") + '">' +
+        '<div class="mt-suggest" id="' + boxId + '" role="listbox">' +
+          (open ? suggestHtml(null) : "") +
+        "</div>" +
+      "</div>";
+    }
+    return '<div class="mt-field mt-trn-partner">' +
+      '<span class="mt-label">' + esc(label) + "</span>" + body +
+    "</div>";
+  }
+
+  /* Asked once per tournament day: name (required), disciplines played
+     (≥ 1), a partner per doubles discipline, class (optional).
      Shown only while no tournament session exists for today, or on re-edit. */
   function tournamentSetupHtml() {
     const editing = !!state.session;
+    const chosen = trnDisciplines();
+    const cat = trnCategory();
     return '<section class="panel mt-session mt-trn-setup">' +
       "<h2>" + esc(t("Turnier heute")) + ' <span class="hint">— ' + esc(MT.fmtDate(new Date())) + "</span></h2>" +
       '<p class="mt-muted">' + esc(t("Einmal pro Turniertag eintragen — jedes Spiel erbt diese Angaben.")) + "</p>" +
@@ -778,12 +893,26 @@ Object.assign(EN, {
             ' placeholder="' + esc(t("Turniername")) + '" aria-label="' + esc(t("Turniername")) + '"' +
             ' value="' + esc(trnName()) + '">' +
         "</label>" +
-        '<label class="mt-field">' +
-          '<span class="mt-label">' + esc(t("Kategorie")) + ' <span class="mt-muted">(' + esc(t("optional")) + ")</span></span>" +
-          '<input type="text" class="mt-trn-cat" autocomplete="off"' +
-            ' placeholder="' + esc(t("z. B. HE O35")) + '" aria-label="' + esc(t("Kategorie")) + '"' +
-            ' value="' + esc(trnCategory()) + '">' +
-        "</label>" +
+        '<div class="mt-field">' +
+          '<span class="mt-label">' + esc(t("Disziplinen")) + "</span>" +
+          '<div class="mt-chips mt-trn-disc" role="group" aria-label="' + esc(t("Disziplinen")) + '">' +
+            DISCIPLINES.map(x =>
+              '<button type="button" class="mt-chip" data-act="trndisc" data-v="' + x[0] + '"' +
+              ' aria-pressed="' + (chosen.indexOf(x[0]) >= 0) + '">' + esc(t(x[1])) + "</button>"
+            ).join("") +
+          "</div>" +
+        "</div>" +
+        /* one partner field per chosen doubles discipline, in canonical order */
+        PARTNER_DISCIPLINES.filter(k => chosen.indexOf(k) >= 0).map(partnerSlotHtml).join("") +
+        '<div class="mt-field">' +
+          '<span class="mt-label">' + esc(t("Klasse")) + ' <span class="mt-muted">(' + esc(t("optional")) + ")</span></span>" +
+          '<div class="mt-chips mt-trn-class" role="group" aria-label="' + esc(t("Klasse")) + '">' +
+            CLASSES.map(c =>
+              '<button type="button" class="mt-chip" data-act="trnclass" data-v="' + c + '"' +
+              ' aria-pressed="' + (cat === c) + '">' + esc(tt("Klasse {0}", c)) + "</button>"
+            ).join("") +
+          "</div>" +
+        "</div>" +
         '<div class="mt-trn-actions">' +
           (editing ? '<button type="button" class="btn" data-act="trncancel">' + esc(t("Abbrechen")) + "</button>" : "") +
           '<button type="submit" class="btn primary mt-big">' +
@@ -821,7 +950,9 @@ Object.assign(EN, {
     const trn = m.tournament || {};
     const round = m.round || trn.round || "";
     const club = m.opponentClub || trn.opponentClub || "";
+    const cls = trnClassLabel(m.category || trn.category);
     const trnHtml =
+      (cls ? '<span class="mt-badge trn">' + esc(cls) + "</span>" : "") +
       (round ? '<span class="mt-badge trn">' + esc(t(round)) + "</span>" : "") +
       (club ? '<span class="mt-badge trn">' + esc(club) + "</span>" : "");
     /* draggable="true" only on the card: the buttons inside stay tappable
@@ -894,7 +1025,7 @@ Object.assign(EN, {
      no id — picking one creates the doc on the fly (see pickByName).
      Order: recently played first (docs only), then everything else A→Z. */
   function pickerPool(d) {
-    const used = draftIds(d);
+    const used = d ? draftIds(d) : setupUsedIds();
     const usedNames = {};
     used.forEach(id => { const p = playerById(id); if (p) usedNames[fold(p.name)] = 1; });
 
@@ -994,8 +1125,8 @@ Object.assign(EN, {
   function patchSuggest() {
     const inp = slotInputEl(state.pickOpen);
     const box = inp && inp.parentNode ? inp.parentNode.querySelector(".mt-suggest") : null;
-    if (!box || !state.draft) return;
-    box.innerHTML = suggestHtml(state.draft);
+    if (!box) return;
+    box.innerHTML = suggestHtml(state.draft);   // null while the setup card is open
     inp.setAttribute("aria-expanded", "true");
   }
 
@@ -1101,7 +1232,7 @@ Object.assign(EN, {
 
         '<div class="mt-opt-row">' +
           '<div class="mt-toggle" role="group" aria-label="' + esc(t("Disziplin")) + '">' +
-            DISCIPLINES.map(x =>
+            allowedDisciplines().map(x =>
               '<button type="button" data-act="disc" data-v="' + x[0] + '"' +
               ' aria-pressed="' + (normDiscipline(d.discipline) === x[0]) + '">' + esc(t(x[1])) + "</button>"
             ).join("") +
@@ -1175,12 +1306,16 @@ Object.assign(EN, {
     const shown = prefill ? orderedMatches() : [];
     const last = shown.length ? shown[shown.length - 1] : null;
     const me = meePlayer();
-    const disc = last ? normDiscipline(last.discipline) : "singles";
+    const allowed = allowedDisciplines().map(x => x[0]);
+    let disc = last ? normDiscipline(last.discipline) : allowed[0];
+    if (allowed.indexOf(disc) < 0) disc = allowed[0];
+    /* a tournament day starts from me + the partner of the day, not from an empty side */
+    const freshA = isTournament() ? tournamentSideA(disc) : (me ? [me.id] : []);
     const d = {
       id: null,
       discipline: disc,
       targetScore: last && last.targetScore ? last.targetScore : defaultTarget(disc),
-      sideA: last && last.sideA ? (last.sideA.playerIds || []).slice() : (me ? [me.id] : []),
+      sideA: last && last.sideA ? (last.sideA.playerIds || []).slice() : freshA,
       sideB: last && last.sideB ? (last.sideB.playerIds || []).slice() : [],
       /* empty, not 0 — the final result gets typed in, and "" must stay
          distinguishable from a real 0 for validation */
@@ -1268,9 +1403,11 @@ Object.assign(EN, {
   /* Fills the slot the type-ahead belongs to, then hops to the next empty one
      so a doubles line-up is four taps with no reaching for a picker. */
   function assignPlayer(playerId) {
-    const d = state.draft;
     const s = state.pickOpen || state.activeSlot;
-    if (!d || !s) return;
+    if (!s) return;
+    if (s.side === "P") { assignPartner(s.i, playerId); return; }
+    const d = state.draft;
+    if (!d) return;
     (s.side === "A" ? d.sideA : d.sideB)[s.i] = playerId;
     const next = firstEmptySlot(d);
     state.activeSlot = next;
@@ -1284,9 +1421,21 @@ Object.assign(EN, {
   /* Picking a suggestion — or pressing Enter on typed text. Reuses the players
      doc if one exists (roster name or free text alike), otherwise creates it
      silently. The user sees the name land in the slot either way. */
+  /* Partner field on the setup card: store id + name (the name is
+     denormalised on the session so the header never costs a lookup). */
+  function assignPartner(disc, playerId) {
+    const p = playerById(playerId);
+    if (!needsPartner(disc) || !p) return;
+    state.trn.partners[disc] = { playerId: playerId, playerName: p.name };
+    state.pickOpen = null;
+    state.activeSlot = null;
+    state.pickQuery = "";
+    renderSession();
+  }
+
   async function pickByName(name) {
     const clean = String(name || "").trim();
-    if (!clean || !state.draft || state.pickBusy) return;
+    if (!clean || state.pickBusy) return;
     if (!(state.pickOpen || state.activeSlot)) return;
     const existing = playerByName(clean);
     if (existing) { assignPlayer(existing.id); return; }
@@ -1421,9 +1570,31 @@ Object.assign(EN, {
       if (inp) inp.focus();
       return;
     }
+    const discs = trnDisciplines();
+    if (!discs.length) { toast(t("Mindestens eine Disziplin wählen")); return; }
+    for (let i = 0; i < discs.length; i++) {
+      const k = discs[i];
+      if (needsPartner(k) && !trnPartner(k)) {
+        toast(tt("Partner für {0} wählen", disciplineLabel(k)));
+        focusIn('.mt-slot-input[data-side="P"][data-i="' + k + '"]', true);
+        return;
+      }
+    }
+    /* every partner key is written, chosen or null, so a dropped discipline
+       also drops its partner in Firestore instead of lingering */
+    const partners = {};
+    PARTNER_DISCIPLINES.forEach(k => {
+      const p = discs.indexOf(k) >= 0 ? trnPartner(k) : null;
+      partners[k] = p ? { playerId: p.playerId, playerName: p.playerName } : null;
+    });
     try {
       const s = await MT.repo.getOrCreateTodaySession("tournament", state.locationId);
-      const patch = { tournamentName: name, tournamentCategory: trnCategory() || null };
+      const patch = {
+        tournamentName: name,
+        tournamentCategory: trnCategory() || null,
+        tournamentDisciplines: discs,
+        tournamentPartners: partners,
+      };
       if (state.locationId) { patch.locationId = state.locationId; patch.locationName = state.locationName; }
       await MT.repo.updateSession(s.id, patch);
       state.trnEdit = false;
@@ -1491,8 +1662,36 @@ Object.assign(EN, {
     if (act === "trnedit") { state.trnEdit = true; renderSession(); renderList(); return; }
     if (act === "trncancel") {
       state.trnEdit = false;
+      closeSuggest();
       hydrateTournament(state.session);              // drop unsaved edits
       renderSession(); renderList();
+      return;
+    }
+    if (act === "trndisc") {
+      const v = normDiscipline(btn.dataset.v);
+      const cur = trnDisciplines();
+      const i = cur.indexOf(v);
+      if (i >= 0) cur.splice(i, 1); else cur.push(v);
+      state.trn.disciplines = orderedDisciplines(cur);
+      closeSuggest();
+      renderSession();
+      return;
+    }
+    if (act === "trnclass") {
+      const v = btn.dataset.v;
+      state.trn.category = trnCategory() === v ? "" : v;   // tap again to clear
+      renderSession();
+      return;
+    }
+    if (act === "pslot") {
+      /* tapping a filled partner clears it and reopens the field */
+      const disc = btn.dataset.i;
+      delete state.trn.partners[disc];
+      state.pickOpen = { side: "P", i: disc };
+      state.activeSlot = state.pickOpen;
+      state.pickQuery = "";
+      renderSession();
+      focusOpenSlot();
       return;
     }
     if (act === "addloc-toggle") {
@@ -1509,6 +1708,8 @@ Object.assign(EN, {
     if (act === "moveup") { moveMatch(btn.dataset.id, -1); return; }
     if (act === "movedown") { moveMatch(btn.dataset.id, 1); return; }
     if (act === "player") { MT.openPlayerProfile(btn.dataset.id); return; }
+    /* before the draft guard: the setup card's partner field picks too */
+    if (act === "pickname") { pickByName(btn.dataset.name); return; }
     if (!d) return;
 
     if (act === "disc") {
@@ -1519,6 +1720,9 @@ Object.assign(EN, {
       /* Doppel ⇄ Mixed keeps the pairing and the target — only the shape
          change to or from singles resets them. */
       if (wasSingles !== (v === "singles")) d.targetScore = defaultTarget(v);
+      /* On a tournament day my side is fixed per discipline: me + that
+         discipline's partner. Only the opponents change. */
+      if (isTournament()) d.sideA = tournamentSideA(v);
       normalizeSlots(d);
       state.activeSlot = firstEmptySlot(d);
       /* the slot that was being typed into may not exist any more */
@@ -1540,7 +1744,6 @@ Object.assign(EN, {
       focusOpenSlot();
       return;
     }
-    if (act === "pickname") { pickByName(btn.dataset.name); return; }
     if (act === "addgame") { if (d.games.length < 3) { d.games.push({ a: "", b: "" }); saveDraftLocal(); renderEditor(); } return; }
     if (act === "delgame") {
       const gi = Number(btn.dataset.g);
@@ -1567,8 +1770,6 @@ Object.assign(EN, {
     const el2 = e.target;
     if (!el2 || !el2.classList || !state.host || !state.host.contains(el2)) return;
     if (el2.classList.contains("mt-trn-name")) { state.trn.name = el2.value; return; }
-    if (el2.classList.contains("mt-trn-cat")) { state.trn.category = el2.value; return; }
-    if (!state.draft) return;
     if (el2.classList.contains("mt-slot-input")) {
       state.pickQuery = el2.value;
       patchSuggest();                                 // rows only — keeps the caret
@@ -1600,9 +1801,12 @@ Object.assign(EN, {
      the people you just played with are one tap away. */
   function onFocusIn(e) {
     const el2 = e.target;
-    if (!el2 || !el2.classList || !state.draft) return;
+    if (!el2 || !el2.classList) return;
     if (!el2.classList.contains("mt-slot-input")) return;
-    const side = el2.dataset.side, i = Number(el2.dataset.i);
+    /* side "P" = partner field on the setup card, indexed by discipline */
+    const side = el2.dataset.side;
+    const i = side === "P" ? el2.dataset.i : Number(el2.dataset.i);
+    if (side !== "P" && !state.draft) return;
     if (slotIsOpen(side, i)) return;
     closeSuggest();                                   // collapse any other field
     state.pickOpen = { side: side, i: i };
@@ -1722,9 +1926,7 @@ Object.assign(EN, {
     if (form.classList.contains("mt-trn-form")) {
       e.preventDefault();
       const nameInp = form.querySelector(".mt-trn-name");
-      const catInp = form.querySelector(".mt-trn-cat");
       if (nameInp) state.trn.name = nameInp.value;
-      if (catInp) state.trn.category = catInp.value;
       await saveTournament();
       return;
     }

@@ -352,8 +352,13 @@ const MT = (function () {
       locationName: session.locationName || DEFAULT_LOCATION,
       type: session.type === "tournament" ? "tournament" : "training",
       note: session.note || "",
-      /* tournament-only fields stay null until phase 4 */
+      /* tournament-only — filled by the entry view's day header */
       tournamentName: session.tournamentName || null,
+      tournamentCategory: session.tournamentCategory || null,
+      /* disciplines played that day + the partner per doubles discipline;
+         the entry view preselects both on every match of the day */
+      tournamentDisciplines: Array.isArray(session.tournamentDisciplines) ? session.tournamentDisciplines.slice() : null,
+      tournamentPartners: session.tournamentPartners || null,
       ownerUid: owner,
       createdAt: serverTs(),
       updatedAt: serverTs(),

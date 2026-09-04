@@ -156,8 +156,15 @@ for (let d = new Date(2025, 0, 7); d < TODAY; d.setDate(d.getDate() + 1)) {
 }
 
 /* ---- tournaments ---- */
+/* category = tournament class letter ("A" | "B"); partner = { id, name } for
+   doubles/mixed, stored on the session like the entry view does. */
 function tournament(date, name, category, disc, partner, oppPool) {
-  const s = session(at(date, 9, 30), "tournament", pick(locations), { tournamentName: name, tournamentCategory: category });
+  const partners = { doubles: null, mixed: null };
+  if (partner) partners[disc] = { playerId: partner.id, playerName: partner.name };
+  const s = session(at(date, 9, 30), "tournament", pick(locations), {
+    tournamentName: name, tournamentCategory: category,
+    tournamentDisciplines: [disc], tournamentPartners: partners,
+  });
   const opp = shuffle(oppPool);
   const rounds = ["Gruppe", "Gruppe", "Gruppe", "R16", "VF", "HF", "Finale"];
   let seq = 0, alive = true;
@@ -178,11 +185,11 @@ function tournament(date, name, category, disc, partner, oppPool) {
   }
 }
 const men = guests.filter(p => !isW(p));
-tournament(new Date(2025, 2, 15), "Heilbronner Stadtmeisterschaft", "HE B", "singles", null, men);
-tournament(new Date(2025, 5, 28), "Unterland Open", "HD B", "doubles", club[0], men);
-tournament(new Date(2025, 10, 8), "Neckar Cup", "Mixed B", "mixed", club[1], guests);
-tournament(new Date(2026, 2, 14), "Heilbronner Stadtmeisterschaft", "HE B", "singles", null, men);
-tournament(new Date(2026, 5, 27), "Unterland Open", "HD B", "doubles", club[2], men);
+tournament(new Date(2025, 2, 15), "Heilbronner Stadtmeisterschaft", "B", "singles", null, men);
+tournament(new Date(2025, 5, 28), "Unterland Open", "B", "doubles", club[0], men);
+tournament(new Date(2025, 10, 8), "Neckar Cup", "B", "mixed", club[1], guests);
+tournament(new Date(2026, 2, 14), "Heilbronner Stadtmeisterschaft", "A", "singles", null, men);
+tournament(new Date(2026, 5, 27), "Unterland Open", "B", "doubles", club[2], men);
 
 /* ---- sort: sessions/matches by date asc ---- */
 sessions.sort((a, b) => a.date.localeCompare(b.date));

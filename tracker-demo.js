@@ -81,6 +81,8 @@
       note: session.note || "",
       tournamentName: session.tournamentName || null,
       tournamentCategory: session.tournamentCategory || null,
+      tournamentDisciplines: Array.isArray(session.tournamentDisciplines) ? session.tournamentDisciplines.slice() : null,
+      tournamentPartners: session.tournamentPartners || null,
       ownerUid: OWNER, createdAt: now(), updatedAt: now(),
     };
   }

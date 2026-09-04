@@ -411,10 +411,17 @@
    "type": "tournament",
    "note": "",
    "tournamentName": "Heilbronner Stadtmeisterschaft",
-   "tournamentCategory": "HE B",
+   "tournamentCategory": "B",
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T08:30:00.000Z",
-   "updatedAt": "2025-03-15T08:30:00.000Z"
+   "updatedAt": "2025-03-15T08:30:00.000Z",
+   "tournamentDisciplines": [
+    "singles"
+   ],
+   "tournamentPartners": {
+    "doubles": null,
+    "mixed": null
+   }
   },
   {
    "id": "s-070",
@@ -699,10 +706,20 @@
    "type": "tournament",
    "note": "",
    "tournamentName": "Unterland Open",
-   "tournamentCategory": "HD B",
+   "tournamentCategory": "B",
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-28T07:30:00.000Z",
-   "updatedAt": "2025-06-28T07:30:00.000Z"
+   "updatedAt": "2025-06-28T07:30:00.000Z",
+   "tournamentDisciplines": [
+    "doubles"
+   ],
+   "tournamentPartners": {
+    "doubles": {
+     "playerId": "p-002",
+     "playerName": "Weber, Nicolas"
+    },
+    "mixed": null
+   }
   },
   {
    "id": "s-137",
@@ -1035,10 +1052,20 @@
    "type": "tournament",
    "note": "",
    "tournamentName": "Neckar Cup",
-   "tournamentCategory": "Mixed B",
+   "tournamentCategory": "B",
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T08:30:00.000Z",
-   "updatedAt": "2025-11-08T08:30:00.000Z"
+   "updatedAt": "2025-11-08T08:30:00.000Z",
+   "tournamentDisciplines": [
+    "mixed"
+   ],
+   "tournamentPartners": {
+    "doubles": null,
+    "mixed": {
+     "playerId": "p-003",
+     "playerName": "Hoffmann, Lena"
+    }
+   }
   },
   {
    "id": "s-218",
@@ -1371,10 +1398,17 @@
    "type": "tournament",
    "note": "",
    "tournamentName": "Heilbronner Stadtmeisterschaft",
-   "tournamentCategory": "HE B",
+   "tournamentCategory": "A",
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-14T08:30:00.000Z",
-   "updatedAt": "2026-03-14T08:30:00.000Z"
+   "updatedAt": "2026-03-14T08:30:00.000Z",
+   "tournamentDisciplines": [
+    "singles"
+   ],
+   "tournamentPartners": {
+    "doubles": null,
+    "mixed": null
+   }
   },
   {
    "id": "s-302",
@@ -1691,10 +1725,20 @@
    "type": "tournament",
    "note": "",
    "tournamentName": "Unterland Open",
-   "tournamentCategory": "HD B",
+   "tournamentCategory": "B",
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T07:30:00.000Z",
-   "updatedAt": "2026-06-27T07:30:00.000Z"
+   "updatedAt": "2026-06-27T07:30:00.000Z",
+   "tournamentDisciplines": [
+    "doubles"
+   ],
+   "tournamentPartners": {
+    "doubles": {
+     "playerId": "p-004",
+     "playerName": "Becker, Jonas"
+    },
+    "mixed": null
+   }
   },
   {
    "id": "s-370",
@@ -4302,7 +4346,7 @@
    "note": "",
    "seq": 1,
    "round": "Gruppe",
-   "category": "HE B",
+   "category": "B",
    "opponentClub": "TSV Öhringen",
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T08:46:00.000Z",
@@ -4365,7 +4409,7 @@
    "note": "",
    "seq": 2,
    "round": "Gruppe",
-   "category": "HE B",
+   "category": "B",
    "opponentClub": "SG Bietigheim",
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T09:06:00.000Z",
@@ -4424,7 +4468,7 @@
    "note": "",
    "seq": 3,
    "round": "Gruppe",
-   "category": "HE B",
+   "category": "B",
    "opponentClub": "SV Böckingen",
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T09:15:00.000Z",
@@ -4483,7 +4527,7 @@
    "note": "",
    "seq": 4,
    "round": "R16",
-   "category": "HE B",
+   "category": "B",
    "opponentClub": "BC Neckarsulm",
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T09:38:00.000Z",
@@ -4546,7 +4590,7 @@
    "note": "",
    "seq": 5,
    "round": "VF",
-   "category": "HE B",
+   "category": "B",
    "opponentClub": "TSV Öhringen",
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T10:00:00.000Z",
@@ -7907,7 +7951,7 @@
    "note": "",
    "seq": 1,
    "round": "Gruppe",
-   "category": "HD B",
+   "category": "B",
    "opponentClub": "BC Neckarsulm",
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-28T07:51:00.000Z",
@@ -7974,7 +8018,7 @@
    "note": "",
    "seq": 2,
    "round": "Gruppe",
-   "category": "HD B",
+   "category": "B",
    "opponentClub": "TSV Öhringen",
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-28T08:14:00.000Z",
@@ -8045,7 +8089,7 @@
    "note": "",
    "seq": 3,
    "round": "Gruppe",
-   "category": "HD B",
+   "category": "B",
    "opponentClub": "SG Bietigheim",
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-28T08:12:00.000Z",
@@ -12051,7 +12095,7 @@
    "note": "",
    "seq": 1,
    "round": "Gruppe",
-   "category": "Mixed B",
+   "category": "B",
    "opponentClub": "SG Bietigheim",
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T08:44:00.000Z",
@@ -12118,7 +12162,7 @@
    "note": "",
    "seq": 2,
    "round": "Gruppe",
-   "category": "Mixed B",
+   "category": "B",
    "opponentClub": "TSV Öhringen",
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T09:06:00.000Z",
@@ -12189,7 +12233,7 @@
    "note": "",
    "seq": 3,
    "round": "Gruppe",
-   "category": "Mixed B",
+   "category": "B",
    "opponentClub": "TSV Öhringen",
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T09:15:00.000Z",
@@ -12260,7 +12304,7 @@
    "note": "",
    "seq": 4,
    "round": "R16",
-   "category": "Mixed B",
+   "category": "B",
    "opponentClub": "BC Neckarsulm",
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T09:54:00.000Z",
@@ -12331,7 +12375,7 @@
    "note": "",
    "seq": 5,
    "round": "VF",
-   "category": "Mixed B",
+   "category": "B",
    "opponentClub": "SG Bietigheim",
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T10:05:00.000Z",
@@ -16562,7 +16606,7 @@
    "note": "",
    "seq": 1,
    "round": "Gruppe",
-   "category": "HE B",
+   "category": "A",
    "opponentClub": "SG Bietigheim",
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-14T08:45:00.000Z",
@@ -16625,7 +16669,7 @@
    "note": "",
    "seq": 2,
    "round": "Gruppe",
-   "category": "HE B",
+   "category": "A",
    "opponentClub": "BC Neckarsulm",
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-14T09:10:00.000Z",
@@ -16688,7 +16732,7 @@
    "note": "",
    "seq": 3,
    "round": "Gruppe",
-   "category": "HE B",
+   "category": "A",
    "opponentClub": "TSV Öhringen",
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-14T09:21:00.000Z",
@@ -19974,7 +20018,7 @@
    "note": "",
    "seq": 1,
    "round": "Gruppe",
-   "category": "HD B",
+   "category": "B",
    "opponentClub": "TSV Öhringen",
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T07:51:00.000Z",
@@ -20045,7 +20089,7 @@
    "note": "",
    "seq": 2,
    "round": "Gruppe",
-   "category": "HD B",
+   "category": "B",
    "opponentClub": "SG Bietigheim",
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T08:08:00.000Z",
@@ -20116,7 +20160,7 @@
    "note": "",
    "seq": 3,
    "round": "Gruppe",
-   "category": "HD B",
+   "category": "B",
    "opponentClub": "BC Neckarsulm",
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T08:24:00.000Z",
@@ -20183,7 +20227,7 @@
    "note": "",
    "seq": 4,
    "round": "R16",
-   "category": "HD B",
+   "category": "B",
    "opponentClub": "SV Böckingen",
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T08:30:00.000Z",
@@ -20250,7 +20294,7 @@
    "note": "",
    "seq": 5,
    "round": "VF",
-   "category": "HD B",
+   "category": "B",
    "opponentClub": "TSV Öhringen",
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T09:20:00.000Z",
