@@ -42,6 +42,7 @@
       "Training": "Training",
       "Turnier": "Tournament",
       "Klasse {0}": "Class {0}",
+      "mit {0}": "with {0}",
       "Disziplin": "Discipline",
       "Art": "Type",
       "Filter": "Filters",
@@ -241,6 +242,28 @@
     /* the core denormalises names as `playerNames`; `names` kept as legacy fallback */
     if (s && Array.isArray(s.playerNames)) return s.playerNames;
     return (s && Array.isArray(s.names)) ? s.names : [];
+  }
+
+  /** Full name of my partner in this match: the other player on the side I am
+   *  on. Empty for singles, for matches I did not play, and for unknown ids. */
+  function partnerName(match) {
+    if (!state.meId) return "";
+    var side = sideIds(match, "A").indexOf(state.meId) !== -1 ? "A"
+             : sideIds(match, "B").indexOf(state.meId) !== -1 ? "B" : null;
+    if (!side) return "";
+    var ids = sideIds(match, side), names = sideNames(match, side);
+    for (var i = 0; i < ids.length; i++) {
+      if (ids[i] && ids[i] !== state.meId) return names[i] || "";
+    }
+    return "";
+  }
+
+  /* "Last, First" → "First"; anything without a comma is used whole. */
+  function firstName(full) {
+    var s = String(full == null ? "" : full).trim();
+    var c = s.indexOf(",");
+    if (c < 0) return s;
+    return s.slice(c + 1).trim() || s;
   }
 
   /** Spec default when a match has no explicit targetScore. Mirrors the entry view. */
@@ -714,6 +737,13 @@
       if (cat) {
         var cls = (cat === "A" || cat === "B") ? TT("Klasse {0}", cat) : cat;
         trn += '<span class="mth-badge mth-badge-trn" title="' + ESC(cls) + '">' + ESC(cls) + "</span>";
+      }
+      /* my tournament partner: the other player on my side of a doubles/mixed
+         match, by first name — "Last, First" is how names are stored */
+      var partner = partnerName(match);
+      if (partner) {
+        trn += '<span class="mth-badge mth-badge-trn" title="' + ESC(TT("mit {0}", partner)) + '">' +
+          ESC(TT("mit {0}", firstName(partner))) + "</span>";
       }
     }
     var cap = verdict(match);
