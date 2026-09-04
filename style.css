@@ -1464,8 +1464,6 @@
   .mt-trn-actions .btn { min-height: 50px; }
   .mt-trn-actions .mt-big { width: auto; flex: 2 1 60%; }
   .mt-trn-actions .btn:not(.mt-big) { flex: 1 1 auto; }
-  .mt-trn-actions .mt-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
-  .mt-trn-actions .mt-danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
 
   /* setup card: discipline / class chips sit inside a field like any input;
      the partner field reuses the editor's slot type-ahead */
@@ -1475,6 +1473,16 @@
   .mt-trn-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .mt-trn-head h2 { margin: 0; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
   .mt-trn-head .btn { flex: none; }
+  .mt-trn-tools { display: inline-flex; gap: 6px; flex: none; }
+  /* button.btn outranks a bare class: match its specificity so padding and
+     min-height from the base button do not squeeze the icon */
+  button.btn.mt-icon-btn {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 40px; height: 40px; min-height: 0; padding: 0; border-radius: 50%;
+  }
+  button.btn.mt-icon-btn svg { display: block; flex: none; width: 18px; height: 18px; }
+  button.btn.mt-icon-btn.mt-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+  button.btn.mt-icon-btn.mt-danger:hover { background: color-mix(in srgb, var(--danger) 10%, transparent); }
   /* training card: the day picker sits where the tournament card has its edit button */
   .mt-trn-head .mt-day-input {
     flex: none; font: inherit; min-height: 40px; padding: 6px 10px;

@@ -175,6 +175,14 @@ Object.assign(EN, {
   const ROUNDS = ["Gruppe", "R32", "R16", "VF", "HF", "Finale"];
   /* tournament class — stored as the bare letter, t("Klasse {0}") labels it */
   const CLASSES = ["A", "B"];
+  /* header icons — currentColor, 18px, stroke only, so they follow the theme */
+  const ICON_EDIT = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+  const ICON_TRASH = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+  /* Icon-only button: the label lives in aria-label and title, never in the DOM text. */
+  function iconBtn(act, label, svg, extraCls) {
+    return '<button type="button" class="btn mt-icon-btn' + (extraCls ? " " + extraCls : "") + '" data-act="' + act + '"' +
+      ' aria-label="' + esc(label) + '" title="' + esc(label) + '">' + svg + "</button>";
+  }
   /* window of the "existing tournaments" list on the setup card */
   const TRN_LIST_BACK = 60, TRN_LIST_AHEAD = 60, TRN_LIST_MAX = 6;
 
@@ -855,7 +863,10 @@ Object.assign(EN, {
     if (cls) bits.push(cls);
     return '<div class="mt-trn-head">' +
       "<h2>" + esc(trnName() || t("Turnier")) + "</h2>" +
-      '<button type="button" class="btn small" data-act="trnedit">' + esc(t("Turnier bearbeiten")) + "</button>" +
+      '<span class="mt-trn-tools">' +
+        iconBtn("trnedit", t("Turnier bearbeiten"), ICON_EDIT, "") +
+        iconBtn("trndelete", t("Turnier löschen"), ICON_TRASH, "mt-danger") +
+      "</span>" +
     "</div>" +
     /* partner names and legacy class text are user input and stay escaped */
     '<p class="mt-sess-meta">' + (bits.length ? esc(bits.join(" · ")) + " · " : "") + meta + "</p>" +
@@ -1032,7 +1043,6 @@ Object.assign(EN, {
           "</textarea>" +
         "</label>" +
         '<div class="mt-trn-actions">' +
-          (editing ? '<button type="button" class="btn mt-danger" data-act="trndelete">' + esc(t("Turnier löschen")) + "</button>" : "") +
           (editing ? '<button type="button" class="btn" data-act="trncancel">' + esc(t("Abbrechen")) + "</button>" : "") +
           '<button type="submit" class="btn primary mt-big">' +
             esc(editing ? t("Turnier speichern") : t("Turnier starten")) + "</button>" +

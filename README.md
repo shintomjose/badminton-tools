@@ -137,9 +137,9 @@ and picking one fills side A with you plus that discipline's partner — a match
 is then opponents, score, optional round and opponent club. **Turnier
 bearbeiten** reopens the card; a changed partner applies to new matches only,
 saved matches keep their line-up, while a changed date moves the day with all
-its matches. The same card has **Turnier löschen**: after a confirm that names
-the tournament and its match count, the session and all its matches are
-deleted in one batch.
+its matches. Both live as icon buttons in the tournament header: the pencil
+opens the card, the trash can deletes the tournament — after a confirm that
+names it and its match count — together with all its matches in one batch.
 
 On the `sessions` document this lives in `tournamentName`,
 `tournamentDisciplines` (`["singles","doubles","mixed"]` subset),
