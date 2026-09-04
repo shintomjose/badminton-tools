@@ -1337,16 +1337,6 @@
     padding: 2px 8px;
   }
 
-  .mt-add-loc { display: flex; gap: 8px; flex-wrap: wrap; }
-  /* display:flex above would otherwise defeat the hidden attribute */
-  .mt-add-loc[hidden] { display: none; }
-  .mt-add-loc input {
-    flex: 1 1 160px; min-width: 0; font: inherit;
-    background: var(--surface-2); color: var(--text-strong);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 8px 12px; min-height: 44px;
-  }
-  .mt-add-loc input:focus-visible { outline: none; box-shadow: var(--ring); }
 
   /* --- Endergebnis pro Satz: zwei große Zahlenfelder, "21 : 15" --- */
   .mt-games { margin-top: 6px; }
@@ -1466,30 +1456,30 @@
   .mt-venue { max-width: 420px; }
 
   /* settings view: venue rows with star / rename / delete */
-  .mts-list { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 6px; }
-  .mts-row {
+  .mtv-list { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 6px; }
+  .mtv-row {
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     padding: 6px 10px; background: var(--surface-2);
     border: 1px solid var(--border); border-radius: var(--radius-sm);
   }
-  .mts-name { flex: 1 1 auto; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
-  .mts-tools { display: inline-flex; gap: 6px; margin-left: auto; }
-  .mts-tools .is-default { color: var(--brand-teal); }
-  .mts-rename { display: flex; gap: 8px; flex-wrap: wrap; flex: 1 1 auto; }
-  .mts-rename input {
+  .mtv-name { flex: 1 1 auto; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+  .mtv-tools { display: inline-flex; gap: 6px; margin-left: auto; }
+  .mtv-tools .is-default { color: var(--brand-teal); }
+  .mtv-rename { display: flex; gap: 8px; flex-wrap: wrap; flex: 1 1 auto; }
+  .mtv-rename input {
     flex: 1 1 200px; min-width: 0; font: inherit; min-height: 44px; padding: 8px 12px;
     background: var(--surface); color: var(--text-strong);
     border: 1px solid var(--border); border-radius: var(--radius-sm);
   }
-  .mts-rename input:focus-visible { outline: none; box-shadow: var(--ring); }
-  .mts-add { display: flex; gap: 8px; flex-wrap: wrap; max-width: 520px; }
-  .mts-add input {
+  .mtv-rename input:focus-visible { outline: none; box-shadow: var(--ring); }
+  .mtv-add { display: flex; gap: 8px; flex-wrap: wrap; max-width: 520px; }
+  .mtv-add input {
     flex: 1 1 200px; min-width: 0; font: inherit; min-height: 44px; padding: 8px 12px;
     background: var(--surface-2); color: var(--text-strong);
     border: 1px solid var(--border); border-radius: var(--radius-sm);
   }
-  .mts-add input:focus-visible { outline: none; box-shadow: var(--ring); }
-  .mts-add .btn { min-height: 44px; }
+  .mtv-add input:focus-visible { outline: none; box-shadow: var(--ring); }
+  .mtv-add .btn { min-height: 44px; }
   .mt-trn-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
   .mt-trn-actions .btn { min-height: 50px; }
   .mt-trn-actions .mt-big { width: auto; flex: 2 1 60%; }
@@ -1543,14 +1533,6 @@
     .mt-trn-actions .mt-big { flex: 1 1 100%; }
   }
 
-  /* --- Abschnittskopf mit "+"-Umschalter (wie in der Rangliste) --- */
-  .mt-sec-head {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 6px;
-  }
-  .mt-sec-head > .mt-label,
-  .mt-sec-head > h3 { flex: 1 1 auto; min-width: 0; margin: 0; }
-  .mt-sec-head > .btn.icon-add { flex: none; }
 
   /* --- Ergebnis-Konvention: Siege grün, Niederlagen rot ---
      Utility spans wrapping the numbers of every W–L pair; the separator and

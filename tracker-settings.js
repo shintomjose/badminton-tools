@@ -60,19 +60,19 @@ Object.assign(EN, {
 
   function rowHtml(l) {
     if (state.editingId === l.id) {
-      return '<li class="mts-row editing" data-id="' + esc(l.id) + '">' +
-        '<form class="mts-rename" data-id="' + esc(l.id) + '">' +
+      return '<li class="mtv-row editing" data-id="' + esc(l.id) + '">' +
+        '<form class="mtv-rename" data-id="' + esc(l.id) + '">' +
           '<input type="text" value="' + esc(l.name) + '" autocomplete="off" aria-label="' + esc(t("Umbenennen")) + '">' +
           '<button type="submit" class="btn primary">' + esc(t("Speichern")) + "</button>" +
           '<button type="button" class="btn" data-act="cancel">' + esc(t("Abbrechen")) + "</button>" +
         "</form>" +
       "</li>";
     }
-    return '<li class="mts-row" data-id="' + esc(l.id) + '">' +
-      '<span class="mts-name">' + esc(l.name) +
+    return '<li class="mtv-row" data-id="' + esc(l.id) + '">' +
+      '<span class="mtv-name">' + esc(l.name) +
         (l.isDefault ? ' <span class="mt-badge trn">' + esc(t("Standard")) + "</span>" : "") +
       "</span>" +
-      '<span class="mts-tools">' +
+      '<span class="mtv-tools">' +
         iconBtn("default", l.id, t("Als Standard"), l.isDefault ? ICON_STAR_FILL : ICON_STAR, l.isDefault ? "is-default" : "") +
         iconBtn("rename", l.id, t("Umbenennen"), ICON_EDIT, "") +
         iconBtn("delete", l.id, t("Ort löschen"), ICON_TRASH, "mt-danger") +
@@ -87,13 +87,13 @@ Object.assign(EN, {
     if (!state.loaded) body = '<p class="mt-muted">' + esc(t("Laden …")) + "</p>";
     else if (state.error) body = '<p class="mt-muted">' + esc(t("Orte nicht ladbar")) + "</p>";
     else body =
-      '<ul class="mts-list">' + state.locations.map(rowHtml).join("") + "</ul>" +
-      '<form class="add-form mts-add">' +
+      '<ul class="mtv-list">' + state.locations.map(rowHtml).join("") + "</ul>" +
+      '<form class="add-form mtv-add">' +
         '<input type="text" placeholder="' + esc(t("Neuer Ort")) + '" autocomplete="off" aria-label="' + esc(t("Neuer Ort")) + '">' +
         '<button type="submit" class="btn">' + esc(t("Hinzufügen")) + "</button>" +
       "</form>";
     host.innerHTML =
-      '<section class="panel mt-card mts-panel">' +
+      '<section class="panel mt-card mtv-panel">' +
         '<div class="mt-trn-head">' +
           "<h2>" + esc(t("Orte")) + "</h2>" +
           '<button type="button" class="btn small" data-act="back">' + esc(t("Zurück")) + "</button>" +
@@ -142,7 +142,7 @@ Object.assign(EN, {
     if (act === "rename") {
       state.editingId = id;
       render();
-      const inp = state.host.querySelector('.mts-rename[data-id="' + id + '"] input');
+      const inp = state.host.querySelector('.mtv-rename[data-id="' + id + '"] input');
       if (inp) { inp.focus(); inp.select(); }
       return;
     }
@@ -177,14 +177,14 @@ Object.assign(EN, {
     const name = String(inp && inp.value || "").trim();
     if (!name) { toast(t("Name eingeben")); if (inp) inp.focus(); return; }
 
-    if (form.classList.contains("mts-add")) {
+    if (form.classList.contains("mtv-add")) {
       run(async () => {
         const id = await MT.repo.addLocation(name, { isDefault: !state.locations.length });
         state.locations = state.locations.concat([{ id: id, name: name, isDefault: !state.locations.length }]);
       }, "Ort hinzugefügt");
       return;
     }
-    if (form.classList.contains("mts-rename")) {
+    if (form.classList.contains("mtv-rename")) {
       const id = form.dataset.id;
       const l = byId(id);
       if (!l) return;

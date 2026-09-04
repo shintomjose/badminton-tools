@@ -13,7 +13,9 @@
   }
 
   addTag("link", { rel: "manifest", href: "manifest.webmanifest" });
-  addTag("meta", { name: "theme-color", content: "#F3F6F3" });
+  /* app.js has already applied the saved theme by the time this runs */
+  addTag("meta", { name: "theme-color",
+    content: document.documentElement.dataset.theme === "dark" ? "#0F1512" : "#F3F6F3" });
   addTag("link", { rel: "apple-touch-icon", href: "icons/apple-touch-icon.png" });
   addTag("meta", { name: "mobile-web-app-capable", content: "yes" });
   addTag("meta", { name: "apple-mobile-web-app-capable", content: "yes" });
@@ -74,9 +76,13 @@
     document.body.appendChild(btn);
   }
 
+  /* clients.claim() on the very first install fires controllerchange for a
+     page that had no controller yet — reloading then would throw away what
+     the visitor already typed. Only a real worker swap reloads. */
+  const hadController = !!navigator.serviceWorker.controller;
   let reloading = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (reloading) return;
+    if (!hadController || reloading) return;
     reloading = true;
     location.reload();
   });

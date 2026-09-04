@@ -114,6 +114,7 @@
       note: m.note || "",
       seq: m.seq === undefined ? null : m.seq,
       round: m.round || null, category: m.category || null, opponentClub: m.opponentClub || null,
+      tournament: m.tournament && typeof m.tournament === "object" ? m.tournament : null,
       ownerUid: OWNER, createdAt: now(), updatedAt: now(),
     };
   }
@@ -197,8 +198,12 @@
     store.sessions.push(s);
     return hydrate(s);
   };
-  repo.getOrCreateTodaySession = function (type, locationId) {
-    return repo.getOrCreateSession(type, locationId, new Date());
+
+  repo.retagSessionMatches = async function (id, fields) {
+    var n = 0;
+    store.matches.forEach(function (m) { if (m.sessionId === id) { applyPatch(m, fields); n++; } });
+    notify(id);
+    return n;
   };
 
   repo.moveSession = async function (id, when) {

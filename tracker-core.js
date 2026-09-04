@@ -16,6 +16,8 @@
 Object.assign(EN, {
   "Private Spieldaten — nur mit deinem Google-Konto sichtbar.": "Private match data — visible only with your Google account.",
   "Einstellungen": "Settings",
+  "Laden …": "Loading …",
+  "Name": "Name",
   "🔒 Spiele geschützt": "🔒 Matches locked",
   "PIN eingeben, um den Tracker zu öffnen.": "Enter the PIN to open the tracker.",
   "Verbinde…": "Connecting…",
@@ -55,7 +57,7 @@ Object.assign(EN, {
   "Profil folgt": "Profile coming soon",
   "Offline-Speicher nicht aktiv — Eingaben funktionieren, werden aber nicht zwischengespeichert.":
     "Offline storage is not active — entry still works, but nothing is cached.",
-  "Spiele": "Results",
+  "Spiele": "Matches",
 });
 
 const MT = (function () {
@@ -311,9 +313,19 @@ const MT = (function () {
     }
   }
 
+  /* Firestore's offline cache holds the owner's whole match history in
+     IndexedDB. On a shared device that must not survive a sign-out, so the
+     cache is cleared (which requires terminating the instance) and the page
+     reloads into a clean state. */
   async function signOut() {
-    try { await firebase.auth().signOut(); }
-    catch (e) { toastError(e, "Abmeldung fehlgeschlagen"); }
+    try {
+      await firebase.auth().signOut();
+      if (state.db) {
+        try { await state.db.terminate(); await state.db.clearPersistence(); }
+        catch (e) { console.warn("[MT] Offline-Cache konnte nicht geleert werden:", e && e.code ? e.code : e); }
+      }
+      location.reload();
+    } catch (e) { toastError(e, "Abmeldung fehlgeschlagen"); }
   }
 
   /* ================= write plumbing ================= */
@@ -411,10 +423,14 @@ const MT = (function () {
       /* true when the isMe player is not on court — kept so "matches I watched" stay out of my stats */
       involvesMe: m.involvesMe === undefined ? null : !!m.involvesMe,
       note: m.note || "",
-      /* tournament-only, phase 4 */
+      /* position in the day's list; null until the list is first reordered */
+      seq: m.seq === undefined || m.seq === null ? null : Number(m.seq),
+      /* tournament-only: flat fields for queries, plus the denormalised object
+         the history/profile views render from without a session lookup */
       round: m.round || null,
       category: m.category || null,
       opponentClub: m.opponentClub || null,
+      tournament: m.tournament && typeof m.tournament === "object" ? m.tournament : null,
       ownerUid: owner,
       createdAt: serverTs(),
       updatedAt: serverTs(),
@@ -444,12 +460,14 @@ const MT = (function () {
     return { sessionId: sRef.id, matchId: mRef.id, session: Object.assign({ id: sRef.id }, sData, { date: date }) };
   };
 
-  /* Denormalises date / locationName / type from the session document. */
-  repo.addMatch = async function (sessionId, match) {
+  /* Denormalises date / locationName / type from the session. The entry view
+     passes the session it is watching so nothing waits on the network; the
+     read below is only the fallback for callers without one. */
+  repo.addMatch = async function (sessionId, match, sessionData) {
     const db = await need();
     const owner = uid();
-    let sData = null;
-    try {
+    let sData = sessionData || null;
+    if (!sData) try {
       const snap = await db.collection(COL.sessions).doc(sessionId).get();
       if (snap.exists) sData = snap.data();
     } catch (e) {
@@ -747,13 +765,23 @@ const MT = (function () {
     trackWrite(ref.set(data), "Speichern fehlgeschlagen");
     return Object.assign({ id: ref.id }, data, { date: date });
   };
-  repo.getOrCreateTodaySession = function (type, locationId) {
-    return repo.getOrCreateSession(type, locationId, new Date());
-  };
 
   /* Moves a session to another day. Every match of the session carries the
      date and the grouping keys denormalised, so they move in the same batch —
      the history view must never show a day split in two. */
+  /* Tournament name/class are denormalised onto every match of the day;
+     after a rename they move in one batch so history never shows two names
+     for one day. `fields` is exactly what matchDoc() writes: { category, tournament }. */
+  repo.retagSessionMatches = async function (id, fields) {
+    const db = await need();
+    const snap = await db.collection(COL.matches).where("sessionId", "==", id).get();
+    if (!snap.size) return 0;
+    const batch = db.batch();
+    snap.docs.forEach(d => batch.update(d.ref, Object.assign({ updatedAt: serverTs() }, fields)));
+    trackWrite(batch.commit(), "Speichern fehlgeschlagen");
+    return snap.size;
+  };
+
   repo.moveSession = async function (id, when) {
     const db = await need();
     const date = toDate(when) || new Date();

@@ -32,8 +32,6 @@ Object.assign(EN, {
   "Spiele heute": "Matches today",
   "Noch keine Spiele heute — tippe auf „+ Spiel“.": "No matches today yet — tap “+ Match”.",
   "Noch keine Spiele an diesem Tag — tippe auf „+ Spiel“.": "No matches on this day yet — tap “+ Match”.",
-  "Neuer Ort": "New venue",
-  "Hinzufügen": "Add",
   "Ort gilt ab jetzt — gespeicherte Spiele behalten ihren Ort": "The venue applies from now on — saved matches keep theirs",
   "+ Spiel": "+ Match",
   "Noch ein Spiel": "Another match",
@@ -71,8 +69,6 @@ Object.assign(EN, {
   "Spiel gelöscht": "Match deleted",
   "Wirklich löschen?": "Really delete?",
   "Spieler hinzugefügt": "Player added",
-  "Ort hinzugefügt": "Venue added",
-  "Name eingeben": "Enter a name",
   "gegen": "vs",
 
   /* --- tournament flow (phase 4) --- */
@@ -126,7 +122,6 @@ Object.assign(EN, {
   "Name tippen…": "Type a name…",
   "Vereinsliste": "Club roster",
   "„{0}“ neu anlegen": "Add “{0}” as new",
-  "Ort hinzufügen": "Add venue",
   "Schließen": "Close",
   "Ergebnis {0}": "Score {0}",
   "Satz {0}: beide Ergebnisse eintragen": "Game {0}: enter both scores",
@@ -216,6 +211,7 @@ Object.assign(EN, {
     draft: null,
     activeSlot: null,      // { side: "A"|"B", i: 0|1 }
     justSaved: false,
+    saving: false,         // a second tap while a save is in flight must not write twice
     /* tournament-day fields, asked once and inherited by every match of the day */
     trn: { name: "", category: "", disciplines: [], partners: {}, note: "" },
     /* partners: { doubles: { playerId, playerName }, mixed: { … } } — one per
@@ -902,9 +898,9 @@ Object.assign(EN, {
     if (!rows.length) {
       return '<p class="mt-muted">' + esc(t("Noch keine Spiele erfasst")) + "</p>";
     }
-    const todayKey = MT.keys(new Date()).dateKey;
+    const todayK = todayKey();
     return '<ul class="mt-days">' + rows.map(r => {
-      const isToday = r.dateKey === todayKey;
+      const isToday = r.dateKey === todayK;
       const played = hasRecord(r);
       /* The stats group wraps to its own line before anything gets squeezed,
          and the Sätze cell is abbreviated with the long form as its title. */
@@ -1450,7 +1446,7 @@ Object.assign(EN, {
     const badge = el("mtWinBadge");
     if (!badge) return;
     const w = MT.matchWinner(d);
-    badge.textContent = w ? t("Sieg " + w) : t("Kein Sieger");
+    badge.textContent = draftWinnerText(d);
     badge.className = "mt-badge " + (w ? "done" : "open");
   }
 
@@ -1668,7 +1664,7 @@ Object.assign(EN, {
 
   async function save(finish) {
     const d = state.draft;
-    if (!d) return;
+    if (!d || state.saving) return;
     const n = slotCount(d);
     if (d.sideA.filter(Boolean).length !== n || d.sideB.filter(Boolean).length !== n) {
       toast(t("Bitte alle Spieler wählen"));
@@ -1693,10 +1689,11 @@ Object.assign(EN, {
       } else {
         /* a new match lands at the end of today's list */
         const seq = nextSeq();
-        const payload = Object.assign({}, fields, { status: finish ? "finished" : "in_progress" });
+        const payload = Object.assign({}, fields, { status: finish ? "finished" : "in_progress", seq: seq });
+        state.saving = true;
         let newId = null;
         if (state.session) {
-          newId = await MT.repo.addMatch(state.session.id, payload);
+          newId = await MT.repo.addMatch(state.session.id, payload, state.session);
         } else {
           const res = await MT.repo.createSessionWithMatch({
             type: state.type,
@@ -1708,20 +1705,13 @@ Object.assign(EN, {
           newId = res.matchId;
           startWatch(res.session);
         }
-        /* matchDoc() in the core builds a fixed shape and drops unknown keys,
-           so the denormalised `tournament` object and the list position both
-           need a follow-up write. They share ONE patch so a new match still
-           costs at most one extra queued write. */
-        if (newId) {
-          const post = { seq: seq };
-          if (fields.tournament) post.tournament = fields.tournament;
-          await MT.repo.updateMatch(newId, post);
-        }
       }
       toast(t(finish ? "Spiel gespeichert" : "Als offen gespeichert"));
       closeEditor(true);
     } catch (e) {
       MT.toastError(e, "Spiel speichern fehlgeschlagen");
+    } finally {
+      state.saving = false;
     }
   }
 
@@ -1766,6 +1756,7 @@ Object.assign(EN, {
   /* Creates (or updates) today's tournament session and stores the day-level
      fields on it. Every match of the day then inherits name + category. */
   async function saveTournament() {
+    if (state.saving) return;
     const name = trnName();
     if (!name) {
       toast(t("Turniername eingeben"));
@@ -1792,12 +1783,17 @@ Object.assign(EN, {
     });
     const dateInp = state.host && state.host.querySelector(".mt-trn-date");
     if (dateInp) state.dayKey = dateInp.value;
+    /* a cleared date on a re-edit means "keep the day", never "move to today" */
+    if (state.session && !isDayKey(state.dayKey)) {
+      state.dayKey = sessionKey(state.session) === todayKey() ? "" : sessionKey(state.session);
+    }
     if (String(state.dayKey || "").trim() && !isDayKey(state.dayKey)) {
       toast(t("Datum wählen"));
       if (dateInp) dateInp.focus();
       return;
     }
     const when = dayDate();
+    state.saving = true;
     try {
       const patch = {
         tournamentName: name,
@@ -1818,7 +1814,18 @@ Object.assign(EN, {
         s = await MT.repo.getOrCreateSession("tournament", state.locationId, when);
       }
       if (state.locationId) { patch.locationId = state.locationId; patch.locationName = state.locationName; }
+      /* matches carry the name and class denormalised — decide BEFORE the
+         session write, whose live snapshot already shows the new values */
+      const renamed = !!state.session && (
+        (s.tournamentName || "") !== name ||
+        (s.tournamentCategory || null) !== (trnCategory() || null));
       await MT.repo.updateSession(s.id, patch);
+      if (renamed && state.matches.length) {
+        await MT.repo.retagSessionMatches(s.id, {
+          category: trnCategory() || null,
+          tournament: { name: name, category: trnCategory() || null },
+        });
+      }
       state.trnEdit = false;
       state.trnCreate = false;
       startWatch(Object.assign({}, s, patch));
@@ -1827,6 +1834,8 @@ Object.assign(EN, {
       loadTournamentList();
     } catch (e) {
       MT.toastError(e, "Speichern fehlgeschlagen");
+    } finally {
+      state.saving = false;
     }
   }
 
@@ -1918,6 +1927,7 @@ Object.assign(EN, {
       state.trnEdit = false;
       state.trnCreate = false;
       closeSuggest();
+      if (state.session) state.dayKey = sessionKey(state.session) === todayKey() ? "" : sessionKey(state.session);
       hydrateTournament(state.session);              // drop unsaved edits
       renderSession(); renderList();
       return;

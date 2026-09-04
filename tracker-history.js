@@ -25,7 +25,7 @@
       "Jahr": "Year",
       "Monat": "Month",
       "Woche": "Week",
-      "Zeitraum": "Range",
+      "Zeitraum": "Period",
       "Ansicht": "View",
       /* custom range */
       "von": "from",
@@ -70,7 +70,8 @@
       "ohne mich": "not me",
       "{0} ohne mich": "{0} not me",
       "KW {0} · {1}–{2}": "Week {0} · {1}–{2}",
-      "KW {0}": "Week {0}",
+      "Kalenderwoche {0}": "Week {0}",
+      "gegen": "vs",
       "{0} Spiele": "{0} matches",
       "1 Spiel": "1 match",
       "{0} Sätze": "{0} sets",
@@ -188,7 +189,7 @@
     var m = /^(\d{4})-W(\d{1,2})$/.exec(String(weekKey || ""));
     var num = m ? String(+m[2]) : String(weekKey || "?");
     var mon = isoWeekMonday(weekKey);
-    if (!mon) return TT("KW {0}", num);
+    if (!mon) return TT("Kalenderwoche {0}", num);
     var sun = new Date(mon.getTime() + 6 * DAY_MS);
     return TT("KW {0} · {1}–{2}", num, FMT_DM.format(mon), FMT_DM.format(sun));
   }
@@ -399,7 +400,11 @@
     var f = state.filters;
     if (f.discipline !== "all" && m.discipline !== f.discipline) return false;
     if (f.type !== "all" && m.type !== f.type) return false;
-    if (f.locationId !== "all" && m.locationId !== f.locationId) return false;
+    if (f.locationId !== "all") {
+      /* match documents denormalise the venue NAME only (no locationId) */
+      var loc = state.locations.filter(function (l) { return l.id === f.locationId; })[0];
+      if (!loc || m.locationName !== loc.name) return false;
+    }
     if (f.playerId !== "all") {
       var ids = Array.isArray(m.playerIds) ? m.playerIds : [];
       if (ids.indexOf(f.playerId) === -1) return false;
@@ -656,7 +661,7 @@
     if (match.status === "in_progress") {
       return '<span class="mth-badge mth-badge-live">' + ESC(T("läuft")) + "</span>";
     }
-    if (match.status === "retired") {
+    if (match.resultType === "retired") {
       return '<span class="mth-badge mth-badge-ret">' + ESC(T("aufgegeben")) + "</span>";
     }
     return "";
@@ -720,7 +725,7 @@
           leadCol(match, true, false) +
           '<div class="mth-editnames">' +
             ESC(sideNames(match, "A").join(" / ")) +
-            '<span class="mth-vs-lite"> vs </span>' +
+            '<span class="mth-vs-lite"> ' + ESC(T("gegen")) + " </span>" +
             ESC(sideNames(match, "B").join(" / ")) +
           "</div>" +
         "</div>" +
@@ -1121,7 +1126,7 @@
     // winnerSide is denormalised and derived from the score — keep it in step, but
     // never invent one for a retired match, where the score does not decide the winner.
     if (match.status === "finished") {
-      patch.winnerSide = deriveWinner(games, Number(match.targetScore) || defaultTarget(match.discipline));
+      patch.winnerSide = MT.matchWinner(Object.assign({}, match, { games: games }));
     }
 
     var token = mountToken;

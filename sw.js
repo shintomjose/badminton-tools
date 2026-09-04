@@ -1,10 +1,10 @@
 /* Service Worker — Badminton Tools
  *
- * Strategien (kein Build-Step, keine Hash-Dateinamen):
- *  - Eigene HTML/CSS/JS:  network-first  → Updates kommen sofort an, offline aus Cache
- *  - img/ Produktbilder:  cache-first    → 8.7 MB, nie precachen, LRU-Deckel
- *  - CDN (Firebase SDK, Leaflet, Fonts): stale-while-revalidate
- *  - Firebase RTDB/Firestore, OSRM, Nominatim, OSM-Tiles: network-only (Passthrough)
+ * Strategies (no build step, no hashed file names):
+ *  - own HTML/CSS/JS:      network-first  → updates arrive at once, offline from cache
+ *  - img/ product photos:  cache-first    → 8.7 MB, never precached, FIFO cap
+ *  - CDN (Firebase SDK, Leaflet, fonts): stale-while-revalidate
+ *  - Firebase RTDB/Firestore, OSRM, Nominatim, OSM tiles: network-only (pass-through)
  */
 "use strict";
 
@@ -22,6 +22,7 @@ const PRECACHE = [
   "./style.css",
   "./app.js",
   "./tracker-core.js",
+  "./tracker-demo.js",
   "./tracker-entry.js",
   "./tracker-settings.js",
   "./tracker-history.js",
@@ -59,7 +60,8 @@ const NETWORK_ONLY_HOSTS = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) => cache.addAll(PRECACHE))
+    caches.open(SHELL_CACHE).then((cache) =>
+      cache.addAll(PRECACHE.map((u) => new Request(u, { cache: "reload" }))))
   );
 });
 
@@ -97,6 +99,10 @@ self.addEventListener("fetch", (event) => {
   if (NETWORK_ONLY_HOSTS.some((h) => url.hostname.endsWith(h))) return;
 
   if (url.origin === self.location.origin) {
+    /* /__/auth/*, /__/firebase/* are Firebase Hosting's own helper pages — each
+       query string would become a new cache entry, and a stale auth handler
+       served offline breaks sign-in. Leave them to the network. */
+    if (url.pathname.startsWith("/__/")) return;
     if (url.pathname.includes("/img/") || url.pathname.includes("/icons/")) {
       event.respondWith(cacheFirst(req, IMG_CACHE, IMG_CACHE_MAX));
     } else {
@@ -106,20 +112,22 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (CDN_HOSTS.includes(url.hostname)) {
-    event.respondWith(staleWhileRevalidate(req, CDN_CACHE));
+    event.respondWith(staleWhileRevalidate(req, CDN_CACHE, event));
   }
 });
 
 async function networkFirst(req, cacheName) {
   const cache = await caches.open(cacheName);
   try {
-    const fresh = await fetch(req);
-    if (fresh.ok) cache.put(req, fresh.clone());
-    return fresh;
+    const fresh = await fetch(req, { cache: "no-cache" });
+    if (fresh.ok) { cache.put(req, fresh.clone()); return fresh; }
+    /* a 5xx from the host is worse than the copy we already have */
+    const stale = await cache.match(req, { ignoreSearch: true });
+    return stale || fresh;
   } catch (err) {
     const cached = await cache.match(req, { ignoreSearch: true });
     if (cached) return cached;
-    // Navigation offline ohne Cache-Treffer → App-Shell
+    // navigation offline with no cache hit → app shell
     if (req.mode === "navigate") {
       const shell = await cache.match("./index.html");
       if (shell) return shell;
@@ -130,17 +138,18 @@ async function networkFirst(req, cacheName) {
 
 async function cacheFirst(req, cacheName, maxEntries) {
   const cache = await caches.open(cacheName);
-  const cached = await cache.match(req);
+  /* icons are precached into the shell cache — look there too */
+  const cached = (await cache.match(req)) || (await caches.match(req));
   if (cached) return cached;
   const fresh = await fetch(req);
   if (fresh.ok) {
     await cache.put(req, fresh.clone());
-    trimCache(cache, maxEntries); // bewusst nicht awaited
+    trimCache(cache, maxEntries); // deliberately not awaited
   }
   return fresh;
 }
 
-async function staleWhileRevalidate(req, cacheName) {
+async function staleWhileRevalidate(req, cacheName, event) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(req);
   const refresh = fetch(req)
@@ -149,9 +158,12 @@ async function staleWhileRevalidate(req, cacheName) {
       return fresh;
     })
     .catch(() => null);
+  /* keep the worker alive until the revalidation lands, even when the cached
+     copy was already returned */
+  if (event && typeof event.waitUntil === "function") event.waitUntil(refresh);
   return cached || refresh.then((r) => {
     if (r) return r;
-    throw new Error("offline, kein Cache: " + req.url);
+    throw new Error("offline, no cached copy: " + req.url);
   });
 }
 

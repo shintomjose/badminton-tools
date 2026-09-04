@@ -32,8 +32,12 @@ data sync between them in both directions.
 | `tracker-core.js` | Match tracker: Firestore layer, Google owner auth, PIN gate, view registry (`MT`) |
 | `tracker-entry.js` | Match tracker: training and tournament entry flow |
 | `tracker-settings.js` | Match tracker: venue settings behind the gear button |
+| `tracker-history.js` / `tracker-stats.js` / `tracker-profile.js` | Match tracker: history, stats, player profile views (each with its own `tracker-*.css`) |
+| `anfahrt.html` | Directions map (Leaflet + OSRM), embedded in tab 04 |
+| `database.rules.json` | Realtime Database rules for tabs 1–5 (shape validation) — deploy with `firebase deploy --only database` |
+| `dev/gen-demo.js` | Regenerates `demo-data.json` (`node dev/gen-demo.js demo-data.json`) |
 | `tracker-demo.js` / `demo-data.json` | Match tracker demo mode (`?demo=1`): in-memory fixture, nothing persisted |
-| `style.css` | Design tokens and all styling |
+| `style.css` | Design tokens and the styling of the app shell and the entry/settings views |
 | `sw.js` / `pwa.js` | Service worker and PWA bootstrap |
 | `firestore.rules` | Security rules for the match tracker collections |
 | `firestore.indexes.json` | Composite indexes required by the tracker queries |
@@ -72,7 +76,8 @@ Do these four steps once:
    ```
 
    Index builds take a few minutes; until they finish, the history and stats
-   queries fall back to a slower client-side sort.
+   range query retries without the owner filter (the rules still restrict
+   reads to you) and the player profile sorts client-side.
 
 4. **Bind the rules to your account.** Open the app, go to the **Spiele /
    Matches** tab, enter the PIN, and sign in with Google. The first Firestore

@@ -1,0 +1,87 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "teams": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$group": {
+        ".validate": "$group == 'm' || $group == 'f'",
+        "players": {
+          "$i": {
+            ".validate": "newData.hasChildren(['name'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+            },
+            "rank": {
+              ".validate": "newData.isNumber()"
+            },
+            "note": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "a": {
+              ".validate": "newData.isNumber() || newData.isBoolean()"
+            },
+            "gone": {
+              ".validate": "newData.isBoolean()"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "sizes": {
+          "$i": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 99"
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "avail": {
+      ".read": "auth != null",
+      "players": {
+        ".write": "auth != null",
+        "$i": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+        }
+      },
+      "marks": {
+        "$day": {
+          "$name": {
+            ".write": "auth != null",
+            ".validate": "newData.val() == 'y' || newData.val() == 'n'"
+          }
+        }
+      },
+      "log": {
+        ".write": "auth != null",
+        "$id": {
+          "player": {
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          },
+          "by": {
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          },
+          "from": {
+            ".validate": "newData.val() == 'y' || newData.val() == 'n' || newData.val() == 'u'"
+          },
+          "to": {
+            ".validate": "newData.val() == 'y' || newData.val() == 'n' || newData.val() == 'u'"
+          },
+          "day": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "ts": {
+            ".validate": "newData.isNumber()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    }
+  }
+}

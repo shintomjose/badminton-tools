@@ -11,14 +11,19 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
+# The workflow token only needs to read the repo; the deploy itself uses the
+# service account. Actions are pinned by commit SHA so a moved tag cannot
+# swap the code that receives that service account.
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a # v0
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_BADMINTON_TOOLS_C6B27 }}
           projectId: badminton-tools-c6b27
           channelId: live

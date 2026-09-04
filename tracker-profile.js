@@ -54,7 +54,7 @@
        The abbreviation "GD" -> "XD" is already registered by app.js — do not
        redefine it here or the two maps could drift apart. */
     "Mixed": "Mixed",
-    "Gesamt": "Total",
+    "Gesamtbilanz": "Total",
     "Keine gewerteten Spiele": "No counted matches",
     "Laufende und abgebrochene Spiele zählen nicht in die Bilanz.":
       "In-progress and retired matches are not counted in the record.",
@@ -260,6 +260,9 @@
 
   /* --------------------------------------------------------- open / close */
   function open(playerId) {
+    /* fresh read on every open — the caches only dedupe concurrent requests */
+    matchCache.delete(playerId);
+    playersPromise = null;
     build();
     if (isOpen) {
       if (playerId !== currentId) navStack.push(currentId);
@@ -447,7 +450,7 @@
   }
 
   function recordBlockHtml(label, bucket) {
-    var rows = statRowHtml(T("Gesamt"), bucket.total);
+    var rows = statRowHtml(T("Gesamtbilanz"), bucket.total);
     if (bucket.singles.n) rows += statRowHtml(T("Einzel"), bucket.singles);
     if (bucket.doubles.n) rows += statRowHtml(T("Doppel"), bucket.doubles);
     if (bucket.mixed.n) rows += statRowHtml(T("Mixed"), bucket.mixed);
@@ -522,7 +525,7 @@
     }
     if (match.locationName) metaBits += '<span class="mtp-m-loc">' + E(match.locationName) + "</span>";
     if (match.status === "in_progress") metaBits += '<span class="mtp-chip">' + E(T("läuft")) + "</span>";
-    else if (match.status === "retired") metaBits += '<span class="mtp-chip">' + E(T("abgebrochen")) + "</span>";
+    else if (match.resultType === "retired" || match.resultType === "incomplete") metaBits += '<span class="mtp-chip">' + E(T("abgebrochen")) + "</span>";
 
     var lines = ["A", "B"].map(function (s) {
       var win = counted && match.winnerSide === s;

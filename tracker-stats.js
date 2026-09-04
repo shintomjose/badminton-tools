@@ -251,6 +251,19 @@
     };
     if (!meId) return out;
 
+    /* getMatches orders by date only, and every match of a day shares the
+       session's date — the streak and "last N" need the real in-day order:
+       seq (manual order) first, then createdAt. */
+    matches = matches.slice().sort(function (a, b) {
+      var da = toDate(a.date), db = toDate(b.date);
+      var td = (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+      if (td) return td;
+      var sa = Number(a.seq) || 0, sb = Number(b.seq) || 0;
+      if (sa !== sb) return sb - sa;
+      var ca = toDate(a.createdAt), cb = toDate(b.createdAt);
+      return (cb ? cb.getTime() : 0) - (ca ? ca.getTime() : 0);
+    });
+
     for (var i = 0; i < matches.length; i++) {
       var m = matches[i];
       if (!m || m.status !== "finished" || m.type !== type) continue;

@@ -8,6 +8,8 @@ const DATE_LOCALE = LANG === "en" ? "en-GB" : "de-DE";
 
 /* dynamische Strings: deutscher Text ist der Schlüssel */
 const EN = {
+  "— Name wählen —": "— choose name —",
+  "Noch keine Änderungen": "No changes yet",
   "Cloud-Speichern fehlgeschlagen": "Cloud save failed",
   "Position in Mannschaft": "Position in team",
   "Position auf Warteliste": "Position on waitlist",
@@ -262,7 +264,11 @@ function showTab(id) {
   // Leaflet inside iframe misjudges size while hidden — poke it when shown
   if (id === "anfahrt") {
     const f = document.getElementById("distFrame");
-    try { f.contentWindow.dispatchEvent(new f.contentWindow.Event("resize")); } catch {}
+    try {
+      f.contentWindow.dispatchEvent(new f.contentWindow.Event("resize"));
+      /* the map was fitted while the iframe was 0×0 → re-fit now that it has a size */
+      if (typeof f.contentWindow.fitAll === "function") f.contentWindow.fitAll();
+    } catch {}
   }
 }
 TABS.forEach(t =>
@@ -381,12 +387,15 @@ window.fbReady = new Promise(resolve => {
   /* Sign in anonymously ONLY when the first auth callback reports nobody signed
      in — an unconditional signInAnonymously() would clobber a persisted Google
      session (the match tracker signs in with Google). */
-  let firstCallback = true;
+  let signingIn = false;
   firebase.auth().onAuthStateChanged(u => {
-    const wasFirst = firstCallback;
-    firstCallback = false;
-    if (u) { resolve(firebase.database()); return; }
-    if (wasFirst) firebase.auth().signInAnonymously().catch(() => resolve(null));
+    if (u) { signingIn = false; resolve(firebase.database()); return; }
+    /* nobody signed in — on first load, and again after the match tracker
+       signs out of Google; without this the availability writes of tabs 1–5
+       fail until the next reload */
+    if (signingIn) return;
+    signingIn = true;
+    firebase.auth().signInAnonymously().catch(() => { signingIn = false; resolve(null); });
   });
 });
 
@@ -522,10 +531,16 @@ function defaultSizes(g) { return Array(MAX_TEAMS).fill(g === "m" ? 5 : 2); }
 function freshGroup(g) {
   return { players: originalOf(g).map(p => ({...p})), sizes: defaultSizes(g) };
 }
+/* Shape check for what arrives from localStorage AND from the cloud — the
+   Realtime Database is writable by every anonymous visitor, so every field
+   that ends up in the DOM must be type-checked here, not trusted. */
 function validGroup(x) {
-  return x && Array.isArray(x.players) && Array.isArray(x.sizes)
+  return !!x && Array.isArray(x.players) && Array.isArray(x.sizes)
     && x.sizes.length === MAX_TEAMS
-    && x.players.every(p => p && typeof p.name === "string");
+    && x.sizes.every(n => Number.isInteger(n) && n >= 0 && n <= 99)
+    && x.players.every(p => p && typeof p.name === "string" && p.name.length <= 120
+         && (p.rank === undefined || typeof p.rank === "number")
+         && (p.note === undefined || typeof p.note === "string"));
 }
 function load() {
   groups = null;
@@ -619,7 +634,7 @@ function playerRow(p, i, subNo, subTitle) {
   li.dataset.index = i;
   li.title = p.note || "";
   li.innerHTML = `
-    <span class="rank" title="Vereinsrangliste">${p.rank ?? "–"}</span>
+    <span class="rank" title="Vereinsrangliste">${esc(p.rank ?? "–")}</span>
     <span class="sub-chip" title="${subTitle}">${subNo}</span>
     <span class="who">
       <span class="name">${esc(p.name)}${p.a ? '<span class="badge-a">A</span>' : ""}</span>
@@ -934,7 +949,11 @@ let avSeeded = false;
 
 /* Namen als DB-Schlüssel: verbotene Zeichen ersetzen */
 function avKey(name) { return name.replace(/[.#$/\[\]]/g, "_"); }
-function avState(name, dayKey) { return (av.marks[dayKey] || {})[avKey(name)] || "u"; }
+/* Whitelisted: the value lands in a class attribute, so anything but y/n is "u". */
+function avState(name, dayKey) {
+  const v = (av.marks[dayKey] || {})[avKey(name)];
+  return v === "y" || v === "n" ? v : "u";
+}
 function avStatus(txt) { document.getElementById("avStatus").textContent = txt; }
 
 /* Ehrlichkeitsprinzip: jeder wählt einmal seinen Namen, Änderungen werden damit protokolliert */
@@ -964,7 +983,7 @@ function renderLog(items) {
   const el = document.getElementById("avLog");
   document.getElementById("avLogClear").hidden = !items.length;
   if (!items.length) {
-    el.innerHTML = `<li class="av-log-empty">Noch keine Änderungen</li>`;
+    el.innerHTML = `<li class="av-log-empty">${t("Noch keine Änderungen")}</li>`;
     return;
   }
   const fmtT = t => t
@@ -1003,7 +1022,7 @@ function renderLog(items) {
         <button type="button" class="log-del" data-logdel="${esc(it._k)}" aria-label="${t("Eintrag löschen")}">×</button></div>
     </li>`);
   });
-  el.innerHTML = parts.length ? parts.join("") : `<li class="av-log-empty">Noch keine Änderungen</li>`;
+  el.innerHTML = parts.length ? parts.join("") : `<li class="av-log-empty">${t("Noch keine Änderungen")}</li>`;
 }
 
 let avRound = localStorage.getItem("termine-round") === "rueck" ? "rueck" : "vor";
@@ -2515,6 +2534,7 @@ function openCart(open) {
   document.getElementById("cartBackdrop").classList.toggle("open", open);
 }
 document.getElementById("cartFab").addEventListener("click", () => openCart(true));
+window.addEventListener("hashchange", renderCart);   // back button leaves the shop → hide the FAB
 document.getElementById("cartClose").addEventListener("click", () => openCart(false));
 document.getElementById("cartBackdrop").addEventListener("click", () => openCart(false));
 document.addEventListener("keydown", e => { if (e.key === "Escape") openCart(false); });
