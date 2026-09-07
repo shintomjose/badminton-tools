@@ -1656,6 +1656,8 @@
     border-color: var(--court-green);
   }
   .mt-outcome.champ .mt-outcome-text { color: var(--court-green); }
+  .mt-outcome.bronze { border-color: color-mix(in srgb, var(--court-green) 60%, transparent); }
+  .mt-outcome.bronze .mt-outcome-text { color: var(--court-green); }
   .mt-outcome.final { border-color: color-mix(in srgb, var(--brand-teal) 60%, transparent); }
   .mt-outcome.final .mt-outcome-text, .mt-outcome.reached .mt-outcome-text { color: var(--teal-ink); }
   .mt-outcome.out { border-color: color-mix(in srgb, var(--danger) 45%, transparent); }

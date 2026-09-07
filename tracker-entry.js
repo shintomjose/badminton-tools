@@ -116,6 +116,7 @@ Object.assign(EN, {
   "R16": "R16",
   "VF": "VF",
   "HF": "HF",
+  "Platz 3": "3rd place",
   "Finale": "Final",
 
   /* --- type-ahead player slots, final-score entry --- */
@@ -168,6 +169,9 @@ Object.assign(EN, {
   "Achtelfinale": "Round of 16",
   "Viertelfinale": "Quarter-final",
   "Halbfinale": "Semi-final",
+  "Spiel um Platz 3": "3rd-place match",
+  "3. Platz": "3rd place",
+  "4. Platz": "4th place",
   "Sieger": "Winner",
   "Finalist": "Finalist",
   "Aus im {0}": "Out in {0}",
@@ -191,9 +195,11 @@ Object.assign(EN, {
   const SUMMARY_ROWS = 5;    // how many play days to show
   const SMALL_N = 5;         // below this a percentage is flagged as thin evidence
   /* Stored verbatim on the match — the codes are the data, t() only labels them. */
-  const ROUNDS = ["Gruppe", "R32", "R16", "VF", "HF", "Finale"];
+  /* In draw order — the index is the rank a KO result is judged by. The
+     3rd-place match ranks above the HF that led to it and below the Finale. */
+  const ROUNDS = ["Gruppe", "R32", "R16", "VF", "HF", "Platz 3", "Finale"];
   /* Long round names for the outcome chip — the codes stay on the cards. */
-  const ROUND_LONG = { Gruppe: "Gruppenphase", R32: "R32", R16: "Achtelfinale", VF: "Viertelfinale", HF: "Halbfinale", Finale: "Finale" };
+  const ROUND_LONG = { Gruppe: "Gruppenphase", R32: "R32", R16: "Achtelfinale", VF: "Viertelfinale", HF: "Halbfinale", "Platz 3": "Spiel um Platz 3", Finale: "Finale" };
   /* Which phase a round code belongs to: the group stage, the knock-out
      draw, or none (round not entered). Drives the card pill and dividers. */
   function phaseOf(round) {
@@ -941,9 +947,10 @@ Object.assign(EN, {
   /* How far I got in each discipline of the open tournament, from the
      matches logged so far:
        - a KO match decides it: won the Finale → Sieger, lost the Finale →
-         Finalist, lost any other KO round → "Aus im Viertelfinale"; a won
-         KO match with nothing after it (draw still running or not logged)
-         names the round reached;
+         Finalist, the 3rd-place match → 3. Platz or 4. Platz, lost any
+         other KO round → "Aus im Viertelfinale"; a won KO match with
+         nothing after it (draw still running or not logged) names the
+         round reached;
        - group matches only → Gruppenphase with my W–L;
        - an open match anywhere keeps the chip on "läuft" — nothing is
          final while I still have to play.
@@ -976,6 +983,9 @@ Object.assign(EN, {
     if (o.open) return { cls: "live", text: t("läuft") };
     if (o.best) {
       const fin = o.best.round === "Finale";
+      if (o.best.round === "Platz 3") return o.best.res === "win"
+        ? { cls: "bronze", text: "🥉 " + t("3. Platz") }
+        : { cls: "reached", text: t("4. Platz") };
       if (o.best.res === "win") return fin
         ? { cls: "champ", text: "🏆 " + t("Sieger") }
         : { cls: "reached", text: roundLong(o.best.round) };

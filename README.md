@@ -164,8 +164,8 @@ The round pill separates the phases — **Gruppe** is a dashed outline, a
 knock-out round is filled and reads **KO · VF** — and a divider row
 (*Gruppenphase* / *K.-o.-Runde*) marks every change of phase in the list.
 The header shows one outcome chip per discipline you played: **🏆 Sieger**
-after a won final, **Finalist**, **Aus im Viertelfinale** for a lost
-knock-out round, the round reached after a won one, **Gruppenphase** while
+after a won final, **Finalist**, **🥉 3. Platz** / **4. Platz** after the
+*Platz 3* match, **Aus im Viertelfinale** for a lost knock-out round, the round reached after a won one, **Gruppenphase** while
 only group matches exist, and **läuft** as long as one of your matches is
 still open — each with your W–L in that discipline.
 
