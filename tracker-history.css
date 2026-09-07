@@ -241,6 +241,21 @@ button.mth-reset { flex: 0 0 auto; }
 .mth-name-plain { cursor: default; color: var(--text-muted); }
 .mth-team.win .mth-name { color: var(--court-green); font-weight: 700; }
 .mth-team.lost .mth-name { color: var(--danger); font-weight: 400; }
+/* my side: always the strong colour and bold, and the only side that
+   carries the verdict in a match of mine (the opponents stay neutral) */
+.mth-team.me .mth-name { color: var(--text-strong); font-weight: 700; }
+.mth-team.me.win .mth-name { color: var(--court-green); }
+.mth-team.me.lost .mth-name { color: var(--danger); font-weight: 700; }
+
+/* --- my result on the row, same convention as the entry cards ---
+   A green or red band on the left and a faint wash across the row; open
+   matches of mine take the warn colour, rows I was not on court for keep
+   the plain hairline ledger. */
+.mth-row { border-left: 3px solid transparent; padding-left: 8px; }
+.mth-row.res-win  { border-left-color: var(--court-green); background: color-mix(in srgb, var(--court-green) 8%, transparent); }
+.mth-row.res-loss { border-left-color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); }
+.mth-row.res-open { border-left-color: var(--warn); }
+.mth-row.res-void { border-left-color: var(--text-muted); }
 
 /* centre score block */
 .mth-score {
@@ -271,6 +286,18 @@ button.mth-reset { flex: 0 0 auto; }
   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .mth-badge-trn { background: var(--brand-teal); color: var(--accent-on); }
+/* group stage vs knock-out: a dashed outline vs a filled pill */
+.mth-badge-trn.mth-phase-group {
+  background: transparent; color: var(--teal-ink);
+  border: 1px dashed color-mix(in srgb, var(--brand-teal) 60%, transparent);
+}
+.mth-badge-trn.mth-phase-ko { background: var(--teal-ink); }
+[data-theme="light"] .mth-badge-trn.mth-phase-ko { color: #fff; }
+/* the verdict of a match of mine — filled, no ✓ needed */
+.mth-res-win, .mth-res-loss { color: var(--accent-on); padding: 3px 10px; }
+.mth-res-win { background: var(--court-green); }
+.mth-res-loss { background: var(--danger); }
+[data-theme="light"] .mth-res-win, [data-theme="light"] .mth-res-loss { color: #fff; }
 .mth-badge-live { background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--warn); border: 1px solid var(--warn); }
 .mth-badge-ret { background: var(--surface-1); color: var(--text-muted); border: 1px solid var(--border); }
 

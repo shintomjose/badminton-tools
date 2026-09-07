@@ -245,12 +245,34 @@
     return (s && Array.isArray(s.names)) ? s.names : [];
   }
 
+  /** The side I was on — "A" / "B", null when I did not play. */
+  function mySide(match) {
+    if (!state.meId) return null;
+    return sideIds(match, "A").indexOf(state.meId) !== -1 ? "A"
+         : sideIds(match, "B").indexOf(state.meId) !== -1 ? "B" : null;
+  }
+
+  /** My outcome of a match, mirroring the entry view: win / loss / open /
+   *  void (finished without a winner) / other (I was not on court). */
+  function myOutcome(match) {
+    var mine = mySide(match);
+    if (!mine) return "other";
+    if (match.status !== "finished") return "open";
+    if (!match.winnerSide) return "void";
+    return match.winnerSide === mine ? "win" : "loss";
+  }
+
+  /** Group stage, knock-out draw, or no round entered. */
+  function phaseOf(round) {
+    var r = String(round || "").trim();
+    if (!r) return "none";
+    return r === "Gruppe" ? "group" : "ko";
+  }
+
   /** Full name of my partner in this match: the other player on the side I am
    *  on. Empty for singles, for matches I did not play, and for unknown ids. */
   function partnerName(match) {
-    if (!state.meId) return "";
-    var side = sideIds(match, "A").indexOf(state.meId) !== -1 ? "A"
-             : sideIds(match, "B").indexOf(state.meId) !== -1 ? "B" : null;
+    var side = mySide(match);
     if (!side) return "";
     var ids = sideIds(match, side), names = sideNames(match, side);
     for (var i = 0; i < ids.length; i++) {
@@ -634,15 +656,24 @@
   }
 
   /**
-   * One team block. Win/loss colouring is purely result-based here (not isMe-based):
-   * the winning side is green, the losing side red, an undecided match neutral.
-   * Colour is never the only signal — each decided side carries screen-reader text
-   * and a title, and the verdict caption under the score spells the result out.
+   * One team block, read from my side as in the entry view: in a match I
+   * played only MY side takes colour (green on a win, red on a loss) and is
+   * marked `me`, the opponents stay neutral. In a match I only logged for
+   * others the winning side is green and the losing side red as before.
+   * Colour is never the only signal — a decided side carries screen-reader
+   * text, and the caption under the score spells the result out.
    */
   function teamBlock(match, side, winner) {
     var cls = "mth-team mth-team-" + side.toLowerCase();
     var sr = "";
-    if (winner === side) {
+    var mine = mySide(match);
+    if (mine) {
+      if (side === mine) {
+        cls += " me";
+        if (winner === side) { cls += " win"; sr = '<span class="mth-sr">' + ESC(T("Sieg")) + "</span>"; }
+        else if (winner) { cls += " lost"; sr = '<span class="mth-sr">' + ESC(T("Niederlage")) + "</span>"; }
+      }
+    } else if (winner === side) {
       cls += " win";
       sr = '<span class="mth-sr">' + ESC(T("Sieg")) + "</span>";
     } else if (winner) {
@@ -654,6 +685,10 @@
 
   /** The caption under the score: the verdict, or the live/retired badge when undecided. */
   function verdict(match) {
+    /* my match: the verdict is a filled Sieg / Niederlage pill, as on the entry cards */
+    var res = myOutcome(match);
+    if (res === "win") return '<span class="mth-badge mth-res-win">' + ESC(T("Sieg")) + "</span>";
+    if (res === "loss") return '<span class="mth-badge mth-res-loss">' + ESC(T("Niederlage")) + "</span>";
     if (match.winnerSide === "A" || match.winnerSide === "B") {
       var word = match.winnerSide === "A" ? T("Sieg links") : T("Sieg rechts");
       return '<span class="mth-verdict"><span aria-hidden="true">✓</span> ' + ESC(word) + "</span>";
@@ -743,6 +778,14 @@
         var cls = (cat === "A" || cat === "B") ? TT("Klasse {0}", cat) : cat;
         trn += '<span class="mth-badge mth-badge-trn" title="' + ESC(cls) + '">' + ESC(cls) + "</span>";
       }
+      /* the round, styled by phase as on the entry cards: dashed Gruppe, filled "KO · VF" */
+      var round = String(match.round || (match.tournament && match.tournament.round) || "").trim();
+      if (round) {
+        var ph = phaseOf(round);
+        trn += ph === "group"
+          ? '<span class="mth-badge mth-badge-trn mth-phase-group">' + ESC(T(round)) + "</span>"
+          : '<span class="mth-badge mth-badge-trn mth-phase-ko">' + ESC(T("KO") + " · " + T(round)) + "</span>";
+      }
       /* my tournament partner: the other player on my side of a doubles/mixed
          match, by first name — "Last, First" is how names are stored */
       var partner = partnerName(match);
@@ -753,7 +796,7 @@
     }
     var cap = verdict(match);
 
-    return '<article class="mth-row" data-mid="' + ESC(match.id) + '"' +
+    return '<article class="mth-row res-' + myOutcome(match) + '" data-mid="' + ESC(match.id) + '"' +
         ' data-day="' + ESC(pos.day) + '" data-pos="' + pos.pos + '"' +
         (canOrder ? ' draggable="true"' : "") + ">" +
       leadCol(match, false, canOrder) +
