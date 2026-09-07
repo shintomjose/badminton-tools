@@ -124,7 +124,9 @@ five tournament days of the past year with their name, my W–L and set record
 and win %, and an **Öffnen** button (the open day is marked instead). The panel
 stays visible inside an opened tournament; only the setup card hides it. A
 tournament opened from either list carries an **Übersicht** button back. The
-creation card only appears behind **+ Turnier**, always blank.
+creation card only appears behind **+ Turnier**, always blank. Starting a
+tournament dated today opens it; one planned for another day returns to this
+overview, where it now sits under *Anstehende Turniere*.
 
 ### Venues
 

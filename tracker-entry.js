@@ -87,6 +87,7 @@ Object.assign(EN, {
   "Einmal pro Turniertag eintragen — jedes Spiel erbt diese Angaben.":
     "Enter once per tournament day — every match inherits it.",
   "Turnier starten": "Start tournament",
+  "Turnier geplant": "Tournament planned",
   "Turnier speichern": "Save tournament",
   "Turnier bearbeiten": "Edit tournament",
   "Turniername eingeben": "Enter a tournament name",
@@ -2002,6 +2003,7 @@ Object.assign(EN, {
         note: trnNote(),
       };
       let s = state.session;
+      const created = !s;
       if (s) {
         /* re-edit with another date: the whole day moves, matches included */
         if (sessionKey(s) !== dayKey()) {
@@ -2027,6 +2029,15 @@ Object.assign(EN, {
       }
       state.trnEdit = false;
       state.trnCreate = false;
+      /* A tournament planned for another day is not opened: there is nothing
+         to enter yet, so the landing page comes back with the new one under
+         Anstehende Turniere and "+ Turnier" ready for the next. Today's
+         tournament (and every re-edit) opens as before. */
+      if (created && MT.keys(when).dateKey !== todayKey()) {
+        toast(t("Turnier geplant"));
+        switchDay(todayKey());
+        return;
+      }
       startWatch(Object.assign({}, s, patch));
       toast(t("Turnier gespeichert"));
       renderAll();
