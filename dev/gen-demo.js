@@ -104,6 +104,8 @@ function match(s, seq, o) {
     retiredSide: resultType === "retired" ? (o.aWins ? "B" : "A") : null,
     winnerSide, involvesMe: ids.indexOf(ME.id) >= 0, note: o.note || "", seq,
     round: o.round || null, category: o.category || null, opponentClub: o.opponentClub || null,
+    tournament: o.tournament || null,
+    slot: o.slot || null, league: o.league || null,
     ownerUid: OWNER, createdAt: iso(created), updatedAt: iso(created),
   };
   matches.push(m); return m;
@@ -190,6 +192,45 @@ tournament(new Date(2025, 5, 28), "Unterland Open", "B", "doubles", club[0], men
 tournament(new Date(2025, 10, 8), "Neckar Cup", "B", "mixed", club[1], guests);
 tournament(new Date(2026, 2, 14), "Heilbronner Stadtmeisterschaft", "A", "singles", null, men);
 tournament(new Date(2026, 5, 27), "Unterland Open", "B", "doubles", club[2], men);
+
+/* ---- league: Bezirksliga team matches of SG Heilbronn/Leingarten IV ----
+   One played fixture from last season (all eight slots) and nothing for the
+   current season — its schedule comes from app.js and is all in the future
+   relative to TODAY, so the Liga list in demo mode shows it unlogged. */
+const LEAGUE_TEAM = "SG Heilbronn/Leingarten IV";
+const SLOTS = [["HD1", "doubles"], ["HD2", "doubles"], ["DD", "doubles"], ["HE1", "singles"], ["HE2", "singles"], ["HE3", "singles"], ["DE", "singles"], ["GD", "mixed"]];
+function leagueFixture(fixtureId, opp, home, round, oppPool) {
+  const p = fixtureId.split("-");
+  const time = p[3].slice(0, 2) + ":" + p[3].slice(2);
+  const date = new Date(+p[0], +p[1] - 1, +p[2], +p[3].slice(0, 2), +p[3].slice(2), 0, 0);
+  const lg = { fixtureId, opponent: opp, home, round, time, team: LEAGUE_TEAM, score: null };
+  const s = session(date, "league", locations[0], { fixtureId, league: lg });
+  const men = shuffle(club.filter(x => !isW(x))), women = club.filter(isW);
+  const om = shuffle(oppPool.filter(x => !isW(x))), ow = oppPool.filter(isW);
+  const w = women.length >= 2 ? women : men, oww = ow.length >= 2 ? ow : om;
+  /* ME plays HD1 and HE2 — the two slots a fourth-team player usually gets */
+  const mine = men.filter(x => x !== ME);
+  const lineup = {
+    HD1: [[ME, mine[0]], [om[0], om[1]]],
+    HD2: [[mine[1], mine[2]], [om[2], om[3]]],
+    DD:  [[w[0], w[1]], [oww[0], oww[1]]],
+    HE1: [[mine[0]], [om[0]]],
+    HE2: [[ME], [om[2]]],
+    HE3: [[mine[3] || mine[1]], [om[4] || om[1]]],
+    DE:  [[w[0]], [oww[0]]],
+    GD:  [[mine[2], w[1]], [om[3], oww[1]]],
+  };
+  const denorm = { fixtureId, opponent: opp, home, team: LEAGUE_TEAM };
+  let seq = 0, us = 0, them = 0;
+  for (const [slot, disc] of SLOTS) {
+    const aWins = rnd() < 0.55;
+    if (aWins) us++; else them++;
+    match(s, ++seq, { discipline: disc, targetScore: 21, sideA: lineup[slot][0], sideB: lineup[slot][1], aWins,
+      slot, opponentClub: opp, league: denorm });
+  }
+  lg.score = { us, them };
+}
+leagueFixture("2026-03-21-1400", "TSV Pfedelbach", true, "rueck", guests);
 
 /* ---- sort: sessions/matches by date asc ---- */
 sessions.sort((a, b) => a.date.localeCompare(b.date));

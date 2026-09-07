@@ -357,14 +357,22 @@ const MT = (function () {
   }
 
   /* ================= document builders ================= */
+  /* The three record types. Anything unknown is a training match — the
+     safe default for documents written before a type existed. */
+  function normType(v) { return (v === "tournament" || v === "league") ? v : "training"; }
+
   function sessionDoc(session, date, k, owner) {
     return {
       date: ts(date),
       dateKey: k.dateKey, weekKey: k.weekKey, yearKey: k.yearKey,
       locationId: session.locationId || null,
       locationName: session.locationName || DEFAULT_LOCATION,
-      type: session.type === "tournament" ? "tournament" : "training",
+      type: normType(session.type),
       note: session.note || "",
+      /* league-only: the fixture this team match belongs to. fixtureId is
+         flat for the equality lookup; the object is what the views render. */
+      fixtureId: session.fixtureId || null,
+      league: session.league && typeof session.league === "object" ? session.league : null,
       /* tournament-only — filled by the entry view's day header */
       tournamentName: session.tournamentName || null,
       tournamentCategory: session.tournamentCategory || null,
@@ -407,7 +415,7 @@ const MT = (function () {
       date: ts(ctx.date),
       dateKey: ctx.k.dateKey, weekKey: ctx.k.weekKey, yearKey: ctx.k.yearKey,
       locationName: ctx.locationName || DEFAULT_LOCATION,
-      type: ctx.type === "tournament" ? "tournament" : "training",
+      type: normType(ctx.type),
       discipline: discipline,
       targetScore: targetScore,
       sideA: sideA,
@@ -431,6 +439,10 @@ const MT = (function () {
       category: m.category || null,
       opponentClub: m.opponentClub || null,
       tournament: m.tournament && typeof m.tournament === "object" ? m.tournament : null,
+      /* league-only: the slot in the team match (HD1 … GD) and the fixture,
+         denormalised like `tournament` so the views need no session read */
+      slot: m.slot || null,
+      league: m.league && typeof m.league === "object" ? m.league : null,
       ownerUid: owner,
       createdAt: serverTs(),
       updatedAt: serverTs(),
@@ -717,11 +729,24 @@ const MT = (function () {
   repo.findTodaySession = async function (type, when) {
     const db = await need();
     const k = keys(when || new Date());
-    const wanted = type === "tournament" ? "tournament" : "training";
+    const wanted = normType(type);
     const snap = await db.collection(COL.sessions).where("dateKey", "==", k.dateKey).get();
     const me = uid();
     const hit = snap.docs.map(docData)
       .filter(s => s.type === wanted && (!s.ownerUid || s.ownerUid === me))[0];
+    return hit || null;
+  };
+
+  /* The league session of one fixture. Two fixtures can share a Saturday,
+     so this is the lookup for team matches — equality on a flat field,
+     automatic single-field index. */
+  repo.findSessionByFixture = async function (fixtureId) {
+    const db = await need();
+    const id = String(fixtureId || "").trim();
+    if (!id) return null;
+    const snap = await db.collection(COL.sessions).where("fixtureId", "==", id).get();
+    const me = uid();
+    const hit = snap.docs.map(docData).filter(s => !s.ownerUid || s.ownerUid === me)[0];
     return hit || null;
   };
 
@@ -734,7 +759,7 @@ const MT = (function () {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (Number(daysBack) || 0));
     const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (Number(daysAhead) || 0));
-    const wanted = type === "tournament" ? "tournament" : "training";
+    const wanted = normType(type);
     const snap = await db.collection(COL.sessions)
       .where("dateKey", ">=", keys(start).dateKey)
       .where("dateKey", "<=", keys(end).dateKey)

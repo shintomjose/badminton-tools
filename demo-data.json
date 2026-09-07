@@ -1443,6 +1443,35 @@
    "updatedAt": "2026-03-19T19:00:00.000Z"
   },
   {
+   "id": "s-431",
+   "date": "2026-03-21T13:00:00.000Z",
+   "dateKey": "2026-03-21",
+   "weekKey": "2026-W12",
+   "yearKey": "2026",
+   "locationId": "l-018",
+   "locationName": "TSG Heilbronn Hall",
+   "type": "league",
+   "note": "",
+   "tournamentName": null,
+   "tournamentCategory": null,
+   "ownerUid": "demo-owner",
+   "createdAt": "2026-03-21T13:00:00.000Z",
+   "updatedAt": "2026-03-21T13:00:00.000Z",
+   "fixtureId": "2026-03-21-1400",
+   "league": {
+    "fixtureId": "2026-03-21-1400",
+    "opponent": "TSV Pfedelbach",
+    "home": true,
+    "round": "rueck",
+    "time": "14:00",
+    "team": "SG Heilbronn/Leingarten IV",
+    "score": {
+     "us": 4,
+     "them": 4
+    }
+   }
+  },
+  {
    "id": "s-309",
    "date": "2026-03-24T18:00:00.000Z",
    "dateKey": "2026-03-24",
@@ -1949,6 +1978,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-07T18:19:00.000Z",
    "updatedAt": "2025-01-07T18:19:00.000Z"
@@ -2012,6 +2044,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-07T18:28:00.000Z",
    "updatedAt": "2025-01-07T18:28:00.000Z"
@@ -2079,6 +2114,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-07T18:42:00.000Z",
    "updatedAt": "2025-01-07T18:42:00.000Z"
@@ -2142,6 +2180,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-07T19:16:00.000Z",
    "updatedAt": "2025-01-07T19:16:00.000Z"
@@ -2209,6 +2250,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-14T18:20:00.000Z",
    "updatedAt": "2025-01-14T18:20:00.000Z"
@@ -2268,6 +2312,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-14T18:34:00.000Z",
    "updatedAt": "2025-01-14T18:34:00.000Z"
@@ -2327,6 +2374,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-14T19:03:00.000Z",
    "updatedAt": "2025-01-14T19:03:00.000Z"
@@ -2386,6 +2436,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-14T19:00:00.000Z",
    "updatedAt": "2025-01-14T19:00:00.000Z"
@@ -2453,6 +2506,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-16T19:22:00.000Z",
    "updatedAt": "2025-01-16T19:22:00.000Z"
@@ -2524,6 +2580,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-16T19:30:00.000Z",
    "updatedAt": "2025-01-16T19:30:00.000Z"
@@ -2595,6 +2654,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-16T19:42:00.000Z",
    "updatedAt": "2025-01-16T19:42:00.000Z"
@@ -2666,6 +2728,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-21T18:17:00.000Z",
    "updatedAt": "2025-01-21T18:17:00.000Z"
@@ -2729,6 +2794,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-21T18:44:00.000Z",
    "updatedAt": "2025-01-21T18:44:00.000Z"
@@ -2800,6 +2868,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-21T18:42:00.000Z",
    "updatedAt": "2025-01-21T18:42:00.000Z"
@@ -2859,6 +2930,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-28T18:14:00.000Z",
    "updatedAt": "2025-01-28T18:14:00.000Z"
@@ -2926,6 +3000,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-28T18:38:00.000Z",
    "updatedAt": "2025-01-28T18:38:00.000Z"
@@ -2993,6 +3070,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-01-28T18:57:00.000Z",
    "updatedAt": "2025-01-28T18:57:00.000Z"
@@ -3060,6 +3140,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-04T18:17:00.000Z",
    "updatedAt": "2025-02-04T18:17:00.000Z"
@@ -3131,6 +3214,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-04T18:38:00.000Z",
    "updatedAt": "2025-02-04T18:38:00.000Z"
@@ -3194,6 +3280,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-06T19:16:00.000Z",
    "updatedAt": "2025-02-06T19:16:00.000Z"
@@ -3261,6 +3350,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-06T19:30:00.000Z",
    "updatedAt": "2025-02-06T19:30:00.000Z"
@@ -3332,6 +3424,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-11T18:16:00.000Z",
    "updatedAt": "2025-02-11T18:16:00.000Z"
@@ -3403,6 +3498,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-11T18:34:00.000Z",
    "updatedAt": "2025-02-11T18:34:00.000Z"
@@ -3466,6 +3564,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-11T18:45:00.000Z",
    "updatedAt": "2025-02-11T18:45:00.000Z"
@@ -3525,6 +3626,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-18T18:15:00.000Z",
    "updatedAt": "2025-02-18T18:15:00.000Z"
@@ -3592,6 +3696,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-18T18:44:00.000Z",
    "updatedAt": "2025-02-18T18:44:00.000Z"
@@ -3651,6 +3758,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-18T18:48:00.000Z",
    "updatedAt": "2025-02-18T18:48:00.000Z"
@@ -3710,6 +3820,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-18T19:08:00.000Z",
    "updatedAt": "2025-02-18T19:08:00.000Z"
@@ -3769,6 +3882,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-25T18:14:00.000Z",
    "updatedAt": "2025-02-25T18:14:00.000Z"
@@ -3832,6 +3948,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-25T18:32:00.000Z",
    "updatedAt": "2025-02-25T18:32:00.000Z"
@@ -3903,6 +4022,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-25T18:51:00.000Z",
    "updatedAt": "2025-02-25T18:51:00.000Z"
@@ -3962,6 +4084,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-27T19:18:00.000Z",
    "updatedAt": "2025-02-27T19:18:00.000Z"
@@ -4029,6 +4154,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-02-27T19:32:00.000Z",
    "updatedAt": "2025-02-27T19:32:00.000Z"
@@ -4096,6 +4224,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-04T18:22:00.000Z",
    "updatedAt": "2025-03-04T18:22:00.000Z"
@@ -4155,6 +4286,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-04T18:42:00.000Z",
    "updatedAt": "2025-03-04T18:42:00.000Z"
@@ -4222,6 +4356,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-11T18:19:00.000Z",
    "updatedAt": "2025-03-11T18:19:00.000Z"
@@ -4285,6 +4422,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-11T18:34:00.000Z",
    "updatedAt": "2025-03-11T18:34:00.000Z"
@@ -4348,6 +4488,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "TSV Öhringen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T08:46:00.000Z",
    "updatedAt": "2025-03-15T08:46:00.000Z"
@@ -4411,6 +4554,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "SG Bietigheim",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T09:06:00.000Z",
    "updatedAt": "2025-03-15T09:06:00.000Z"
@@ -4470,6 +4616,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "SV Böckingen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T09:15:00.000Z",
    "updatedAt": "2025-03-15T09:15:00.000Z"
@@ -4529,6 +4678,9 @@
    "round": "R16",
    "category": "B",
    "opponentClub": "BC Neckarsulm",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T09:38:00.000Z",
    "updatedAt": "2025-03-15T09:38:00.000Z"
@@ -4592,6 +4744,9 @@
    "round": "VF",
    "category": "B",
    "opponentClub": "TSV Öhringen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-15T10:00:00.000Z",
    "updatedAt": "2025-03-15T10:00:00.000Z"
@@ -4663,6 +4818,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-18T18:16:00.000Z",
    "updatedAt": "2025-03-18T18:16:00.000Z"
@@ -4722,6 +4880,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-18T18:30:00.000Z",
    "updatedAt": "2025-03-18T18:30:00.000Z"
@@ -4789,6 +4950,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-18T18:48:00.000Z",
    "updatedAt": "2025-03-18T18:48:00.000Z"
@@ -4848,6 +5012,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-18T19:28:00.000Z",
    "updatedAt": "2025-03-18T19:28:00.000Z"
@@ -4919,6 +5086,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-20T19:16:00.000Z",
    "updatedAt": "2025-03-20T19:16:00.000Z"
@@ -4978,6 +5148,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-20T19:30:00.000Z",
    "updatedAt": "2025-03-20T19:30:00.000Z"
@@ -5045,6 +5218,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-03-20T20:06:00.000Z",
    "updatedAt": "2025-03-20T20:06:00.000Z"
@@ -5116,6 +5292,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-01T17:18:00.000Z",
    "updatedAt": "2025-04-01T17:18:00.000Z"
@@ -5187,6 +5366,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-01T17:30:00.000Z",
    "updatedAt": "2025-04-01T17:30:00.000Z"
@@ -5246,6 +5428,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-08T17:20:00.000Z",
    "updatedAt": "2025-04-08T17:20:00.000Z"
@@ -5313,6 +5498,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-08T17:34:00.000Z",
    "updatedAt": "2025-04-08T17:34:00.000Z"
@@ -5384,6 +5572,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-08T17:54:00.000Z",
    "updatedAt": "2025-04-08T17:54:00.000Z"
@@ -5455,6 +5646,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-08T18:16:00.000Z",
    "updatedAt": "2025-04-08T18:16:00.000Z"
@@ -5522,6 +5716,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-15T17:19:00.000Z",
    "updatedAt": "2025-04-15T17:19:00.000Z"
@@ -5585,6 +5782,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-15T17:40:00.000Z",
    "updatedAt": "2025-04-15T17:40:00.000Z"
@@ -5652,6 +5852,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-22T17:22:00.000Z",
    "updatedAt": "2025-04-22T17:22:00.000Z"
@@ -5719,6 +5922,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-22T17:34:00.000Z",
    "updatedAt": "2025-04-22T17:34:00.000Z"
@@ -5782,6 +5988,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-29T17:15:00.000Z",
    "updatedAt": "2025-04-29T17:15:00.000Z"
@@ -5849,6 +6058,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-29T17:44:00.000Z",
    "updatedAt": "2025-04-29T17:44:00.000Z"
@@ -5908,6 +6120,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-29T17:54:00.000Z",
    "updatedAt": "2025-04-29T17:54:00.000Z"
@@ -5979,6 +6194,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-04-29T18:24:00.000Z",
    "updatedAt": "2025-04-29T18:24:00.000Z"
@@ -6050,6 +6268,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-06T17:22:00.000Z",
    "updatedAt": "2025-05-06T17:22:00.000Z"
@@ -6117,6 +6338,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-06T17:28:00.000Z",
    "updatedAt": "2025-05-06T17:28:00.000Z"
@@ -6184,6 +6408,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-06T17:57:00.000Z",
    "updatedAt": "2025-05-06T17:57:00.000Z"
@@ -6247,6 +6474,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-13T17:20:00.000Z",
    "updatedAt": "2025-05-13T17:20:00.000Z"
@@ -6314,6 +6544,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-13T17:36:00.000Z",
    "updatedAt": "2025-05-13T17:36:00.000Z"
@@ -6381,6 +6614,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-13T17:54:00.000Z",
    "updatedAt": "2025-05-13T17:54:00.000Z"
@@ -6452,6 +6688,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-13T18:28:00.000Z",
    "updatedAt": "2025-05-13T18:28:00.000Z"
@@ -6519,6 +6758,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-20T17:21:00.000Z",
    "updatedAt": "2025-05-20T17:21:00.000Z"
@@ -6578,6 +6820,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-20T17:30:00.000Z",
    "updatedAt": "2025-05-20T17:30:00.000Z"
@@ -6645,6 +6890,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-20T17:51:00.000Z",
    "updatedAt": "2025-05-20T17:51:00.000Z"
@@ -6704,6 +6952,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-22T18:22:00.000Z",
    "updatedAt": "2025-05-22T18:22:00.000Z"
@@ -6775,6 +7026,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-22T18:42:00.000Z",
    "updatedAt": "2025-05-22T18:42:00.000Z"
@@ -6834,6 +7088,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-22T19:00:00.000Z",
    "updatedAt": "2025-05-22T19:00:00.000Z"
@@ -6905,6 +7162,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-27T17:22:00.000Z",
    "updatedAt": "2025-05-27T17:22:00.000Z"
@@ -6964,6 +7224,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-27T17:42:00.000Z",
    "updatedAt": "2025-05-27T17:42:00.000Z"
@@ -7023,6 +7286,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-27T17:51:00.000Z",
    "updatedAt": "2025-05-27T17:51:00.000Z"
@@ -7094,6 +7360,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-05-27T18:00:00.000Z",
    "updatedAt": "2025-05-27T18:00:00.000Z"
@@ -7161,6 +7430,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-03T17:21:00.000Z",
    "updatedAt": "2025-06-03T17:21:00.000Z"
@@ -7232,6 +7504,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-03T17:32:00.000Z",
    "updatedAt": "2025-06-03T17:32:00.000Z"
@@ -7299,6 +7574,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-03T17:48:00.000Z",
    "updatedAt": "2025-06-03T17:48:00.000Z"
@@ -7362,6 +7640,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-10T17:17:00.000Z",
    "updatedAt": "2025-06-10T17:17:00.000Z"
@@ -7433,6 +7714,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-10T17:44:00.000Z",
    "updatedAt": "2025-06-10T17:44:00.000Z"
@@ -7504,6 +7788,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-12T18:19:00.000Z",
    "updatedAt": "2025-06-12T18:19:00.000Z"
@@ -7571,6 +7858,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-12T18:36:00.000Z",
    "updatedAt": "2025-06-12T18:36:00.000Z"
@@ -7638,6 +7928,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-17T17:21:00.000Z",
    "updatedAt": "2025-06-17T17:21:00.000Z"
@@ -7697,6 +7990,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-17T17:38:00.000Z",
    "updatedAt": "2025-06-17T17:38:00.000Z"
@@ -7756,6 +8052,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-24T17:19:00.000Z",
    "updatedAt": "2025-06-24T17:19:00.000Z"
@@ -7819,6 +8118,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-24T17:38:00.000Z",
    "updatedAt": "2025-06-24T17:38:00.000Z"
@@ -7882,6 +8184,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-24T18:06:00.000Z",
    "updatedAt": "2025-06-24T18:06:00.000Z"
@@ -7953,6 +8258,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "BC Neckarsulm",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-28T07:51:00.000Z",
    "updatedAt": "2025-06-28T07:51:00.000Z"
@@ -8020,6 +8328,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "TSV Öhringen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-28T08:14:00.000Z",
    "updatedAt": "2025-06-28T08:14:00.000Z"
@@ -8091,6 +8402,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "SG Bietigheim",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-06-28T08:12:00.000Z",
    "updatedAt": "2025-06-28T08:12:00.000Z"
@@ -8150,6 +8464,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-01T17:22:00.000Z",
    "updatedAt": "2025-07-01T17:22:00.000Z"
@@ -8213,6 +8530,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-01T17:34:00.000Z",
    "updatedAt": "2025-07-01T17:34:00.000Z"
@@ -8280,6 +8600,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-01T18:06:00.000Z",
    "updatedAt": "2025-07-01T18:06:00.000Z"
@@ -8351,6 +8674,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-01T18:04:00.000Z",
    "updatedAt": "2025-07-01T18:04:00.000Z"
@@ -8410,6 +8736,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-03T18:14:00.000Z",
    "updatedAt": "2025-07-03T18:14:00.000Z"
@@ -8469,6 +8798,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-03T18:42:00.000Z",
    "updatedAt": "2025-07-03T18:42:00.000Z"
@@ -8536,6 +8868,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-08T17:15:00.000Z",
    "updatedAt": "2025-07-08T17:15:00.000Z"
@@ -8603,6 +8938,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-08T17:40:00.000Z",
    "updatedAt": "2025-07-08T17:40:00.000Z"
@@ -8662,6 +9000,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-08T18:03:00.000Z",
    "updatedAt": "2025-07-08T18:03:00.000Z"
@@ -8729,6 +9070,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-15T17:19:00.000Z",
    "updatedAt": "2025-07-15T17:19:00.000Z"
@@ -8788,6 +9132,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-15T17:38:00.000Z",
    "updatedAt": "2025-07-15T17:38:00.000Z"
@@ -8855,6 +9202,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-22T17:20:00.000Z",
    "updatedAt": "2025-07-22T17:20:00.000Z"
@@ -8926,6 +9276,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-22T17:40:00.000Z",
    "updatedAt": "2025-07-22T17:40:00.000Z"
@@ -8989,6 +9342,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-22T17:48:00.000Z",
    "updatedAt": "2025-07-22T17:48:00.000Z"
@@ -9048,6 +9404,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-22T18:00:00.000Z",
    "updatedAt": "2025-07-22T18:00:00.000Z"
@@ -9107,6 +9466,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-24T18:21:00.000Z",
    "updatedAt": "2025-07-24T18:21:00.000Z"
@@ -9166,6 +9528,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-24T18:38:00.000Z",
    "updatedAt": "2025-07-24T18:38:00.000Z"
@@ -9225,6 +9590,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-29T17:15:00.000Z",
    "updatedAt": "2025-07-29T17:15:00.000Z"
@@ -9292,6 +9660,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-29T17:28:00.000Z",
    "updatedAt": "2025-07-29T17:28:00.000Z"
@@ -9351,6 +9722,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-29T17:48:00.000Z",
    "updatedAt": "2025-07-29T17:48:00.000Z"
@@ -9414,6 +9788,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-07-29T18:08:00.000Z",
    "updatedAt": "2025-07-29T18:08:00.000Z"
@@ -9485,6 +9862,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-08-26T17:15:00.000Z",
    "updatedAt": "2025-08-26T17:15:00.000Z"
@@ -9544,6 +9924,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-08-26T17:32:00.000Z",
    "updatedAt": "2025-08-26T17:32:00.000Z"
@@ -9603,6 +9986,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-08-26T17:45:00.000Z",
    "updatedAt": "2025-08-26T17:45:00.000Z"
@@ -9670,6 +10056,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-08-26T18:24:00.000Z",
    "updatedAt": "2025-08-26T18:24:00.000Z"
@@ -9737,6 +10126,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-02T17:15:00.000Z",
    "updatedAt": "2025-09-02T17:15:00.000Z"
@@ -9800,6 +10192,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-02T17:38:00.000Z",
    "updatedAt": "2025-09-02T17:38:00.000Z"
@@ -9871,6 +10266,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-02T18:06:00.000Z",
    "updatedAt": "2025-09-02T18:06:00.000Z"
@@ -9938,6 +10336,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-04T18:16:00.000Z",
    "updatedAt": "2025-09-04T18:16:00.000Z"
@@ -9997,6 +10398,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-04T18:42:00.000Z",
    "updatedAt": "2025-09-04T18:42:00.000Z"
@@ -10064,6 +10468,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-04T18:45:00.000Z",
    "updatedAt": "2025-09-04T18:45:00.000Z"
@@ -10135,6 +10542,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-04T19:12:00.000Z",
    "updatedAt": "2025-09-04T19:12:00.000Z"
@@ -10194,6 +10604,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-16T17:22:00.000Z",
    "updatedAt": "2025-09-16T17:22:00.000Z"
@@ -10265,6 +10678,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-16T17:28:00.000Z",
    "updatedAt": "2025-09-16T17:28:00.000Z"
@@ -10332,6 +10748,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-16T17:48:00.000Z",
    "updatedAt": "2025-09-16T17:48:00.000Z"
@@ -10403,6 +10822,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-23T17:17:00.000Z",
    "updatedAt": "2025-09-23T17:17:00.000Z"
@@ -10470,6 +10892,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-23T17:34:00.000Z",
    "updatedAt": "2025-09-23T17:34:00.000Z"
@@ -10537,6 +10962,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-25T18:17:00.000Z",
    "updatedAt": "2025-09-25T18:17:00.000Z"
@@ -10608,6 +11036,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-25T18:30:00.000Z",
    "updatedAt": "2025-09-25T18:30:00.000Z"
@@ -10679,6 +11110,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-25T19:03:00.000Z",
    "updatedAt": "2025-09-25T19:03:00.000Z"
@@ -10746,6 +11180,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-25T19:16:00.000Z",
    "updatedAt": "2025-09-25T19:16:00.000Z"
@@ -10805,6 +11242,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-30T17:20:00.000Z",
    "updatedAt": "2025-09-30T17:20:00.000Z"
@@ -10868,6 +11308,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-30T17:38:00.000Z",
    "updatedAt": "2025-09-30T17:38:00.000Z"
@@ -10939,6 +11382,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-09-30T17:45:00.000Z",
    "updatedAt": "2025-09-30T17:45:00.000Z"
@@ -11010,6 +11456,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-07T17:17:00.000Z",
    "updatedAt": "2025-10-07T17:17:00.000Z"
@@ -11081,6 +11530,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-07T17:30:00.000Z",
    "updatedAt": "2025-10-07T17:30:00.000Z"
@@ -11144,6 +11596,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-07T17:51:00.000Z",
    "updatedAt": "2025-10-07T17:51:00.000Z"
@@ -11203,6 +11658,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-14T17:18:00.000Z",
    "updatedAt": "2025-10-14T17:18:00.000Z"
@@ -11270,6 +11728,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-14T17:28:00.000Z",
    "updatedAt": "2025-10-14T17:28:00.000Z"
@@ -11329,6 +11790,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-14T17:57:00.000Z",
    "updatedAt": "2025-10-14T17:57:00.000Z"
@@ -11388,6 +11852,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-16T18:20:00.000Z",
    "updatedAt": "2025-10-16T18:20:00.000Z"
@@ -11459,6 +11926,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-16T18:44:00.000Z",
    "updatedAt": "2025-10-16T18:44:00.000Z"
@@ -11518,6 +11988,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-16T18:45:00.000Z",
    "updatedAt": "2025-10-16T18:45:00.000Z"
@@ -11585,6 +12058,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-21T17:19:00.000Z",
    "updatedAt": "2025-10-21T17:19:00.000Z"
@@ -11648,6 +12124,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-21T17:34:00.000Z",
    "updatedAt": "2025-10-21T17:34:00.000Z"
@@ -11711,6 +12190,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-21T17:45:00.000Z",
    "updatedAt": "2025-10-21T17:45:00.000Z"
@@ -11778,6 +12260,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-28T18:19:00.000Z",
    "updatedAt": "2025-10-28T18:19:00.000Z"
@@ -11849,6 +12334,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-28T18:42:00.000Z",
    "updatedAt": "2025-10-28T18:42:00.000Z"
@@ -11908,6 +12396,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-10-28T19:00:00.000Z",
    "updatedAt": "2025-10-28T19:00:00.000Z"
@@ -11971,6 +12462,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-04T18:16:00.000Z",
    "updatedAt": "2025-11-04T18:16:00.000Z"
@@ -12030,6 +12524,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-04T18:36:00.000Z",
    "updatedAt": "2025-11-04T18:36:00.000Z"
@@ -12097,6 +12594,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "SG Bietigheim",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T08:44:00.000Z",
    "updatedAt": "2025-11-08T08:44:00.000Z"
@@ -12164,6 +12664,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "TSV Öhringen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T09:06:00.000Z",
    "updatedAt": "2025-11-08T09:06:00.000Z"
@@ -12235,6 +12738,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "TSV Öhringen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T09:15:00.000Z",
    "updatedAt": "2025-11-08T09:15:00.000Z"
@@ -12306,6 +12812,9 @@
    "round": "R16",
    "category": "B",
    "opponentClub": "BC Neckarsulm",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T09:54:00.000Z",
    "updatedAt": "2025-11-08T09:54:00.000Z"
@@ -12377,6 +12886,9 @@
    "round": "VF",
    "category": "B",
    "opponentClub": "SG Bietigheim",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-08T10:05:00.000Z",
    "updatedAt": "2025-11-08T10:05:00.000Z"
@@ -12448,6 +12960,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-11T18:16:00.000Z",
    "updatedAt": "2025-11-11T18:16:00.000Z"
@@ -12515,6 +13030,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-11T18:30:00.000Z",
    "updatedAt": "2025-11-11T18:30:00.000Z"
@@ -12574,6 +13092,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-11T18:48:00.000Z",
    "updatedAt": "2025-11-11T18:48:00.000Z"
@@ -12633,6 +13154,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-18T18:16:00.000Z",
    "updatedAt": "2025-11-18T18:16:00.000Z"
@@ -12704,6 +13228,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-18T18:36:00.000Z",
    "updatedAt": "2025-11-18T18:36:00.000Z"
@@ -12771,6 +13298,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-18T18:54:00.000Z",
    "updatedAt": "2025-11-18T18:54:00.000Z"
@@ -12842,6 +13372,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-25T18:22:00.000Z",
    "updatedAt": "2025-11-25T18:22:00.000Z"
@@ -12913,6 +13446,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-25T18:28:00.000Z",
    "updatedAt": "2025-11-25T18:28:00.000Z"
@@ -12976,6 +13512,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-25T18:42:00.000Z",
    "updatedAt": "2025-11-25T18:42:00.000Z"
@@ -13047,6 +13586,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-25T19:16:00.000Z",
    "updatedAt": "2025-11-25T19:16:00.000Z"
@@ -13114,6 +13656,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-27T19:22:00.000Z",
    "updatedAt": "2025-11-27T19:22:00.000Z"
@@ -13185,6 +13730,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-27T19:28:00.000Z",
    "updatedAt": "2025-11-27T19:28:00.000Z"
@@ -13256,6 +13804,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-27T19:45:00.000Z",
    "updatedAt": "2025-11-27T19:45:00.000Z"
@@ -13319,6 +13870,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-11-27T20:12:00.000Z",
    "updatedAt": "2025-11-27T20:12:00.000Z"
@@ -13378,6 +13932,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-02T18:14:00.000Z",
    "updatedAt": "2025-12-02T18:14:00.000Z"
@@ -13445,6 +14002,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-02T18:28:00.000Z",
    "updatedAt": "2025-12-02T18:28:00.000Z"
@@ -13516,6 +14076,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-02T18:54:00.000Z",
    "updatedAt": "2025-12-02T18:54:00.000Z"
@@ -13575,6 +14138,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-09T18:17:00.000Z",
    "updatedAt": "2025-12-09T18:17:00.000Z"
@@ -13646,6 +14212,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-09T18:36:00.000Z",
    "updatedAt": "2025-12-09T18:36:00.000Z"
@@ -13705,6 +14274,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-09T18:48:00.000Z",
    "updatedAt": "2025-12-09T18:48:00.000Z"
@@ -13764,6 +14336,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-16T18:17:00.000Z",
    "updatedAt": "2025-12-16T18:17:00.000Z"
@@ -13827,6 +14402,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-16T18:38:00.000Z",
    "updatedAt": "2025-12-16T18:38:00.000Z"
@@ -13886,6 +14464,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-18T19:22:00.000Z",
    "updatedAt": "2025-12-18T19:22:00.000Z"
@@ -13945,6 +14526,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-18T19:32:00.000Z",
    "updatedAt": "2025-12-18T19:32:00.000Z"
@@ -14008,6 +14592,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2025-12-18T20:03:00.000Z",
    "updatedAt": "2025-12-18T20:03:00.000Z"
@@ -14075,6 +14662,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-13T18:20:00.000Z",
    "updatedAt": "2026-01-13T18:20:00.000Z"
@@ -14142,6 +14732,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-13T18:32:00.000Z",
    "updatedAt": "2026-01-13T18:32:00.000Z"
@@ -14209,6 +14802,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-15T19:20:00.000Z",
    "updatedAt": "2026-01-15T19:20:00.000Z"
@@ -14280,6 +14876,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-15T19:42:00.000Z",
    "updatedAt": "2026-01-15T19:42:00.000Z"
@@ -14339,6 +14938,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-15T19:42:00.000Z",
    "updatedAt": "2026-01-15T19:42:00.000Z"
@@ -14402,6 +15004,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-15T20:24:00.000Z",
    "updatedAt": "2026-01-15T20:24:00.000Z"
@@ -14465,6 +15070,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-20T18:22:00.000Z",
    "updatedAt": "2026-01-20T18:22:00.000Z"
@@ -14536,6 +15144,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-20T18:42:00.000Z",
    "updatedAt": "2026-01-20T18:42:00.000Z"
@@ -14595,6 +15206,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-20T18:45:00.000Z",
    "updatedAt": "2026-01-20T18:45:00.000Z"
@@ -14654,6 +15268,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-20T19:00:00.000Z",
    "updatedAt": "2026-01-20T19:00:00.000Z"
@@ -14725,6 +15342,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-27T18:15:00.000Z",
    "updatedAt": "2026-01-27T18:15:00.000Z"
@@ -14784,6 +15404,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-27T18:28:00.000Z",
    "updatedAt": "2026-01-27T18:28:00.000Z"
@@ -14851,6 +15474,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-27T19:00:00.000Z",
    "updatedAt": "2026-01-27T19:00:00.000Z"
@@ -14910,6 +15536,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-01-27T19:08:00.000Z",
    "updatedAt": "2026-01-27T19:08:00.000Z"
@@ -14969,6 +15598,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-03T18:14:00.000Z",
    "updatedAt": "2026-02-03T18:14:00.000Z"
@@ -15040,6 +15672,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-03T18:32:00.000Z",
    "updatedAt": "2026-02-03T18:32:00.000Z"
@@ -15107,6 +15742,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-03T18:57:00.000Z",
    "updatedAt": "2026-02-03T18:57:00.000Z"
@@ -15174,6 +15812,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-05T19:15:00.000Z",
    "updatedAt": "2026-02-05T19:15:00.000Z"
@@ -15245,6 +15886,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-05T19:36:00.000Z",
    "updatedAt": "2026-02-05T19:36:00.000Z"
@@ -15316,6 +15960,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-05T20:00:00.000Z",
    "updatedAt": "2026-02-05T20:00:00.000Z"
@@ -15383,6 +16030,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-10T18:19:00.000Z",
    "updatedAt": "2026-02-10T18:19:00.000Z"
@@ -15442,6 +16092,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-10T18:30:00.000Z",
    "updatedAt": "2026-02-10T18:30:00.000Z"
@@ -15501,6 +16154,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-10T19:03:00.000Z",
    "updatedAt": "2026-02-10T19:03:00.000Z"
@@ -15568,6 +16224,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-10T19:20:00.000Z",
    "updatedAt": "2026-02-10T19:20:00.000Z"
@@ -15639,6 +16298,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-17T18:20:00.000Z",
    "updatedAt": "2026-02-17T18:20:00.000Z"
@@ -15706,6 +16368,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-17T18:40:00.000Z",
    "updatedAt": "2026-02-17T18:40:00.000Z"
@@ -15769,6 +16434,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-24T18:17:00.000Z",
    "updatedAt": "2026-02-24T18:17:00.000Z"
@@ -15840,6 +16508,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-24T18:36:00.000Z",
    "updatedAt": "2026-02-24T18:36:00.000Z"
@@ -15907,6 +16578,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-24T18:48:00.000Z",
    "updatedAt": "2026-02-24T18:48:00.000Z"
@@ -15974,6 +16648,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-24T19:28:00.000Z",
    "updatedAt": "2026-02-24T19:28:00.000Z"
@@ -16033,6 +16710,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-26T19:19:00.000Z",
    "updatedAt": "2026-02-26T19:19:00.000Z"
@@ -16092,6 +16772,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-26T19:30:00.000Z",
    "updatedAt": "2026-02-26T19:30:00.000Z"
@@ -16163,6 +16846,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-26T19:48:00.000Z",
    "updatedAt": "2026-02-26T19:48:00.000Z"
@@ -16234,6 +16920,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-02-26T20:28:00.000Z",
    "updatedAt": "2026-02-26T20:28:00.000Z"
@@ -16297,6 +16986,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-03T18:14:00.000Z",
    "updatedAt": "2026-03-03T18:14:00.000Z"
@@ -16356,6 +17048,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-03T18:32:00.000Z",
    "updatedAt": "2026-03-03T18:32:00.000Z"
@@ -16415,6 +17110,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-10T18:17:00.000Z",
    "updatedAt": "2026-03-10T18:17:00.000Z"
@@ -16474,6 +17172,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-10T18:38:00.000Z",
    "updatedAt": "2026-03-10T18:38:00.000Z"
@@ -16545,6 +17246,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-10T18:45:00.000Z",
    "updatedAt": "2026-03-10T18:45:00.000Z"
@@ -16608,6 +17312,9 @@
    "round": "Gruppe",
    "category": "A",
    "opponentClub": "SG Bietigheim",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-14T08:45:00.000Z",
    "updatedAt": "2026-03-14T08:45:00.000Z"
@@ -16671,6 +17378,9 @@
    "round": "Gruppe",
    "category": "A",
    "opponentClub": "BC Neckarsulm",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-14T09:10:00.000Z",
    "updatedAt": "2026-03-14T09:10:00.000Z"
@@ -16734,6 +17444,9 @@
    "round": "Gruppe",
    "category": "A",
    "opponentClub": "TSV Öhringen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-14T09:21:00.000Z",
    "updatedAt": "2026-03-14T09:21:00.000Z"
@@ -16793,6 +17506,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-17T18:14:00.000Z",
    "updatedAt": "2026-03-17T18:14:00.000Z"
@@ -16856,6 +17572,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-17T18:42:00.000Z",
    "updatedAt": "2026-03-17T18:42:00.000Z"
@@ -16927,6 +17646,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-17T18:54:00.000Z",
    "updatedAt": "2026-03-17T18:54:00.000Z"
@@ -16998,6 +17720,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-19T19:17:00.000Z",
    "updatedAt": "2026-03-19T19:17:00.000Z"
@@ -17065,9 +17790,584 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-19T19:34:00.000Z",
    "updatedAt": "2026-03-19T19:34:00.000Z"
+  },
+  {
+   "id": "m-432",
+   "sessionId": "s-431",
+   "date": "2026-03-21T13:00:00.000Z",
+   "dateKey": "2026-03-21",
+   "weekKey": "2026-W12",
+   "yearKey": "2026",
+   "locationName": "TSG Heilbronn Hall",
+   "type": "league",
+   "discipline": "doubles",
+   "targetScore": 21,
+   "sideA": {
+    "playerIds": [
+     "p-001",
+     "p-009"
+    ],
+    "playerNames": [
+     "Mathew Jose, Shinto",
+     "Kaiser, David"
+    ]
+   },
+   "sideB": {
+    "playerIds": [
+     "p-014",
+     "p-012"
+    ],
+    "playerNames": [
+     "Ahmed, Samir",
+     "Vogt, Markus"
+    ]
+   },
+   "playerIds": [
+    "p-001",
+    "p-009",
+    "p-014",
+    "p-012"
+   ],
+   "playerClubs": {
+    "p-001": "TSG Heilbronn",
+    "p-009": "TSG Heilbronn",
+    "p-014": "TSV Öhringen",
+    "p-012": "SV Böckingen"
+   },
+   "games": [
+    {
+     "a": 19,
+     "b": 21
+    },
+    {
+     "a": 10,
+     "b": 21
+    }
+   ],
+   "status": "finished",
+   "resultType": "normal",
+   "retiredSide": null,
+   "winnerSide": "B",
+   "involvesMe": true,
+   "note": "",
+   "seq": 1,
+   "round": null,
+   "category": null,
+   "opponentClub": "TSV Pfedelbach",
+   "tournament": null,
+   "slot": "HD1",
+   "league": {
+    "fixtureId": "2026-03-21-1400",
+    "opponent": "TSV Pfedelbach",
+    "home": true,
+    "team": "SG Heilbronn/Leingarten IV"
+   },
+   "ownerUid": "demo-owner",
+   "createdAt": "2026-03-21T13:16:00.000Z",
+   "updatedAt": "2026-03-21T13:16:00.000Z"
+  },
+  {
+   "id": "m-433",
+   "sessionId": "s-431",
+   "date": "2026-03-21T13:00:00.000Z",
+   "dateKey": "2026-03-21",
+   "weekKey": "2026-W12",
+   "yearKey": "2026",
+   "locationName": "TSG Heilbronn Hall",
+   "type": "league",
+   "discipline": "doubles",
+   "targetScore": 21,
+   "sideA": {
+    "playerIds": [
+     "p-004",
+     "p-006"
+    ],
+    "playerNames": [
+     "Becker, Jonas",
+     "Krüger, Tobias"
+    ]
+   },
+   "sideB": {
+    "playerIds": [
+     "p-016",
+     "p-010"
+    ],
+    "playerNames": [
+     "Fischer, Leon",
+     "Roth, Daniel"
+    ]
+   },
+   "playerIds": [
+    "p-004",
+    "p-006",
+    "p-016",
+    "p-010"
+   ],
+   "playerClubs": {
+    "p-004": "TSG Heilbronn",
+    "p-006": "TSG Heilbronn",
+    "p-016": "SG Bietigheim",
+    "p-010": "BC Neckarsulm"
+   },
+   "games": [
+    {
+     "a": 21,
+     "b": 15
+    },
+    {
+     "a": 21,
+     "b": 15
+    }
+   ],
+   "status": "finished",
+   "resultType": "normal",
+   "retiredSide": null,
+   "winnerSide": "A",
+   "involvesMe": false,
+   "note": "",
+   "seq": 2,
+   "round": null,
+   "category": null,
+   "opponentClub": "TSV Pfedelbach",
+   "tournament": null,
+   "slot": "HD2",
+   "league": {
+    "fixtureId": "2026-03-21-1400",
+    "opponent": "TSV Pfedelbach",
+    "home": true,
+    "team": "SG Heilbronn/Leingarten IV"
+   },
+   "ownerUid": "demo-owner",
+   "createdAt": "2026-03-21T13:34:00.000Z",
+   "updatedAt": "2026-03-21T13:34:00.000Z"
+  },
+  {
+   "id": "m-434",
+   "sessionId": "s-431",
+   "date": "2026-03-21T13:00:00.000Z",
+   "dateKey": "2026-03-21",
+   "weekKey": "2026-W12",
+   "yearKey": "2026",
+   "locationName": "TSG Heilbronn Hall",
+   "type": "league",
+   "discipline": "doubles",
+   "targetScore": 21,
+   "sideA": {
+    "playerIds": [
+     "p-003",
+     "p-005"
+    ],
+    "playerNames": [
+     "Hoffmann, Lena",
+     "Schulz, Mira"
+    ]
+   },
+   "sideB": {
+    "playerIds": [
+     "p-011",
+     "p-013"
+    ],
+    "playerNames": [
+     "Klein, Sophie",
+     "Berger, Julia"
+    ]
+   },
+   "playerIds": [
+    "p-003",
+    "p-005",
+    "p-011",
+    "p-013"
+   ],
+   "playerClubs": {
+    "p-003": "TSG Heilbronn",
+    "p-005": "TSG Heilbronn",
+    "p-011": "BC Neckarsulm",
+    "p-013": "TV Flein"
+   },
+   "games": [
+    {
+     "a": 21,
+     "b": 18
+    },
+    {
+     "a": 21,
+     "b": 10
+    }
+   ],
+   "status": "finished",
+   "resultType": "normal",
+   "retiredSide": null,
+   "winnerSide": "A",
+   "involvesMe": false,
+   "note": "",
+   "seq": 3,
+   "round": null,
+   "category": null,
+   "opponentClub": "TSV Pfedelbach",
+   "tournament": null,
+   "slot": "DD",
+   "league": {
+    "fixtureId": "2026-03-21-1400",
+    "opponent": "TSV Pfedelbach",
+    "home": true,
+    "team": "SG Heilbronn/Leingarten IV"
+   },
+   "ownerUid": "demo-owner",
+   "createdAt": "2026-03-21T14:06:00.000Z",
+   "updatedAt": "2026-03-21T14:06:00.000Z"
+  },
+  {
+   "id": "m-435",
+   "sessionId": "s-431",
+   "date": "2026-03-21T13:00:00.000Z",
+   "dateKey": "2026-03-21",
+   "weekKey": "2026-W12",
+   "yearKey": "2026",
+   "locationName": "TSG Heilbronn Hall",
+   "type": "league",
+   "discipline": "singles",
+   "targetScore": 21,
+   "sideA": {
+    "playerIds": [
+     "p-009"
+    ],
+    "playerNames": [
+     "Kaiser, David"
+    ]
+   },
+   "sideB": {
+    "playerIds": [
+     "p-014"
+    ],
+    "playerNames": [
+     "Ahmed, Samir"
+    ]
+   },
+   "playerIds": [
+    "p-009",
+    "p-014"
+   ],
+   "playerClubs": {
+    "p-009": "TSG Heilbronn",
+    "p-014": "TSV Öhringen"
+   },
+   "games": [
+    {
+     "a": 15,
+     "b": 21
+    },
+    {
+     "a": 10,
+     "b": 21
+    }
+   ],
+   "status": "finished",
+   "resultType": "normal",
+   "retiredSide": null,
+   "winnerSide": "B",
+   "involvesMe": false,
+   "note": "",
+   "seq": 4,
+   "round": null,
+   "category": null,
+   "opponentClub": "TSV Pfedelbach",
+   "tournament": null,
+   "slot": "HE1",
+   "league": {
+    "fixtureId": "2026-03-21-1400",
+    "opponent": "TSV Pfedelbach",
+    "home": true,
+    "team": "SG Heilbronn/Leingarten IV"
+   },
+   "ownerUid": "demo-owner",
+   "createdAt": "2026-03-21T14:16:00.000Z",
+   "updatedAt": "2026-03-21T14:16:00.000Z"
+  },
+  {
+   "id": "m-436",
+   "sessionId": "s-431",
+   "date": "2026-03-21T13:00:00.000Z",
+   "dateKey": "2026-03-21",
+   "weekKey": "2026-W12",
+   "yearKey": "2026",
+   "locationName": "TSG Heilbronn Hall",
+   "type": "league",
+   "discipline": "singles",
+   "targetScore": 21,
+   "sideA": {
+    "playerIds": [
+     "p-001"
+    ],
+    "playerNames": [
+     "Mathew Jose, Shinto"
+    ]
+   },
+   "sideB": {
+    "playerIds": [
+     "p-016"
+    ],
+    "playerNames": [
+     "Fischer, Leon"
+    ]
+   },
+   "playerIds": [
+    "p-001",
+    "p-016"
+   ],
+   "playerClubs": {
+    "p-001": "TSG Heilbronn",
+    "p-016": "SG Bietigheim"
+   },
+   "games": [
+    {
+     "a": 21,
+     "b": 13
+    },
+    {
+     "a": 21,
+     "b": 18
+    }
+   ],
+   "status": "finished",
+   "resultType": "normal",
+   "retiredSide": null,
+   "winnerSide": "A",
+   "involvesMe": true,
+   "note": "",
+   "seq": 5,
+   "round": null,
+   "category": null,
+   "opponentClub": "TSV Pfedelbach",
+   "tournament": null,
+   "slot": "HE2",
+   "league": {
+    "fixtureId": "2026-03-21-1400",
+    "opponent": "TSV Pfedelbach",
+    "home": true,
+    "team": "SG Heilbronn/Leingarten IV"
+   },
+   "ownerUid": "demo-owner",
+   "createdAt": "2026-03-21T14:30:00.000Z",
+   "updatedAt": "2026-03-21T14:30:00.000Z"
+  },
+  {
+   "id": "m-437",
+   "sessionId": "s-431",
+   "date": "2026-03-21T13:00:00.000Z",
+   "dateKey": "2026-03-21",
+   "weekKey": "2026-W12",
+   "yearKey": "2026",
+   "locationName": "TSG Heilbronn Hall",
+   "type": "league",
+   "discipline": "singles",
+   "targetScore": 21,
+   "sideA": {
+    "playerIds": [
+     "p-008"
+    ],
+    "playerNames": [
+     "Brandt, Felix"
+    ]
+   },
+   "sideB": {
+    "playerIds": [
+     "p-012"
+    ],
+    "playerNames": [
+     "Vogt, Markus"
+    ]
+   },
+   "playerIds": [
+    "p-008",
+    "p-012"
+   ],
+   "playerClubs": {
+    "p-008": "TSG Heilbronn",
+    "p-012": "SV Böckingen"
+   },
+   "games": [
+    {
+     "a": 21,
+     "b": 10
+    },
+    {
+     "a": 21,
+     "b": 11
+    }
+   ],
+   "status": "finished",
+   "resultType": "normal",
+   "retiredSide": null,
+   "winnerSide": "A",
+   "involvesMe": false,
+   "note": "",
+   "seq": 6,
+   "round": null,
+   "category": null,
+   "opponentClub": "TSV Pfedelbach",
+   "tournament": null,
+   "slot": "HE3",
+   "league": {
+    "fixtureId": "2026-03-21-1400",
+    "opponent": "TSV Pfedelbach",
+    "home": true,
+    "team": "SG Heilbronn/Leingarten IV"
+   },
+   "ownerUid": "demo-owner",
+   "createdAt": "2026-03-21T14:42:00.000Z",
+   "updatedAt": "2026-03-21T14:42:00.000Z"
+  },
+  {
+   "id": "m-438",
+   "sessionId": "s-431",
+   "date": "2026-03-21T13:00:00.000Z",
+   "dateKey": "2026-03-21",
+   "weekKey": "2026-W12",
+   "yearKey": "2026",
+   "locationName": "TSG Heilbronn Hall",
+   "type": "league",
+   "discipline": "singles",
+   "targetScore": 21,
+   "sideA": {
+    "playerIds": [
+     "p-003"
+    ],
+    "playerNames": [
+     "Hoffmann, Lena"
+    ]
+   },
+   "sideB": {
+    "playerIds": [
+     "p-011"
+    ],
+    "playerNames": [
+     "Klein, Sophie"
+    ]
+   },
+   "playerIds": [
+    "p-003",
+    "p-011"
+   ],
+   "playerClubs": {
+    "p-003": "TSG Heilbronn",
+    "p-011": "BC Neckarsulm"
+   },
+   "games": [
+    {
+     "a": 19,
+     "b": 21
+    },
+    {
+     "a": 21,
+     "b": 15
+    },
+    {
+     "a": 19,
+     "b": 21
+    }
+   ],
+   "status": "finished",
+   "resultType": "normal",
+   "retiredSide": null,
+   "winnerSide": "B",
+   "involvesMe": false,
+   "note": "",
+   "seq": 7,
+   "round": null,
+   "category": null,
+   "opponentClub": "TSV Pfedelbach",
+   "tournament": null,
+   "slot": "DE",
+   "league": {
+    "fixtureId": "2026-03-21-1400",
+    "opponent": "TSV Pfedelbach",
+    "home": true,
+    "team": "SG Heilbronn/Leingarten IV"
+   },
+   "ownerUid": "demo-owner",
+   "createdAt": "2026-03-21T14:59:00.000Z",
+   "updatedAt": "2026-03-21T14:59:00.000Z"
+  },
+  {
+   "id": "m-439",
+   "sessionId": "s-431",
+   "date": "2026-03-21T13:00:00.000Z",
+   "dateKey": "2026-03-21",
+   "weekKey": "2026-W12",
+   "yearKey": "2026",
+   "locationName": "TSG Heilbronn Hall",
+   "type": "league",
+   "discipline": "mixed",
+   "targetScore": 21,
+   "sideA": {
+    "playerIds": [
+     "p-006",
+     "p-005"
+    ],
+    "playerNames": [
+     "Krüger, Tobias",
+     "Schulz, Mira"
+    ]
+   },
+   "sideB": {
+    "playerIds": [
+     "p-010",
+     "p-013"
+    ],
+    "playerNames": [
+     "Roth, Daniel",
+     "Berger, Julia"
+    ]
+   },
+   "playerIds": [
+    "p-006",
+    "p-005",
+    "p-010",
+    "p-013"
+   ],
+   "playerClubs": {
+    "p-006": "TSG Heilbronn",
+    "p-005": "TSG Heilbronn",
+    "p-010": "BC Neckarsulm",
+    "p-013": "TV Flein"
+   },
+   "games": [
+    {
+     "a": 20,
+     "b": 22
+    },
+    {
+     "a": 8,
+     "b": 21
+    }
+   ],
+   "status": "finished",
+   "resultType": "normal",
+   "retiredSide": null,
+   "winnerSide": "B",
+   "involvesMe": false,
+   "note": "",
+   "seq": 8,
+   "round": null,
+   "category": null,
+   "opponentClub": "TSV Pfedelbach",
+   "tournament": null,
+   "slot": "GD",
+   "league": {
+    "fixtureId": "2026-03-21-1400",
+    "opponent": "TSV Pfedelbach",
+    "home": true,
+    "team": "SG Heilbronn/Leingarten IV"
+   },
+   "ownerUid": "demo-owner",
+   "createdAt": "2026-03-21T15:00:00.000Z",
+   "updatedAt": "2026-03-21T15:00:00.000Z"
   },
   {
    "id": "m-310",
@@ -17136,6 +18436,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-24T18:21:00.000Z",
    "updatedAt": "2026-03-24T18:21:00.000Z"
@@ -17203,6 +18506,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-24T18:32:00.000Z",
    "updatedAt": "2026-03-24T18:32:00.000Z"
@@ -17262,6 +18568,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-31T17:20:00.000Z",
    "updatedAt": "2026-03-31T17:20:00.000Z"
@@ -17325,6 +18634,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-31T17:38:00.000Z",
    "updatedAt": "2026-03-31T17:38:00.000Z"
@@ -17392,6 +18704,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-03-31T17:51:00.000Z",
    "updatedAt": "2026-03-31T17:51:00.000Z"
@@ -17455,6 +18770,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-07T17:18:00.000Z",
    "updatedAt": "2026-04-07T17:18:00.000Z"
@@ -17514,6 +18832,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-07T17:44:00.000Z",
    "updatedAt": "2026-04-07T17:44:00.000Z"
@@ -17573,6 +18894,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-07T17:51:00.000Z",
    "updatedAt": "2026-04-07T17:51:00.000Z"
@@ -17640,6 +18964,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-07T18:04:00.000Z",
    "updatedAt": "2026-04-07T18:04:00.000Z"
@@ -17703,6 +19030,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-09T18:15:00.000Z",
    "updatedAt": "2026-04-09T18:15:00.000Z"
@@ -17766,6 +19096,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-09T18:40:00.000Z",
    "updatedAt": "2026-04-09T18:40:00.000Z"
@@ -17825,6 +19158,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-09T18:57:00.000Z",
    "updatedAt": "2026-04-09T18:57:00.000Z"
@@ -17888,6 +19224,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-09T18:56:00.000Z",
    "updatedAt": "2026-04-09T18:56:00.000Z"
@@ -17947,6 +19286,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-14T17:18:00.000Z",
    "updatedAt": "2026-04-14T17:18:00.000Z"
@@ -18014,6 +19356,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-14T17:30:00.000Z",
    "updatedAt": "2026-04-14T17:30:00.000Z"
@@ -18077,6 +19422,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-28T17:16:00.000Z",
    "updatedAt": "2026-04-28T17:16:00.000Z"
@@ -18140,6 +19488,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-28T17:36:00.000Z",
    "updatedAt": "2026-04-28T17:36:00.000Z"
@@ -18211,6 +19562,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-30T18:21:00.000Z",
    "updatedAt": "2026-04-30T18:21:00.000Z"
@@ -18278,6 +19632,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-30T18:30:00.000Z",
    "updatedAt": "2026-04-30T18:30:00.000Z"
@@ -18337,6 +19694,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-30T18:57:00.000Z",
    "updatedAt": "2026-04-30T18:57:00.000Z"
@@ -18408,6 +19768,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-04-30T19:00:00.000Z",
    "updatedAt": "2026-04-30T19:00:00.000Z"
@@ -18471,6 +19834,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-05T17:16:00.000Z",
    "updatedAt": "2026-05-05T17:16:00.000Z"
@@ -18538,6 +19904,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-05T17:36:00.000Z",
    "updatedAt": "2026-05-05T17:36:00.000Z"
@@ -18601,6 +19970,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-05T17:54:00.000Z",
    "updatedAt": "2026-05-05T17:54:00.000Z"
@@ -18672,6 +20044,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-05T18:08:00.000Z",
    "updatedAt": "2026-05-05T18:08:00.000Z"
@@ -18739,6 +20114,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-12T17:17:00.000Z",
    "updatedAt": "2026-05-12T17:17:00.000Z"
@@ -18810,6 +20188,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-12T17:36:00.000Z",
    "updatedAt": "2026-05-12T17:36:00.000Z"
@@ -18869,6 +20250,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-19T17:18:00.000Z",
    "updatedAt": "2026-05-19T17:18:00.000Z"
@@ -18940,6 +20324,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-19T17:36:00.000Z",
    "updatedAt": "2026-05-19T17:36:00.000Z"
@@ -19007,6 +20394,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-21T18:19:00.000Z",
    "updatedAt": "2026-05-21T18:19:00.000Z"
@@ -19078,6 +20468,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-21T18:36:00.000Z",
    "updatedAt": "2026-05-21T18:36:00.000Z"
@@ -19145,6 +20538,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-21T18:57:00.000Z",
    "updatedAt": "2026-05-21T18:57:00.000Z"
@@ -19208,6 +20604,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-26T17:22:00.000Z",
    "updatedAt": "2026-05-26T17:22:00.000Z"
@@ -19275,6 +20674,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-05-26T17:40:00.000Z",
    "updatedAt": "2026-05-26T17:40:00.000Z"
@@ -19338,6 +20740,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-02T17:14:00.000Z",
    "updatedAt": "2026-06-02T17:14:00.000Z"
@@ -19409,6 +20814,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-02T17:44:00.000Z",
    "updatedAt": "2026-06-02T17:44:00.000Z"
@@ -19480,6 +20888,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-09T17:17:00.000Z",
    "updatedAt": "2026-06-09T17:17:00.000Z"
@@ -19547,6 +20958,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-09T17:44:00.000Z",
    "updatedAt": "2026-06-09T17:44:00.000Z"
@@ -19618,6 +21032,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-11T18:15:00.000Z",
    "updatedAt": "2026-06-11T18:15:00.000Z"
@@ -19689,6 +21106,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-11T18:42:00.000Z",
    "updatedAt": "2026-06-11T18:42:00.000Z"
@@ -19756,6 +21176,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-16T17:17:00.000Z",
    "updatedAt": "2026-06-16T17:17:00.000Z"
@@ -19827,6 +21250,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-16T17:30:00.000Z",
    "updatedAt": "2026-06-16T17:30:00.000Z"
@@ -19886,6 +21312,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-23T17:18:00.000Z",
    "updatedAt": "2026-06-23T17:18:00.000Z"
@@ -19949,6 +21378,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-23T17:32:00.000Z",
    "updatedAt": "2026-06-23T17:32:00.000Z"
@@ -20020,6 +21452,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "TSV Öhringen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T07:51:00.000Z",
    "updatedAt": "2026-06-27T07:51:00.000Z"
@@ -20091,6 +21526,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "SG Bietigheim",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T08:08:00.000Z",
    "updatedAt": "2026-06-27T08:08:00.000Z"
@@ -20162,6 +21600,9 @@
    "round": "Gruppe",
    "category": "B",
    "opponentClub": "BC Neckarsulm",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T08:24:00.000Z",
    "updatedAt": "2026-06-27T08:24:00.000Z"
@@ -20229,6 +21670,9 @@
    "round": "R16",
    "category": "B",
    "opponentClub": "SV Böckingen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T08:30:00.000Z",
    "updatedAt": "2026-06-27T08:30:00.000Z"
@@ -20296,6 +21740,9 @@
    "round": "VF",
    "category": "B",
    "opponentClub": "TSV Öhringen",
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-27T09:20:00.000Z",
    "updatedAt": "2026-06-27T09:20:00.000Z"
@@ -20355,6 +21802,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-30T17:20:00.000Z",
    "updatedAt": "2026-06-30T17:20:00.000Z"
@@ -20426,6 +21876,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-30T17:40:00.000Z",
    "updatedAt": "2026-06-30T17:40:00.000Z"
@@ -20489,6 +21942,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-06-30T17:51:00.000Z",
    "updatedAt": "2026-06-30T17:51:00.000Z"
@@ -20548,6 +22004,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-02T18:16:00.000Z",
    "updatedAt": "2026-07-02T18:16:00.000Z"
@@ -20615,6 +22074,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-02T18:34:00.000Z",
    "updatedAt": "2026-07-02T18:34:00.000Z"
@@ -20678,6 +22140,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-02T18:45:00.000Z",
    "updatedAt": "2026-07-02T18:45:00.000Z"
@@ -20745,6 +22210,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-02T19:08:00.000Z",
    "updatedAt": "2026-07-02T19:08:00.000Z"
@@ -20804,6 +22272,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-07T17:19:00.000Z",
    "updatedAt": "2026-07-07T17:19:00.000Z"
@@ -20863,6 +22334,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-07T17:40:00.000Z",
    "updatedAt": "2026-07-07T17:40:00.000Z"
@@ -20930,6 +22404,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-07T18:00:00.000Z",
    "updatedAt": "2026-07-07T18:00:00.000Z"
@@ -20997,6 +22474,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-07T18:08:00.000Z",
    "updatedAt": "2026-07-07T18:08:00.000Z"
@@ -21064,6 +22544,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-14T17:21:00.000Z",
    "updatedAt": "2026-07-14T17:21:00.000Z"
@@ -21131,6 +22614,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-14T17:40:00.000Z",
    "updatedAt": "2026-07-14T17:40:00.000Z"
@@ -21194,6 +22680,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-21T17:14:00.000Z",
    "updatedAt": "2026-07-21T17:14:00.000Z"
@@ -21253,6 +22742,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-21T17:42:00.000Z",
    "updatedAt": "2026-07-21T17:42:00.000Z"
@@ -21320,6 +22812,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-23T18:21:00.000Z",
    "updatedAt": "2026-07-23T18:21:00.000Z"
@@ -21391,6 +22886,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-23T18:42:00.000Z",
    "updatedAt": "2026-07-23T18:42:00.000Z"
@@ -21458,6 +22956,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-23T18:45:00.000Z",
    "updatedAt": "2026-07-23T18:45:00.000Z"
@@ -21517,6 +23018,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-28T17:22:00.000Z",
    "updatedAt": "2026-07-28T17:22:00.000Z"
@@ -21584,6 +23088,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-07-28T17:44:00.000Z",
    "updatedAt": "2026-07-28T17:44:00.000Z"
@@ -21643,6 +23150,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-08-25T17:15:00.000Z",
    "updatedAt": "2026-08-25T17:15:00.000Z"
@@ -21702,6 +23212,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-08-25T17:38:00.000Z",
    "updatedAt": "2026-08-25T17:38:00.000Z"
@@ -21761,6 +23274,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-08-25T17:54:00.000Z",
    "updatedAt": "2026-08-25T17:54:00.000Z"
@@ -21824,6 +23340,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-09-03T17:20:00.000Z",
    "updatedAt": "2026-09-03T17:20:00.000Z"
@@ -21891,6 +23410,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-09-03T17:40:00.000Z",
    "updatedAt": "2026-09-03T17:40:00.000Z"
@@ -21958,6 +23480,9 @@
    "round": null,
    "category": null,
    "opponentClub": null,
+   "tournament": null,
+   "slot": null,
+   "league": null,
    "ownerUid": "demo-owner",
    "createdAt": "2026-09-03T17:42:00.000Z",
    "updatedAt": "2026-09-03T17:42:00.000Z"

@@ -917,6 +917,11 @@ const MATCHES = [
   { id: "2027-03-06-1800", round: "rueck", day: "Sa", date: "06.03.2027", time: "18:00", opp: "TSV Pfedelbach",             home: false, ort: "74629-1" },
   { id: "2027-03-20-1400", round: "rueck", day: "Sa", date: "20.03.2027", time: "14:00", opp: "Spfr. Affaltrach II",        home: false, ort: "(H)" },
 ];
+/* Shared with the match tracker (tab 06, Liga mode): one schedule, one team
+   name. The tracker reads these lazily and works without them. */
+window.LEAGUE_TEAM = "SG Heilbronn/Leingarten IV";
+window.LEAGUE_NAME = "Bezirksliga Neckar-Odenwald 2026/27";
+window.LEAGUE_FIXTURES = MATCHES;
 
 function renderMatches(tableId, round) {
   const list = MATCHES.filter(m => m.round === round);

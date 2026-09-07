@@ -77,8 +77,10 @@
       dateKey: k.dateKey, weekKey: k.weekKey, yearKey: k.yearKey,
       locationId: session.locationId || null,
       locationName: session.locationName || DEFAULT_LOCATION,
-      type: session.type === "tournament" ? "tournament" : "training",
+      type: normType(session.type),
       note: session.note || "",
+      fixtureId: session.fixtureId || null,
+      league: session.league && typeof session.league === "object" ? session.league : null,
       tournamentName: session.tournamentName || null,
       tournamentCategory: session.tournamentCategory || null,
       tournamentDisciplines: Array.isArray(session.tournamentDisciplines) ? session.tournamentDisciplines.slice() : null,
@@ -102,7 +104,7 @@
       date: ctx.date.toISOString(),
       dateKey: ctx.k.dateKey, weekKey: ctx.k.weekKey, yearKey: ctx.k.yearKey,
       locationName: ctx.locationName || DEFAULT_LOCATION,
-      type: ctx.type === "tournament" ? "tournament" : "training",
+      type: normType(ctx.type),
       discipline: discipline, targetScore: targetScore,
       sideA: sideA, sideB: sideB,
       playerIds: sideA.playerIds.concat(sideB.playerIds),
@@ -115,9 +117,12 @@
       seq: m.seq === undefined ? null : m.seq,
       round: m.round || null, category: m.category || null, opponentClub: m.opponentClub || null,
       tournament: m.tournament && typeof m.tournament === "object" ? m.tournament : null,
+      slot: m.slot || null,
+      league: m.league && typeof m.league === "object" ? m.league : null,
       ownerUid: OWNER, createdAt: now(), updatedAt: now(),
     };
   }
+  function normType(v) { return (v === "tournament" || v === "league") ? v : "training"; }
   function applyPatch(doc, patch) {
     var p = Object.assign({}, patch || {});
     delete p.id; delete p.ownerUid; delete p.createdAt;
@@ -172,8 +177,14 @@
 
   repo.findTodaySession = async function (type, when) {
     var k = keys(when || new Date());
-    var wanted = type === "tournament" ? "tournament" : "training";
+    var wanted = normType(type);
     var hit = store.sessions.filter(function (s) { return s.dateKey === k.dateKey && s.type === wanted; })[0];
+    return hit ? hydrate(hit) : null;
+  };
+
+  repo.findSessionByFixture = async function (fixtureId) {
+    var id = String(fixtureId || "").trim();
+    var hit = id ? store.sessions.filter(function (s) { return s.fixtureId === id; })[0] : null;
     return hit ? hydrate(hit) : null;
   };
 
@@ -182,7 +193,7 @@
     var start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (Number(daysBack) || 0));
     var end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (Number(daysAhead) || 0));
     var lo = keys(start).dateKey, hi = keys(end).dateKey;
-    var wanted = type === "tournament" ? "tournament" : "training";
+    var wanted = normType(type);
     return store.sessions
       .filter(function (s) { return s.type === wanted && s.dateKey >= lo && s.dateKey <= hi; })
       .sort(function (a, b) { return a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0; })
