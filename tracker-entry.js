@@ -156,6 +156,24 @@ Object.assign(EN, {
   "{0} % ({1})": "{0}% ({1})",
   "Kleine Stichprobe: nur 1 Spiel": "Small sample: only 1 match",
   "Kleine Stichprobe: nur {0} Spiele": "Small sample: only {0} matches",
+
+  /* --- my result on the card, group vs knock-out, tournament outcome --- */
+  "Sieg": "Win",
+  "Niederlage": "Loss",
+  "Ohne Wertung": "No result",
+  "KO": "KO",
+  "Gruppenphase": "Group stage",
+  "K.-o.-Runde": "Knock-out",
+  "Ohne Runde": "No round",
+  "Achtelfinale": "Round of 16",
+  "Viertelfinale": "Quarter-final",
+  "Halbfinale": "Semi-final",
+  "Sieger": "Winner",
+  "Finalist": "Finalist",
+  "Aus im {0}": "Out in {0}",
+  "Aus in der {0}": "Out in {0}",
+  "läuft": "live",
+  "Mein Turnierergebnis": "My tournament result",
 });
 
 (function () {
@@ -174,6 +192,17 @@ Object.assign(EN, {
   const SMALL_N = 5;         // below this a percentage is flagged as thin evidence
   /* Stored verbatim on the match — the codes are the data, t() only labels them. */
   const ROUNDS = ["Gruppe", "R32", "R16", "VF", "HF", "Finale"];
+  /* Long round names for the outcome chip — the codes stay on the cards. */
+  const ROUND_LONG = { Gruppe: "Gruppenphase", R32: "R32", R16: "Achtelfinale", VF: "Viertelfinale", HF: "Halbfinale", Finale: "Finale" };
+  /* Which phase a round code belongs to: the group stage, the knock-out
+     draw, or none (round not entered). Drives the card pill and dividers. */
+  function phaseOf(round) {
+    const r = String(round || "").trim();
+    if (!r) return "none";
+    return r === "Gruppe" ? "group" : "ko";
+  }
+  function roundRank(round) { return ROUNDS.indexOf(String(round || "").trim()); }
+  function roundLong(round) { return t(ROUND_LONG[String(round || "").trim()] || String(round || "")); }
   /* tournament class — stored as the bare letter, t("Klasse {0}") labels it */
   const CLASSES = ["A", "B"];
   /* header icons — currentColor, 18px, stroke only, so they follow the theme */
@@ -404,6 +433,26 @@ Object.assign(EN, {
   function playerById(id) { return state.players.find(p => p.id === id) || null; }
   function playerName(id) { const p = playerById(id); return p ? p.name : "—"; }
   function meePlayer() { return state.players.find(p => p.isMe) || null; }
+
+  /* The side I was on in a stored match — "A" / "B", null when I did not play. */
+  function mySide(m) {
+    const me = meePlayer();
+    if (!me) return null;
+    if (((m.sideA && m.sideA.playerIds) || []).indexOf(me.id) >= 0) return "A";
+    if (((m.sideB && m.sideB.playerIds) || []).indexOf(me.id) >= 0) return "B";
+    return null;
+  }
+
+  /* My outcome of a stored match, the thing the tournament list is built
+     around: win / loss / open (still in progress) / void (finished without a
+     winner — retired, abandoned) / other (I was not on court). */
+  function myOutcome(m) {
+    const mine = mySide(m);
+    if (!mine) return "other";
+    if (m.status !== "finished") return "open";
+    if (!m.winnerSide) return "void";
+    return m.winnerSide === mine ? "win" : "loss";
+  }
 
   function namesOf(ids) { return ids.filter(Boolean).map(playerName); }
 
@@ -884,8 +933,73 @@ Object.assign(EN, {
     "</div>" +
     /* partner names and legacy class text are user input and stay escaped */
     '<p class="mt-sess-meta">' + (bits.length ? esc(bits.join(" · ")) + " · " : "") + meta + "</p>" +
+    trnResultHtml() +
     /* free text, shown as typed (line breaks kept by CSS), always escaped */
     (trnNote() ? '<p class="mt-trn-notetext">' + esc(trnNote()) + "</p>" : "");
+  }
+
+  /* How far I got in each discipline of the open tournament, from the
+     matches logged so far:
+       - a KO match decides it: won the Finale → Sieger, lost the Finale →
+         Finalist, lost any other KO round → "Aus im Viertelfinale"; a won
+         KO match with nothing after it (draw still running or not logged)
+         names the round reached;
+       - group matches only → Gruppenphase with my W–L;
+       - an open match anywhere keeps the chip on "läuft" — nothing is
+         final while I still have to play.
+     Only disciplines I actually played get a chip; nothing at all when the
+     day has no match of mine yet. */
+  function trnOutcomes() {
+    const byDisc = new Map();
+    state.matches.forEach(m => {
+      const res = myOutcome(m);
+      if (res === "other") return;
+      const k = normDiscipline(m.discipline);
+      let o = byDisc.get(k);
+      if (!o) { o = { disc: k, w: 0, l: 0, open: false, best: null }; byDisc.set(k, o); }
+      if (res === "open") o.open = true;
+      if (res === "win") o.w++;
+      if (res === "loss") o.l++;
+      const round = m.round || (m.tournament && m.tournament.round) || "";
+      if (phaseOf(round) === "ko" && (res === "win" || res === "loss")) {
+        const rank = roundRank(round);
+        if (!o.best || rank > o.best.rank || (rank === o.best.rank && res === "win")) {
+          o.best = { rank: rank, round: round, res: res };
+        }
+      }
+    });
+    const order = DISCIPLINES.map(x => x[0]);
+    return Array.from(byDisc.values()).sort((a, b) => order.indexOf(a.disc) - order.indexOf(b.disc));
+  }
+
+  function outcomeLabel(o) {
+    if (o.open) return { cls: "live", text: t("läuft") };
+    if (o.best) {
+      const fin = o.best.round === "Finale";
+      if (o.best.res === "win") return fin
+        ? { cls: "champ", text: "🏆 " + t("Sieger") }
+        : { cls: "reached", text: roundLong(o.best.round) };
+      if (fin) return { cls: "final", text: t("Finalist") };
+      /* German article: "im Viertelfinale" but "in der R32" */
+      const long = roundLong(o.best.round);
+      return { cls: "out", text: o.best.round === "R32" ? tt("Aus in der {0}", long) : tt("Aus im {0}", long) };
+    }
+    return { cls: "group", text: t("Gruppenphase") };
+  }
+
+  function trnResultHtml() {
+    const list = trnOutcomes();
+    if (!list.length) return "";
+    return '<div class="mt-trn-result" role="group" aria-label="' + esc(t("Mein Turnierergebnis")) + '">' +
+      list.map(o => {
+        const lab = outcomeLabel(o);
+        return '<span class="mt-outcome ' + lab.cls + '">' +
+          '<span class="mt-outcome-disc">' + esc(disciplineLabel(o.disc)) + "</span>" +
+          '<span class="mt-outcome-text">' + esc(lab.text) + "</span>" +
+          (o.w + o.l ? '<span class="mt-outcome-wl">' + wlPair(o.w, o.l) + "</span>" : "") +
+        "</span>";
+      }).join("") +
+    "</div>";
   }
 
   /* Day-wise totals — a courtside glance, not the history tab. */
@@ -1109,23 +1223,46 @@ Object.assign(EN, {
     const cells = side => games.map(g =>
       '<span class="mt-sg-val">' + esc(String(side === "A" ? (g.a || 0) : (g.b || 0))) + "</span>").join("");
     const disc = disciplineLabel(m.discipline);
-    /* Only an actual winner earns the green pill — a finished match without one
-       (retired, abandoned) stays neutral. */
-    const statusHtml = m.status === "finished"
-      ? '<span class="mt-badge' + (winner ? " done" : "") + '">' + esc(matchWinnerText(m)) + "</span>"
-      : '<span class="mt-badge open">' + esc(t("offen")) + "</span>";
+    /* The card reads from MY side: a match I played says Sieg / Niederlage
+       outright, and the whole card takes that colour. A match I only logged
+       for others keeps the neutral "X gewinnt" pill. A finished match without
+       a winner (retired, abandoned) stays neutral either way. */
+    const mine = mySide(m);
+    const res = myOutcome(m);
+    let statusHtml;
+    if (res === "win") statusHtml = '<span class="mt-badge res-win">' + esc(t("Sieg")) + "</span>";
+    else if (res === "loss") statusHtml = '<span class="mt-badge res-loss">' + esc(t("Niederlage")) + "</span>";
+    else if (res === "void") statusHtml = '<span class="mt-badge">' + esc(t("Ohne Wertung")) + "</span>";
+    else if (m.status === "finished") statusHtml = '<span class="mt-badge' + (winner ? " done" : "") + '">' + esc(matchWinnerText(m)) + "</span>";
+    else statusHtml = '<span class="mt-badge open">' + esc(t("offen")) + "</span>";
     /* tournament extras only exist on tournament matches — null for training */
     const trn = m.tournament || {};
     const round = m.round || trn.round || "";
+    const phase = phaseOf(round);
     const club = m.opponentClub || trn.opponentClub || "";
     const cls = trnClassLabel(m.category || trn.category);
+    /* group stage and knock-out are two different pills, not just two words */
+    const roundHtml = !round ? ""
+      : phase === "group"
+        ? '<span class="mt-badge trn phase-group">' + esc(t(round)) + "</span>"
+        : '<span class="mt-badge trn phase-ko">' + esc(t("KO") + " · " + t(round)) + "</span>";
     const trnHtml =
       (cls ? '<span class="mt-badge trn">' + esc(cls) + "</span>" : "") +
-      (round ? '<span class="mt-badge trn">' + esc(t(round)) + "</span>" : "") +
+      roundHtml +
       (club ? '<span class="mt-badge trn">' + esc(club) + "</span>" : "");
+    /* Name rows: my row is always marked, and in my matches only MY colour
+       changes — green on a win, red on a loss — so the eye never has to work
+       out which side was mine. Without me on court the winner stays green. */
+    const nameCls = side => {
+      let c = "mt-sg-name";
+      if (mine) {
+        if (side === mine) c += " me" + (res === "win" ? " win" : res === "loss" ? " lost" : "");
+      } else if (winner === side) c += " win";
+      return c;
+    };
     /* draggable="true" only on the card: the buttons inside stay tappable
        because a drag has to start on the card surface, not on a control */
-    return '<li class="mt-match" draggable="true" data-id="' + esc(m.id) + '"' +
+    return '<li class="mt-match res-' + res + ' phase-' + phase + '" draggable="true" data-id="' + esc(m.id) + '"' +
       ' data-pos="' + idx + '">' +
       '<div class="mt-match-top">' +
         '<span class="mt-grip" aria-hidden="true" title="' + esc(t("Reihenfolge ändern")) + '">⠿</span>' +
@@ -1135,8 +1272,8 @@ Object.assign(EN, {
         statusHtml +
       "</div>" +
       '<div class="mt-score-grid" style="--games:' + (games.length || 1) + '">' +
-        '<span class="mt-sg-name' + (winner === "A" ? " win" : "") + '">' + sideHtml(m.sideA && m.sideA.playerIds) + "</span>" + cells("A") +
-        '<span class="mt-sg-name' + (winner === "B" ? " win" : "") + '">' + sideHtml(m.sideB && m.sideB.playerIds) + "</span>" + cells("B") +
+        '<span class="' + nameCls("A") + '">' + sideHtml(m.sideA && m.sideA.playerIds) + "</span>" + cells("A") +
+        '<span class="' + nameCls("B") + '">' + sideHtml(m.sideB && m.sideB.playerIds) + "</span>" + cells("B") +
       "</div>" +
       '<div class="mt-match-actions">' +
         '<button type="button" class="btn small" data-act="edit" data-id="' + esc(m.id) + '">' + esc(t("Bearbeiten")) + "</button>" +
@@ -1152,6 +1289,29 @@ Object.assign(EN, {
         "</span>" +
       "</div>" +
     "</li>";
+  }
+
+  /* The day's cards in their manual order. On a tournament day a divider
+     row marks every change of phase (Gruppenphase → K.-o.-Runde), so the two
+     halves of the day never blur into one list. Days with no rounds at all
+     get no dividers; a match without a round inside a day that has rounds
+     is labelled as such. The divider is not a li.mt-match, so drag and the
+     ▲/▼ nudges ignore it. */
+  function matchListHtml(list) {
+    const withRounds = isTournament() && list.some(m => !!(m.round || (m.tournament && m.tournament.round)));
+    const labels = { group: t("Gruppenphase"), ko: t("K.-o.-Runde"), none: t("Ohne Runde") };
+    let prev = null;
+    return list.map((m, i) => {
+      let head = "";
+      if (withRounds) {
+        const ph = phaseOf(m.round || (m.tournament && m.tournament.round));
+        if (ph !== prev) {
+          head = '<li class="mt-phase ' + ph + '" role="presentation">' + esc(labels[ph]) + "</li>";
+          prev = ph;
+        }
+      }
+      return head + matchLine(m, i, list.length);
+    }).join("");
   }
 
   function renderList() {
@@ -1176,8 +1336,7 @@ Object.assign(EN, {
         "<h2>" + esc(dayKey() === todayKey() ? t("Spiele heute") : tt("Spiele am {0}", shortDate(sessionDate()))) +
           ' <span class="seg-count">' + list.length + "</span></h2>" +
         (list.length
-          ? '<ul class="mt-match-list">' +
-              list.map((m, i) => matchLine(m, i, list.length)).join("") + "</ul>"
+          ? '<ul class="mt-match-list">' + matchListHtml(list) + "</ul>"
           : '<p class="empty-note">' + esc(dayKey() === todayKey()
               ? t("Noch keine Spiele heute — tippe auf „+ Spiel“.")
               : t("Noch keine Spiele an diesem Tag — tippe auf „+ Spiel“.")) + "</p>") +

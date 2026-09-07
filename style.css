@@ -1575,3 +1575,91 @@
   .mt-pct.empty { color: var(--text-muted); font-weight: 400; }
   /* a thin sample must never read like a solid one */
   .mt-pct.weak { color: var(--text-muted); font-weight: 400; border-bottom: 1px dotted var(--border); }
+
+  /* --- Mein Ergebnis auf der Karte ---
+     The card is read from my side: its left band and a filled Sieg /
+     Niederlage pill carry the result, a faint wash of the same colour fills
+     the card so a column of wins and losses scans at arm's length. Open
+     matches of mine stay on the warn colour; a match I only logged for
+     others keeps the neutral teal band. */
+  .mt-match.res-win {
+    border-left-color: var(--court-green);
+    background: color-mix(in srgb, var(--court-green) 9%, var(--surface-2));
+  }
+  .mt-match.res-loss {
+    border-left-color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 9%, var(--surface-2));
+  }
+  .mt-match.res-open { border-left-color: var(--warn); }
+  .mt-match.res-void { border-left-color: var(--text-muted); }
+  .mt-badge.res-win, .mt-badge.res-loss {
+    margin-left: auto;              /* the verdict sits at the right edge of the top row */
+    color: var(--accent-on);
+    border-color: transparent;
+    font-size: 0.8rem; padding: 4px 12px;
+  }
+  .mt-badge.res-win { background: var(--court-green); }
+  .mt-badge.res-loss { background: var(--danger); }
+  [data-theme="light"] .mt-badge.res-win, [data-theme="light"] .mt-badge.res-loss { color: #fff; }
+  /* my name row: always the strong colour, and it alone carries the verdict */
+  .mt-sg-name.me { color: var(--text-strong); font-weight: 700; }
+  .mt-sg-name.me.win { color: var(--court-green); }
+  .mt-sg-name.me.lost { color: var(--danger); }
+  .mt-sg-name.me .mt-plink { color: inherit; font-weight: inherit; }
+
+  /* --- Gruppenphase vs. K.-o.-Runde ---
+     A group pill is a dashed outline; a knock-out pill is filled and reads
+     "KO · VF", so the two phases never look like two words in one style. */
+  .mt-badge.trn.phase-group {
+    background: transparent;
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--brand-teal) 60%, transparent);
+  }
+  .mt-badge.trn.phase-ko {
+    background: var(--teal-ink); color: var(--accent-on);
+    border-color: transparent;
+  }
+  [data-theme="light"] .mt-badge.trn.phase-ko { color: #fff; }
+  /* divider rows between the phases of a tournament day */
+  .mt-phase {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 6px;
+    font-family: var(--font-disp);
+    font-size: 0.82rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-muted);
+  }
+  .mt-phase:first-child { margin-top: 0; }
+  .mt-phase::after { content: ""; flex: 1 1 auto; height: 1px; background: var(--border); }
+  .mt-phase.ko { color: var(--teal-ink); }
+  .mt-phase.ko::after { background: color-mix(in srgb, var(--brand-teal) 45%, transparent); }
+
+  /* --- Mein Turnierergebnis: ein Chip je Disziplin im Kopf --- */
+  .mt-trn-result { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 12px; }
+  .mt-outcome {
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 34px; padding: 4px 12px 4px 10px;
+    border: 1px solid var(--border); border-radius: 999px;
+    background: var(--surface-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .mt-outcome-disc {
+    font-family: var(--font-disp);
+    font-size: 0.76rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--text-muted);
+  }
+  .mt-outcome-text { font-weight: 700; color: var(--text-strong); }
+  .mt-outcome-wl { font-size: 0.88em; }
+  .mt-outcome.champ {
+    background: color-mix(in srgb, var(--court-green) 16%, var(--surface-2));
+    border-color: var(--court-green);
+  }
+  .mt-outcome.champ .mt-outcome-text { color: var(--court-green); }
+  .mt-outcome.final { border-color: color-mix(in srgb, var(--brand-teal) 60%, transparent); }
+  .mt-outcome.final .mt-outcome-text, .mt-outcome.reached .mt-outcome-text { color: var(--teal-ink); }
+  .mt-outcome.out { border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+  .mt-outcome.out .mt-outcome-text { color: var(--danger); }
+  .mt-outcome.group .mt-outcome-text { color: var(--text); font-weight: 600; }
+  .mt-outcome.live { border-color: color-mix(in srgb, var(--warn) 55%, transparent); }
+  .mt-outcome.live .mt-outcome-text { color: var(--warn); }

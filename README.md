@@ -156,6 +156,19 @@ its matches. Both live as icon buttons in the tournament header: the pencil
 opens the card, the trash can deletes the tournament — after a confirm that
 names it and its match count — together with all its matches in one batch.
 
+The day list reads from your side. A match you played carries a filled
+**Sieg** / **Niederlage** pill, a green or red left band and a faint wash of
+the same colour; only your name row changes colour, so the side you were on is
+never in doubt. A match logged for others keeps the neutral "X gewinnt" pill.
+The round pill separates the phases — **Gruppe** is a dashed outline, a
+knock-out round is filled and reads **KO · VF** — and a divider row
+(*Gruppenphase* / *K.-o.-Runde*) marks every change of phase in the list.
+The header shows one outcome chip per discipline you played: **🏆 Sieger**
+after a won final, **Finalist**, **Aus im Viertelfinale** for a lost
+knock-out round, the round reached after a won one, **Gruppenphase** while
+only group matches exist, and **läuft** as long as one of your matches is
+still open — each with your W–L in that discipline.
+
 On the `sessions` document this lives in `tournamentName`,
 `tournamentDisciplines` (`["singles","doubles","mixed"]` subset),
 `tournamentPartners` (`{ doubles: { playerId, playerName } | null, mixed: … }`),
