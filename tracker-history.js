@@ -823,21 +823,15 @@
     "</button>";
   }
 
-  /** Day banner + its matches, banded so neighbouring days read apart at a glance. */
+  /** Day banner + its matches, banded so neighbouring days read apart at a
+   *  glance. The banner carries the same record line as a group header —
+   *  matches, sets, my W–L, my S W–L, win % — so a single day answers
+   *  "how did it go" without expanding anything. */
   function renderDayRun(run, alt) {
-    var n = run.matches.length;
-    var sets = setsPlayed(run.matches);
     var out = ['<div class="mth-day' + (alt ? " mth-day-alt" : "") + '">'];
     out.push('<div class="mth-dayhead">' +
       '<span class="mth-daylabel">' + ESC(dayHeadLabel(run.key)) + "</span>" +
-      '<span class="mth-daycount">' +
-        ESC(n === 1 ? T("1 Spiel") : TT("{0} Spiele", n)) +
-        // Sätze only once at least one game is decided — "0 Sätze" is noise.
-        (sets > 0
-          ? '<span class="mth-dot"> · </span>' +
-            ESC(sets === 1 ? T("1 Satz") : TT("{0} Sätze", sets))
-          : "") +
-      "</span>" +
+      '<span class="mth-daycount mth-gs">' + statsLine(run.matches) + "</span>" +
     "</div>");
     run.matches.forEach(function (m) { out.push(renderMatch(m)); });
     out.push("</div>");

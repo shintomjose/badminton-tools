@@ -140,7 +140,8 @@ button.mth-reset { flex: 0 0 auto; }
 .mth-day-alt { background: var(--row-hover); }
 
 .mth-dayhead {
-  display: flex; align-items: baseline; justify-content: center; gap: 8px;
+  display: flex; align-items: baseline; justify-content: center; gap: 8px 12px;
+  flex-wrap: wrap;               /* the record line drops under the date on a phone */
   padding: 8px 0 5px;
   border-bottom: 1px solid var(--border);
 }
@@ -152,11 +153,8 @@ button.mth-reset { flex: 0 0 auto; }
   font-variant-numeric: tabular-nums;
   min-width: 0;
 }
-.mth-daycount {
-  font-size: 0.74em; color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-  flex: 0 0 auto;
-}
+/* the record line: .mth-gs supplies the flex/wrap/colour, this only scales it */
+.mth-daycount { font-size: 0.78em; justify-content: center; }
 
 /* ---------------- match card ---------------- */
 /* ---------------- match row: scoreboard ledger ----------------
@@ -411,6 +409,7 @@ button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
   .mth-gh { padding: 10px 8px; gap: 4px 8px; }
   .mth-day { padding: 0 5px; }
   .mth-gs { flex-basis: 100%; padding-left: 1.6em; }
+  .mth-daycount.mth-gs { padding-left: 0; }   /* the day banner stays centred */
   .mth-gt { font-size: 0.96rem; }
 
   /* The ledger cannot hold one line here. Two lines instead:
