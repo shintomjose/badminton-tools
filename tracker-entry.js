@@ -152,6 +152,7 @@ Object.assign(EN, {
      same; assigning an identical value twice is harmless. */
   /* not "the last few days" — a row can be weeks old if that is when you last played */
   "Letzte Spieltage": "Last match days",
+  "Noch kein Turnier erfasst": "No tournament logged yet",
   "Noch keine Spiele erfasst": "No matches logged yet",
   "Bilanz nicht ladbar": "Record could not be loaded",
   "{0} % ({1})": "{0}% ({1})",
@@ -191,7 +192,12 @@ Object.assign(EN, {
   const SUGGEST_MAX = 8;     // rows in the type-ahead dropdown
   /* Current form is "the last days I actually played", not "the days I played
      inside the last fortnight" — a fortnight off would empty the panel. */
-  const SUMMARY_DAYS = 90;   // look-back window for the day-wise totals
+  const SUMMARY_DAYS = 90;   // look-back window for the day-wise totals (training)
+  /* Tournaments are rare — a 90-day window would usually be empty. A year
+     back, and a limit that comfortably covers a year of everything (the
+     read cannot filter by type without another composite index). */
+  const SUMMARY_DAYS_TRN = 365;
+  const SUMMARY_LIMIT_TRN = 1500;
   const SUMMARY_ROWS = 5;    // how many play days to show
   const SMALL_N = 5;         // below this a percentage is flagged as thin evidence
   /* Stored verbatim on the match — the codes are the data, t() only labels them. */
@@ -584,12 +590,23 @@ Object.assign(EN, {
      getMatches orders by date desc, so the cap can only drop the oldest. */
   async function loadSummary() {
     const wanted = state.type;
+    const trn = wanted === "tournament";
     try {
       const from = new Date();
-      from.setDate(from.getDate() - (SUMMARY_DAYS - 1));
-      const list = await MT.repo.getMatches({ from: from, to: new Date(), limit: 800 });
+      from.setDate(from.getDate() - ((trn ? SUMMARY_DAYS_TRN : SUMMARY_DAYS) - 1));
+      /* Turnier: the session documents name the days — the fallback for
+         matches written before the name was denormalised onto them. */
+      const [list, sessions] = await Promise.all([
+        MT.repo.getMatches({ from: from, to: new Date(), limit: trn ? SUMMARY_LIMIT_TRN : 800 }),
+        trn ? MT.repo.listSessionsAround("tournament", SUMMARY_DAYS_TRN, 0).catch(() => []) : [],
+      ]);
       if (state.type !== wanted) return;                 // mode switched meanwhile
-      state.summary = groupByDay(list.filter(m => m.type === wanted));
+      const rows = groupByDay(list.filter(m => m.type === wanted));
+      if (trn) {
+        const names = new Map((sessions || []).map(x => [x.dateKey, String(x.tournamentName || "").trim()]));
+        rows.forEach(r => { if (!r.name) r.name = names.get(r.dateKey) || ""; });
+      }
+      state.summary = rows;
       state.summaryError = false;
     } catch (e) {
       console.warn("[MT] Tagesbilanz nicht ermittelbar:", e && e.code ? e.code : e);
@@ -600,7 +617,7 @@ Object.assign(EN, {
   }
 
   function blankRec(dateKey, date) {
-    return { dateKey: dateKey, date: date, n: 0, sp: 0, w: 0, l: 0, sw: 0, sl: 0 };
+    return { dateKey: dateKey, date: date, name: "", n: 0, sp: 0, w: 0, l: 0, sw: 0, sl: 0 };
   }
 
   /* Every decided game of one match, whoever played it — the volume counterpart
@@ -648,6 +665,8 @@ Object.assign(EN, {
       let rec = byKey.get(key);
       if (!rec) { rec = blankRec(key, MT.toDate(m.date)); byKey.set(key, rec); }
       if (!rec.date) rec.date = MT.toDate(m.date);
+      /* the tournament name is denormalised onto every match of the day */
+      if (!rec.name) rec.name = String((m.tournament && m.tournament.name) || "").trim();
       tallyDay(rec, m, meId);
     });
     return Array.from(byKey.values()).sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
@@ -660,6 +679,7 @@ Object.assign(EN, {
   function todayRecord() {
     const day = sessionDate();
     const rec = blankRec(MT.keys(day).dateKey, day);
+    if (isTournament()) rec.name = trnName();
     const me = meePlayer();
     const meId = me ? me.id : null;
     state.matches.forEach(m => tallyDay(rec, m, meId));
@@ -1020,16 +1040,21 @@ Object.assign(EN, {
     const rows = summaryRows();
     /* every row is a real play day now, so "empty" simply means none found */
     if (!rows.length) {
-      return '<p class="mt-muted">' + esc(t("Noch keine Spiele erfasst")) + "</p>";
+      return '<p class="mt-muted">' + esc(t(isTournament() ? "Noch kein Turnier erfasst" : "Noch keine Spiele erfasst")) + "</p>";
     }
     const todayK = todayKey();
-    return '<ul class="mt-days">' + rows.map(r => {
+    /* Turnier: each row names its tournament and opens it with one tap —
+       except the day already on screen. */
+    const trn = isTournament();
+    const openK = trn ? (state.session ? sessionKey(state.session) : dayKey()) : null;
+    return '<ul class="mt-days' + (trn ? " trn" : "") + '">' + rows.map(r => {
       const isToday = r.dateKey === todayK;
       const played = hasRecord(r);
       /* The stats group wraps to its own line before anything gets squeezed,
          and the Sätze cell is abbreviated with the long form as its title. */
-      return '<li class="mt-day' + (isToday ? " today" : "") + '">' +
+      return '<li class="mt-day' + (isToday ? " today" : "") + (trn && r.dateKey === openK ? " open" : "") + '">' +
         '<span class="mt-day-date">' + esc(isToday ? t("Heute") : shortDate(r.date)) + "</span>" +
+        (trn ? '<span class="mt-day-name">' + esc(r.name || t("Turnier")) + "</span>" : "") +
         '<span class="mt-day-stats">' +
           '<span class="mt-day-n">' + esc(matchCountLabel(r.n)) + "</span>" +
           (r.sp ? '<span class="mt-day-n">' + esc(setCountLabel(r.sp)) + "</span>" : "") +
@@ -1040,6 +1065,10 @@ Object.assign(EN, {
                 tt("S {0}–{1}", winNum(r.sw), lossNum(r.sl)) + "</span>"
             : "") +
           pctHtml(r.w, r.w + r.l) +
+          (trn && r.dateKey !== openK
+            ? '<button type="button" class="btn small" data-act="openrecent" data-day="' + esc(r.dateKey) + '">' +
+                esc(t("Öffnen")) + "</button>"
+            : "") +
         "</span>" +
       "</li>";
     }).join("") + "</ul>";
@@ -1065,10 +1094,11 @@ Object.assign(EN, {
     if (!host) return;
     /* the editor owns the screen while a match is being entered */
     if (state.draft || !state.loaded) { host.innerHTML = ""; return; }
-    if (isTournament() && (!state.session || state.trnEdit)) { host.innerHTML = ""; return; }
+    /* the setup card owns the screen while a tournament is being named */
+    if (isTournament() && state.trnEdit) { host.innerHTML = ""; return; }
     host.innerHTML =
       '<section class="panel mt-summary">' +
-        "<h2>" + esc(t("Letzte Spieltage")) + "</h2>" +
+        "<h2>" + esc(t(isTournament() ? "Letzte Turniere" : "Letzte Spieltage")) + "</h2>" +
         summaryHtml() +
       "</section>";
   }
@@ -1106,14 +1136,15 @@ Object.assign(EN, {
     "</div>";
   }
 
-  /* Upcoming (nearest first) and recent (newest first) tournaments, one tap
-     to open each. Under an open tournament only the upcoming ones show. */
-  function tournamentListsHtml(upcomingOnly) {
+  /* Upcoming tournaments (nearest first), one tap to open each. Recent ones
+     are not listed here any more: the Letzte Turniere panel below shows them
+     with their results. The overview says so when nothing is planned; under
+     an open tournament an empty list simply disappears. */
+  function tournamentListsHtml(showEmpty) {
     const today = todayKey();
     const up = state.trnList.filter(r => r.dateKey > today)
       .sort((a, b) => (a.dateKey < b.dateKey ? -1 : 1)).slice(0, TRN_LIST_MAX);
-    const past = upcomingOnly ? [] : state.trnList.filter(r => r.dateKey < today).slice(0, TRN_LIST_MAX);
-    if (upcomingOnly && !up.length) return "";
+    if (!showEmpty && !up.length) return "";
     const row = r =>
       "<li>" +
         '<span class="mt-trn-list-name">' + esc(r.tournamentName || t("Turnier")) + "</span>" +
@@ -1128,8 +1159,7 @@ Object.assign(EN, {
           ? '<ul class="mt-trn-list">' + list.map(row).join("") + "</ul>"
           : (empty ? '<p class="mt-muted">' + esc(empty) + "</p>" : "")) +
       "</div>";
-    return block(t("Anstehende Turniere"), up, t("Kein Turnier geplant")) +
-      (past.length ? block(t("Letzte Turniere"), past, "") : "");
+    return block(t("Anstehende Turniere"), up, t("Kein Turnier geplant"));
   }
 
   /* Turnier without a tournament today: the overview — today's status, the
@@ -1141,7 +1171,7 @@ Object.assign(EN, {
         '<button type="button" class="btn primary" data-act="trnnew">' + esc(t("+ Turnier")) + "</button>" +
       "</div>" +
       '<p class="mt-sess-meta">' + esc(shortDate(new Date())) + " · " + esc(t("Heute kein Turnier")) + "</p>" +
-      tournamentListsHtml(false) +
+      tournamentListsHtml(true) +
     "</section>";
   }
 
@@ -1212,7 +1242,7 @@ Object.assign(EN, {
     if (isTournament()) {
       if (state.session && !state.trnEdit) {
         /* today's tournament also shows what is coming up next */
-        const upcoming = sessionKey(state.session) === todayKey() ? tournamentListsHtml(true) : "";
+        const upcoming = sessionKey(state.session) === todayKey() ? tournamentListsHtml(false) : "";
         host.innerHTML =
           '<section class="panel mt-session">' + sessionHeadHtml() + venueSelectHtml() + "</section>" +
           (upcoming ? '<section class="panel mt-session mt-trn-overview">' + upcoming + "</section>" : "");

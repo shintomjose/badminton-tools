@@ -118,10 +118,13 @@ The day list, its heading and the *Letzte Spieltage* summary follow the picked
 day. Switching modes always returns to today.
 
 **Turnier** opens on an overview: today's tournament if one exists, plus
-*Anstehende Turniere* (upcoming, nearest first) and *Letzte Turniere* (recent)
-from 90 days back to 60 days ahead, each with an **Öffnen** button. A tournament opened
-from the list carries an **Übersicht** button back. The creation card only
-appears behind **+ Turnier**, always blank.
+*Anstehende Turniere* (upcoming, nearest first, up to 60 days ahead) with an
+**Öffnen** button each. Below it the *Letzte Turniere* panel lists the last
+five tournament days of the past year with their name, my W–L and set record
+and win %, and an **Öffnen** button (the open day is marked instead). The panel
+stays visible inside an opened tournament; only the setup card hides it. A
+tournament opened from either list carries an **Übersicht** button back. The
+creation card only appears behind **+ Turnier**, always blank.
 
 ### Venues
 

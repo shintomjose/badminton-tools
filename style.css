@@ -1563,6 +1563,12 @@
   .mt-day:last-child { border-bottom: 0; }
   .mt-day.today .mt-day-date { color: var(--text-strong); font-weight: 700; }
   .mt-day-date { flex: 1 0 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  /* Turnier rows: the name is the thing that identifies the day, so it takes
+     the space and the date gives way; the open day is marked, not a button */
+  .mt-days.trn .mt-day-date { flex: 0 0 auto; color: var(--text-muted); font-size: 0.86em; }
+  .mt-day-name { flex: 1 1 12em; min-width: 0; font-weight: 600; color: var(--text-strong); overflow-wrap: anywhere; }
+  .mt-day.open .mt-day-name { color: var(--teal-ink); }
+  .mt-day-stats .btn.small { min-height: 32px; padding: 4px 10px; }
   .mt-day-stats {
     display: flex; flex-wrap: wrap;
     gap: 2px 10px; align-items: baseline;
