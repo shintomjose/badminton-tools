@@ -88,6 +88,25 @@ Object.assign(EN, {
     "Enter once per tournament day — every match inherits it.",
   "Turnier starten": "Start tournament",
   "Turnier geplant": "Tournament planned",
+
+  /* --- Alle overview and Liga team matches --- */
+  "Alle": "All",
+  "Liga": "League",
+  "Spielplan": "Schedule",
+  "Anstehende Spiele": "Upcoming matches",
+  "Gespielt": "Played",
+  "Kein Spiel geplant": "No match scheduled",
+  "gegen {0}": "vs {0}",
+  "Heim": "Home",
+  "Auswärts": "Away",
+  "{0} eintragen": "Enter {0}",
+  "Meine Spiele": "My matches",
+  "Unser Team": "Our team",
+  "Gegner": "Opponents",
+  "Spiele": "Matches",
+  "Heute noch keine Spiele.": "No matches yet today.",
+  "Alle Spiele auf einen Blick — zum Eintragen Training, Turnier oder Liga wählen.": "Every match at a glance — pick Training, Turnier or Liga to enter one.",
+  "Mannschaftsspiel": "Team match",
   "Turnier speichern": "Save tournament",
   "Turnier bearbeiten": "Edit tournament",
   "Turniername eingeben": "Enter a tournament name",
@@ -228,10 +247,18 @@ Object.assign(EN, {
   }
   /* window of the "existing tournaments" list on the setup card */
   const TRN_LIST_BACK = 90, TRN_LIST_AHEAD = 60, TRN_LIST_MAX = 6;
+  /* The four modes of the entry tab. Alle is the read-only landing mode. */
+  const TYPES = ["all", "training", "tournament", "league"];
+  const TYPE_LABEL = { all: "Alle", training: "Training", tournament: "Turnier", league: "Liga" };
+  /* Liga: the eight matches of a Bezirksliga team match, in playing order.
+     The codes are the data; t() labels them like the Aufstellung tab does. */
+  const LEAGUE_SLOTS = [["HD1", "doubles"], ["HD2", "doubles"], ["DD", "doubles"], ["HE1", "singles"], ["HE2", "singles"], ["HE3", "singles"], ["DE", "singles"], ["GD", "mixed"]];
+  const LEAGUE_TARGET = 21;
+  const LG_LIST_DAYS = 400;  // league sessions either side of today: the whole season
 
   const state = {
     host: null,
-    type: "training",      // in-memory only; every mount starts on Training
+    type: "all",           // in-memory only; every mount starts on Alle
     /* The day being entered, "YYYY-MM-DD"; empty means today. Both modes can
        pick another day — a training evening logged the morning after, a
        tournament from last weekend. */
@@ -240,6 +267,11 @@ Object.assign(EN, {
        recent ones, each one tap away */
     trnList: [],
     trnCreate: false,      // "+ Turnier" opened the creation card
+    /* Liga: the fixture on screen and every league session ever logged
+       (the fixture list is the season schedule plus these) */
+    lg: { fixtureId: null, sessions: [] },
+    lgScoreBusy: false,    // a team-score write is in flight
+    allToday: [],          // Alle: today's matches of every type
     session: null,
     matches: [],
     players: [],
@@ -269,6 +301,96 @@ Object.assign(EN, {
 
   /* ================= helpers ================= */
   function isTournament() { return state.type === "tournament"; }
+  function isLeague() { return state.type === "league"; }
+  function isAll() { return state.type === "all"; }
+  function normType(v) { return TYPES.indexOf(v) >= 0 ? v : "training"; }
+  function typeBadgeHtml(type) {
+    const k = normType(type);
+    return '<span class="mt-badge type-' + k + '">' + esc(t(TYPE_LABEL[k])) + "</span>";
+  }
+
+  /* ---- Liga: fixtures ----
+     The season schedule lives in app.js (Termine tab) and is read lazily;
+     the tracker works without it, then only logged fixtures are listed. */
+  function leagueTeam() { return String(window.LEAGUE_TEAM || "").trim() || t("Unser Team"); }
+  function fixtureFromId(id, f) {
+    const m = /^(\d{4}-\d{2}-\d{2})-(\d{2})(\d{2})$/.exec(String(id || ""));
+    if (!m) return null;
+    return {
+      id: String(id), dateKey: m[1],
+      time: (f && f.time) || (m[2] + ":" + m[3]),
+      opponent: String((f && (f.opp || f.opponent)) || ""),
+      home: !!(f && f.home),
+      round: (f && f.round) || "",
+      session: null,
+    };
+  }
+  function scheduleFixtures() {
+    const raw = Array.isArray(window.LEAGUE_FIXTURES) ? window.LEAGUE_FIXTURES : [];
+    return raw.map(f => fixtureFromId(f && f.id, f)).filter(Boolean);
+  }
+  /* schedule + every league session (earlier seasons, ids no longer in app.js) */
+  function allFixtures() {
+    const byId = new Map();
+    scheduleFixtures().forEach(f => byId.set(f.id, f));
+    state.lg.sessions.forEach(sess => {
+      const lg = sess.league || {};
+      const id = sess.fixtureId || lg.fixtureId;
+      if (!id) return;
+      const f = byId.get(id) || fixtureFromId(id, { time: lg.time, opp: lg.opponent, home: lg.home, round: lg.round });
+      if (!f) return;
+      f.session = sess;
+      byId.set(id, f);
+    });
+    return Array.from(byId.values());
+  }
+  function fixtureById(id) { return allFixtures().find(f => f.id === id) || null; }
+  /* The fixture on screen. A session already open fills in what the
+     schedule does not know (an old fixture opened from the Alle overview). */
+  function currentFixture() {
+    const id = state.lg.fixtureId;
+    if (!id) return null;
+    const f = fixtureById(id) || fixtureFromId(id);
+    if (!f) return null;
+    const lg = state.session && state.session.league;
+    if (lg) {
+      if (!f.opponent) f.opponent = String(lg.opponent || "");
+      if (lg.home !== undefined) f.home = !!lg.home;
+      if (!f.session) f.session = state.session;
+    }
+    return f;
+  }
+  function fixtureDate(f) {
+    const p = f.dateKey.split("-").map(Number);
+    const tm = /^(\d{2}):(\d{2})$/.exec(f.time || "");
+    return new Date(p[0], p[1] - 1, p[2], tm ? Number(tm[1]) : 12, tm ? Number(tm[2]) : 0, 0, 0);
+  }
+  function fixtureWhen(f) {
+    return shortDate(fixtureDate(f)) + (f.time ? " · " + f.time : "") + " · " + t(f.home ? "Heim" : "Auswärts");
+  }
+  function slotDiscipline(slot) {
+    const hit = LEAGUE_SLOTS.find(x => x[0] === slot);
+    return hit ? hit[1] : "singles";
+  }
+  function slotMatch(slot) { return state.matches.find(m => m.slot === slot) || null; }
+  /* team score from the finished matches: side A is always our team */
+  function teamScore(list) {
+    let us = 0, them = 0;
+    (list || state.matches).forEach(m => {
+      if (m.status !== "finished") return;
+      if (m.winnerSide === "A") us++; else if (m.winnerSide === "B") them++;
+    });
+    return { us: us, them: them };
+  }
+  function scoreText(sc) { return sc ? (Number(sc.us) || 0) + " : " + (Number(sc.them) || 0) : ""; }
+  /* Side headings in the editor: the two clubs on a league day, A / B otherwise. */
+  function sideLabel(k) {
+    if (isLeague()) {
+      const f = currentFixture();
+      return k === "A" ? leagueTeam() : ((f && f.opponent) || t("Gegner"));
+    }
+    return t("Seite " + k);
+  }
 
   /* Case- and diacritic-insensitive fold, so "muller" finds "Müller"
      and "strauss" finds "Strauß". */
@@ -389,6 +511,11 @@ Object.assign(EN, {
      everything for training and for tournament days recorded before the
      list existed. */
   function allowedDisciplines() {
+    if (isLeague()) {
+      const d = state.draft;
+      const k = d && d.slot ? slotDiscipline(d.slot) : null;
+      return k ? DISCIPLINES.filter(x => x[0] === k) : DISCIPLINES;
+    }
     if (!isTournament()) return DISCIPLINES;
     const set = trnDisciplines();
     if (!set.length) return DISCIPLINES;
@@ -535,7 +662,7 @@ Object.assign(EN, {
       await seedDefaults();
       pickDefaultLocation();
       await loadRecent();
-      const s = await MT.repo.findTodaySession(state.type, dayDate());
+      const s = await lookupSession();
       state.loaded = true;
       restoreDraftLocal();
       sessionFound(s);
@@ -591,18 +718,19 @@ Object.assign(EN, {
      getMatches orders by date desc, so the cap can only drop the oldest. */
   async function loadSummary() {
     const wanted = state.type;
-    const trn = wanted === "tournament";
+    const trn = wanted === "tournament", lg = wanted === "league", all = wanted === "all";
+    const wide = trn || lg;                           // rare events: a year back
     try {
       const from = new Date();
-      from.setDate(from.getDate() - ((trn ? SUMMARY_DAYS_TRN : SUMMARY_DAYS) - 1));
+      from.setDate(from.getDate() - ((wide ? SUMMARY_DAYS_TRN : SUMMARY_DAYS) - 1));
       /* Turnier: the session documents name the days — the fallback for
          matches written before the name was denormalised onto them. */
       const [list, sessions] = await Promise.all([
-        MT.repo.getMatches({ from: from, to: new Date(), limit: trn ? SUMMARY_LIMIT_TRN : 800 }),
+        MT.repo.getMatches({ from: from, to: new Date(), limit: wide ? SUMMARY_LIMIT_TRN : 800 }),
         trn ? MT.repo.listSessionsAround("tournament", SUMMARY_DAYS_TRN, 0).catch(() => []) : [],
       ]);
       if (state.type !== wanted) return;                 // mode switched meanwhile
-      const rows = groupByDay(list.filter(m => m.type === wanted));
+      const rows = groupByDay(all ? list : list.filter(m => normType(m.type) === wanted));
       if (trn) {
         const names = new Map((sessions || []).map(x => [x.dateKey, String(x.tournamentName || "").trim()]));
         rows.forEach(r => { if (!r.name) r.name = names.get(r.dateKey) || ""; });
@@ -618,7 +746,8 @@ Object.assign(EN, {
   }
 
   function blankRec(dateKey, date) {
-    return { dateKey: dateKey, date: date, name: "", n: 0, sp: 0, w: 0, l: 0, sw: 0, sl: 0 };
+    return { dateKey: dateKey, date: date, name: "", type: state.type, fixtureId: null, us: 0, them: 0,
+      n: 0, sp: 0, w: 0, l: 0, sw: 0, sl: 0 };
   }
 
   /* Every decided game of one match, whoever played it — the volume counterpart
@@ -661,13 +790,31 @@ Object.assign(EN, {
     const me = meePlayer();
     const meId = me ? me.id : null;
     const byKey = new Map();
+    /* One row per day — except that Alle keeps the types apart (a training
+       evening and a tournament on one day are two rows) and Liga keeps the
+       fixtures apart (two team matches on one Saturday are two rows). */
     list.forEach(m => {
-      const key = m.dateKey || MT.keys(MT.toDate(m.date) || new Date()).dateKey;
+      const type = normType(m.type);
+      const dk = m.dateKey || MT.keys(MT.toDate(m.date) || new Date()).dateKey;
+      const fx = type === "league" ? String((m.league && m.league.fixtureId) || "") : "";
+      const key = isAll() ? dk + "|" + type + "|" + fx : (fx || dk);
       let rec = byKey.get(key);
-      if (!rec) { rec = blankRec(key, MT.toDate(m.date)); byKey.set(key, rec); }
+      if (!rec) {
+        rec = blankRec(dk, MT.toDate(m.date));
+        rec.type = type;
+        rec.fixtureId = fx || null;
+        byKey.set(key, rec);
+      }
       if (!rec.date) rec.date = MT.toDate(m.date);
-      /* the tournament name is denormalised onto every match of the day */
-      if (!rec.name) rec.name = String((m.tournament && m.tournament.name) || "").trim();
+      /* names are denormalised onto every match: the tournament's, the opponent's */
+      if (!rec.name) {
+        rec.name = type === "league"
+          ? ((m.league && m.league.opponent) ? tt("gegen {0}", m.league.opponent) : "")
+          : String((m.tournament && m.tournament.name) || "").trim();
+      }
+      if (type === "league" && m.status === "finished") {
+        if (m.winnerSide === "A") rec.us++; else if (m.winnerSide === "B") rec.them++;
+      }
       tallyDay(rec, m, meId);
     });
     return Array.from(byKey.values()).sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
@@ -681,6 +828,13 @@ Object.assign(EN, {
     const day = sessionDate();
     const rec = blankRec(MT.keys(day).dateKey, day);
     if (isTournament()) rec.name = trnName();
+    if (isLeague()) {
+      const f = currentFixture();
+      rec.fixtureId = state.lg.fixtureId;
+      rec.name = f && f.opponent ? tt("gegen {0}", f.opponent) : "";
+      const sc = teamScore(state.matches);
+      rec.us = sc.us; rec.them = sc.them;
+    }
     const me = meePlayer();
     const meId = me ? me.id : null;
     state.matches.forEach(m => tallyDay(rec, m, meId));
@@ -692,15 +846,23 @@ Object.assign(EN, {
      Today only earns a row when it has matches; the header meta already states
      today's record either way, so an empty row would just cost a slot. */
   function summaryRows() {
-    const live = todayRecord();
-    const rows = state.summary.filter(r => r.dateKey !== live.dateKey && r.n > 0);
-    if (live.n) {
-      rows.push(live);                         // the open day, tallied live
+    let rows;
+    if (isAll()) {
+      rows = state.summary.filter(r => r.n > 0);   // nothing is live in Alle
     } else {
-      /* No live session attached yet (first paint, or tournament mode before
-         the day is named) — fall back to what the ranged read saw for that day. */
-      const fetched = state.summary.find(r => r.dateKey === live.dateKey && r.n > 0);
-      if (fetched) rows.push(fetched);
+      const live = todayRecord();
+      /* the live row replaces the fetched one for the same day — or, in Liga,
+         for the same fixture */
+      const same = r => isLeague() ? (!!r.fixtureId && r.fixtureId === live.fixtureId) : r.dateKey === live.dateKey;
+      rows = state.summary.filter(r => !same(r) && r.n > 0);
+      if (live.n) {
+        rows.push(live);                       // the open day, tallied live
+      } else {
+        /* No live session attached yet (first paint, or tournament mode before
+           the day is named) — fall back to what the ranged read saw for that day. */
+        const fetched = state.summary.find(r => same(r) && r.n > 0);
+        if (fetched) rows.push(fetched);
+      }
     }
     /* the open day is not necessarily the newest one any more */
     rows.sort((a, b) => (a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0));
@@ -791,6 +953,7 @@ Object.assign(EN, {
     state.unwatch = MT.repo.watchSession(session.id, function (payload) {
       if (payload.session) { state.session = payload.session; hydrateTournament(payload.session); }
       if (payload.matches) state.matches = payload.matches;
+      syncLeagueScore();
       renderSession();
       renderList();
       renderSummary();
@@ -802,6 +965,7 @@ Object.assign(EN, {
      setup card can offer them (planned ones included). */
   function sessionFound(s) {
     if (s) startWatch(s);
+    if (isLeague()) { loadLeagueSessions(); return; }
     if (!isTournament()) return;
     /* No tournament on this day: the creation card must start blank. Keeping
        the previous tournament's name here is how a second copy gets created. */
@@ -829,16 +993,104 @@ Object.assign(EN, {
 
   /* Re-attach the live session watch after the view was unmounted and mounted
      again (switching away to History and back would otherwise show a frozen list). */
+  /* What "the session" means per mode: the day's session for Training and
+     Turnier, the fixture's session for Liga, nothing for Alle (which reads
+     today's matches of every type instead). */
+  function lookupSession() {
+    if (isAll()) return loadAllToday().then(() => null);
+    if (isLeague()) {
+      const f = currentFixture();
+      return f ? MT.repo.findSessionByFixture(f.id) : Promise.resolve(null);
+    }
+    return MT.repo.findTodaySession(state.type, dayDate());
+  }
+
   function resyncSession() {
-    const wanted = state.type;
-    MT.repo.findTodaySession(wanted, dayDate())
+    const wanted = state.type, key = dayKey(), fx = state.lg.fixtureId;
+    lookupSession()
       .then(s => {
-        if (state.type !== wanted) return;          // toggled again meanwhile
+        /* toggled, day-switched or fixture-switched meanwhile */
+        if (state.type !== wanted || dayKey() !== key || state.lg.fixtureId !== fx) return;
         sessionFound(s);
         renderSession();
         renderList();
+        renderSummary();
       })
       .catch(e => MT.toastError(e, "Laden fehlgeschlagen"));
+  }
+
+  async function loadAllToday() {
+    try {
+      const d = new Date();
+      state.allToday = await MT.repo.getMatches({ from: d, to: d, limit: 200 });
+    } catch (e) {
+      console.warn("[MT] Heutige Spiele nicht ermittelbar:", e && e.code ? e.code : e);
+      state.allToday = [];
+    }
+  }
+
+  /* Every league session ever logged — the fixture list and the scores on it. */
+  function loadLeagueSessions() {
+    const wanted = state.type;
+    MT.repo.listSessionsAround("league", LG_LIST_DAYS, LG_LIST_DAYS)
+      .then(list => {
+        if (state.type !== wanted) return;
+        state.lg.sessions = list || [];
+        renderSession();
+        renderSummary();
+      })
+      .catch(() => { /* the schedule alone still lists the fixtures */ });
+  }
+
+  /* Keep the stored team score in step with the eight results, so the
+     fixture list and the history can show it without reading the matches.
+     Writes only when the score actually changed — the snapshot that follows
+     the write finds it equal and stops. */
+  function syncLeagueScore() {
+    const sess = state.session;
+    if (!isLeague() || !sess || !sess.league || state.lgScoreBusy) return;
+    const sc = teamScore(state.matches);
+    const old = sess.league.score || null;
+    if (old ? (old.us === sc.us && old.them === sc.them) : (!sc.us && !sc.them)) return;
+    state.lgScoreBusy = true;
+    MT.repo.updateSession(sess.id, { league: Object.assign({}, sess.league, { score: sc }) })
+      .catch(() => {})
+      .then(() => { state.lgScoreBusy = false; });
+  }
+
+  function openFixture(id) {
+    const f = fixtureById(id) || fixtureFromId(id);
+    if (!f) return;
+    closeEditor(false);
+    stopWatch();
+    state.session = null;
+    state.matches = [];
+    state.lg.fixtureId = f.id;
+    state.dayKey = f.dateKey === todayKey() ? "" : f.dateKey;
+    pickDefaultLocation();
+    renderAll();
+    resyncSession();
+  }
+
+  function closeFixture() {
+    closeEditor(false);
+    stopWatch();
+    state.session = null;
+    state.matches = [];
+    state.lg.fixtureId = null;
+    state.dayKey = "";
+    renderAll();
+    loadLeagueSessions();
+    loadSummary();
+  }
+
+  /* From the Alle overview into the mode and day a row belongs to. */
+  function jumpTo(type, day, fixtureId) {
+    const k = normType(type);
+    if (k === "all") return;
+    switchType(k);
+    if (k === "league") { if (fixtureId) openFixture(fixtureId); return; }
+    if (isDayKey(day) && day !== dayKey()) switchDay(day);
   }
 
   function stopWatch() {
@@ -1044,19 +1296,34 @@ Object.assign(EN, {
       return '<p class="mt-muted">' + esc(t(isTournament() ? "Noch kein Turnier erfasst" : "Noch keine Spiele erfasst")) + "</p>";
     }
     const todayK = todayKey();
-    /* Turnier: each row names its tournament and opens it with one tap —
-       except the day already on screen. */
-    const trn = isTournament();
+    /* Turnier and Liga: each row names its tournament / opponent and opens
+       it with one tap — except the one already on screen. Alle: every row
+       carries its type and jumps into that mode. */
+    const trn = isTournament(), lg = isLeague(), all = isAll();
     const openK = trn ? (state.session ? sessionKey(state.session) : dayKey()) : null;
-    return '<ul class="mt-days' + (trn ? " trn" : "") + '">' + rows.map(r => {
+    const isOpenRow = r => trn ? r.dateKey === openK : lg ? (!!r.fixtureId && r.fixtureId === state.lg.fixtureId) : false;
+    const openBtn = r => {
+      if (isOpenRow(r)) return "";
+      let attrs;
+      if (trn) attrs = 'data-act="openrecent" data-day="' + esc(r.dateKey) + '"';
+      else if (lg) attrs = r.fixtureId ? 'data-act="lgopen" data-fixture="' + esc(r.fixtureId) + '"' : "";
+      else if (all) attrs = 'data-act="openday" data-type="' + esc(r.type) + '" data-day="' + esc(r.dateKey) + '" data-fixture="' + esc(r.fixtureId || "") + '"';
+      else attrs = "";
+      return attrs ? '<button type="button" class="btn small" ' + attrs + ">" + esc(t("Öffnen")) + "</button>" : "";
+    };
+    return '<ul class="mt-days' + ((trn || lg || all) ? " trn" : "") + '">' + rows.map(r => {
       const isToday = r.dateKey === todayK;
       const played = hasRecord(r);
+      const showName = trn || lg || (all && r.name);
+      const withScore = lg || (all && r.type === "league");
       /* The stats group wraps to its own line before anything gets squeezed,
          and the Sätze cell is abbreviated with the long form as its title. */
-      return '<li class="mt-day' + (isToday ? " today" : "") + (trn && r.dateKey === openK ? " open" : "") + '">' +
+      return '<li class="mt-day' + (isToday ? " today" : "") + (isOpenRow(r) ? " open" : "") + '">' +
         '<span class="mt-day-date">' + esc(isToday ? t("Heute") : shortDate(r.date)) + "</span>" +
-        (trn ? '<span class="mt-day-name">' + esc(r.name || t("Turnier")) + "</span>" : "") +
+        (all ? typeBadgeHtml(r.type) : "") +
+        (showName ? '<span class="mt-day-name">' + esc(r.name || (trn ? t("Turnier") : "")) + "</span>" : "") +
         '<span class="mt-day-stats">' +
+          (withScore ? '<span class="mt-lg-mini" title="' + esc(t("Mannschaftsspiel")) + '">' + esc(scoreText(r)) + "</span>" : "") +
           '<span class="mt-day-n">' + esc(matchCountLabel(r.n)) + "</span>" +
           (r.sp ? '<span class="mt-day-n">' + esc(setCountLabel(r.sp)) + "</span>" : "") +
           (played
@@ -1066,10 +1333,7 @@ Object.assign(EN, {
                 tt("S {0}–{1}", winNum(r.sw), lossNum(r.sl)) + "</span>"
             : "") +
           pctHtml(r.w, r.w + r.l) +
-          (trn && r.dateKey !== openK
-            ? '<button type="button" class="btn small" data-act="openrecent" data-day="' + esc(r.dateKey) + '">' +
-                esc(t("Öffnen")) + "</button>"
-            : "") +
+          openBtn(r) +
         "</span>" +
       "</li>";
     }).join("") + "</ul>";
@@ -1099,7 +1363,7 @@ Object.assign(EN, {
     if (isTournament() && state.trnEdit) { host.innerHTML = ""; return; }
     host.innerHTML =
       '<section class="panel mt-summary">' +
-        "<h2>" + esc(t(isTournament() ? "Letzte Turniere" : "Letzte Spieltage")) + "</h2>" +
+        "<h2>" + esc(t(isTournament() ? "Letzte Turniere" : isLeague() ? "Letzte Spiele" : "Letzte Spieltage")) + "</h2>" +
         summaryHtml() +
       "</section>";
   }
@@ -1240,6 +1504,16 @@ Object.assign(EN, {
   function renderSession() {
     const host = el("mtSessionPanel");
     if (!host) return;
+    if (isAll()) {
+      host.innerHTML = '<section class="panel mt-session">' + allHeadHtml() + "</section>";
+      return;
+    }
+    if (isLeague()) {
+      host.innerHTML = currentFixture()
+        ? '<section class="panel mt-session">' + leagueHeadHtml() + venueSelectHtml() + "</section>"
+        : leagueListHtml();
+      return;
+    }
     if (isTournament()) {
       if (state.session && !state.trnEdit) {
         /* today's tournament also shows what is coming up next */
@@ -1257,7 +1531,124 @@ Object.assign(EN, {
     host.innerHTML = '<section class="panel mt-session">' + sessionHeadHtml() + venueSelectHtml() + "</section>";
   }
 
-  function matchLine(m, idx, total) {
+  /* ---- Alle: today across every type, read-only ---- */
+  function allHeadHtml() {
+    const rec = blankRec(todayKey(), new Date());
+    const me = meePlayer();
+    const meId = me ? me.id : null;
+    state.allToday.forEach(m => tallyDay(rec, m, meId));
+    return '<div class="mt-trn-head"><h2>' + esc(t("Heute")) + "</h2></div>" +
+      '<p class="mt-sess-meta">' + esc(shortDate(new Date())) + " · " + metaTailHtml(rec) + "</p>" +
+      '<p class="mt-muted">' + esc(t("Alle Spiele auf einen Blick — zum Eintragen Training, Turnier oder Liga wählen.")) + "</p>";
+  }
+
+  function allListHtml() {
+    /* getMatches returns newest first; the day reads better in playing order */
+    const list = state.allToday.slice().reverse();
+    return '<section class="panel mt-matches">' +
+      "<h2>" + esc(t("Spiele heute")) + ' <span class="seg-count">' + list.length + "</span></h2>" +
+      (list.length
+        ? '<ul class="mt-match-list">' + list.map((m, i) => matchLine(m, i, list.length, { readOnly: true })).join("") + "</ul>"
+        : '<p class="empty-note">' + esc(t("Heute noch keine Spiele.")) + "</p>") +
+    "</section>";
+  }
+
+  /* ---- Liga: fixture list, fixture header, the eight slots ---- */
+  function fixtureRowHtml(f) {
+    const sc = f.session && f.session.league ? f.session.league.score : null;
+    const state_ = sc && (sc.us || sc.them)
+      ? '<span class="mt-lg-mini">' + esc(scoreText(sc)) + "</span>"
+      : (f.session ? '<span class="mt-badge open">' + esc(t("offen")) + "</span>" : "");
+    return "<li>" +
+      '<span class="mt-trn-list-name">' + esc(tt("gegen {0}", f.opponent || "?")) + "</span>" +
+      '<span class="mt-muted">' + esc(fixtureWhen(f)) + "</span>" +
+      state_ +
+      '<button type="button" class="btn small" data-act="lgopen" data-fixture="' + esc(f.id) + '">' + esc(t("Öffnen")) + "</button>" +
+    "</li>";
+  }
+
+  function leagueListHtml() {
+    const today = todayKey();
+    const all = allFixtures();
+    const byStart = (a, b) => a.dateKey === b.dateKey ? a.time.localeCompare(b.time) : (a.dateKey < b.dateKey ? -1 : 1);
+    const up = all.filter(f => f.dateKey >= today).sort(byStart);
+    const past = all.filter(f => f.dateKey < today).sort((a, b) => -byStart(a, b));
+    const block = (title, list, empty) =>
+      '<div class="mt-field mt-trn-list-wrap">' +
+        '<span class="mt-label">' + esc(title) + "</span>" +
+        (list.length
+          ? '<ul class="mt-trn-list">' + list.map(fixtureRowHtml).join("") + "</ul>"
+          : (empty ? '<p class="mt-muted">' + esc(empty) + "</p>" : "")) +
+      "</div>";
+    const meta = [String(window.LEAGUE_NAME || "").trim(), leagueTeam()].filter(Boolean).join(" · ");
+    return '<section class="panel mt-session mt-trn-overview">' +
+      '<div class="mt-trn-head"><h2>' + esc(t("Liga")) + "</h2></div>" +
+      (meta ? '<p class="mt-sess-meta">' + esc(meta) + "</p>" : "") +
+      block(t("Anstehende Spiele"), up, t("Kein Spiel geplant")) +
+      (past.length ? block(t("Gespielt"), past, "") : "") +
+    "</section>";
+  }
+
+  /* My matches of this team match, one chip each — Sieg / Niederlage from my side. */
+  function leagueMyChipsHtml() {
+    const mine = LEAGUE_SLOTS.map(x => slotMatch(x[0])).filter(m => m && myOutcome(m) !== "other");
+    if (!mine.length) return "";
+    const look = { win: ["champ", "Sieg"], loss: ["out", "Niederlage"], open: ["live", "läuft"], void: ["group", "Ohne Wertung"] };
+    return '<div class="mt-trn-result" role="group" aria-label="' + esc(t("Meine Spiele")) + '">' +
+      mine.map(m => {
+        const l = look[myOutcome(m)] || look.void;
+        return '<span class="mt-outcome ' + l[0] + '">' +
+          '<span class="mt-outcome-disc">' + esc(t(m.slot)) + "</span>" +
+          '<span class="mt-outcome-text">' + esc(t(l[1])) + "</span>" +
+        "</span>";
+      }).join("") +
+    "</div>";
+  }
+
+  function leagueHeadHtml() {
+    const f = currentFixture();
+    const sc = teamScore(state.matches);
+    const decided = sc.us + sc.them;
+    const tone = !decided ? "" : sc.us > sc.them ? " win" : sc.us < sc.them ? " loss" : " draw";
+    return '<div class="mt-trn-head">' +
+      "<h2>" + esc(tt("gegen {0}", f.opponent || "?")) + "</h2>" +
+      '<span class="mt-trn-tools">' +
+        '<button type="button" class="btn small" data-act="lgback">' + esc(t("Spielplan")) + "</button>" +
+      "</span>" +
+    "</div>" +
+    '<div class="mt-lg-score' + tone + '" aria-label="' + esc(t("Mannschaftsspiel")) + '">' +
+      '<span class="mt-lg-team">' + esc(leagueTeam()) + "</span>" +
+      '<span class="mt-lg-num">' + sc.us + '<span class="mt-lg-colon">:</span>' + sc.them + "</span>" +
+      '<span class="mt-lg-team">' + esc(f.opponent || "?") + "</span>" +
+    "</div>" +
+    '<p class="mt-sess-meta">' + esc(fixtureWhen(f)) + " · " + metaTailHtml(todayRecord()) + "</p>" +
+    leagueMyChipsHtml();
+  }
+
+  function leagueSlotsHtml() {
+    const items = LEAGUE_SLOTS.map((x, i) => {
+      const m = slotMatch(x[0]);
+      if (m) return matchLine(m, i, LEAGUE_SLOTS.length, { league: true });
+      return '<li class="mt-match mt-slot-empty">' +
+        '<div class="mt-match-top">' +
+          '<span class="mt-no">' + esc(t(x[0])) + "</span>" +
+          '<span class="mt-badge">' + esc(disciplineLabel(x[1]) + " · " + LEAGUE_TARGET) + "</span>" +
+        "</div>" +
+        '<button type="button" class="btn small" data-act="lgslot" data-slot="' + esc(x[0]) + '">' +
+          esc(tt("{0} eintragen", t(x[0]))) + "</button>" +
+      "</li>";
+    });
+    return '<section class="panel mt-matches">' +
+      "<h2>" + esc(t("Spiele")) + ' <span class="seg-count">' + state.matches.length + "/" + LEAGUE_SLOTS.length + "</span></h2>" +
+      '<ul class="mt-match-list">' + items.join("") + "</ul>" +
+    "</section>";
+  }
+
+  /* opts.readOnly — the Alle overview: no controls, a type badge, one Öffnen;
+     opts.league  — a slot card: the slot as its number, no drag, no nudges */
+  function matchLine(m, idx, total, opts) {
+    const o = opts || {};
+    const lgm = m.league || {};
     const no = idx + 1;
     const games = Array.isArray(m.games) ? m.games : [];
     const winner = m.status === "finished" ? m.winnerSide : null;
@@ -1301,14 +1692,26 @@ Object.assign(EN, {
       } else if (winner === side) c += " win";
       return c;
     };
+    const canDrag = !o.readOnly && !o.league;
+    const isLg = normType(m.type) === "league";
+    /* Alle: say what kind of match this is and, for a team match, which */
+    const ctxHtml = o.readOnly
+      ? typeBadgeHtml(m.type) +
+        (isLg && lgm.opponent ? '<span class="mt-badge trn">' + esc(tt("gegen {0}", lgm.opponent)) + "</span>" : "") +
+        (isLg && m.slot ? '<span class="mt-badge trn phase-ko">' + esc(t(m.slot)) + "</span>" : "")
+      : "";
+    const noHtml = (o.league || (o.readOnly && isLg)) && m.slot
+      ? '<span class="mt-no">' + esc(t(m.slot)) + "</span>"
+      : '<span class="mt-no">#' + no + "</span>";
     /* draggable="true" only on the card: the buttons inside stay tappable
        because a drag has to start on the card surface, not on a control */
-    return '<li class="mt-match res-' + res + ' phase-' + phase + '" draggable="true" data-id="' + esc(m.id) + '"' +
+    return '<li class="mt-match res-' + res + ' phase-' + phase + '"' + (canDrag ? ' draggable="true"' : "") + ' data-id="' + esc(m.id) + '"' +
       ' data-pos="' + idx + '">' +
       '<div class="mt-match-top">' +
-        '<span class="mt-grip" aria-hidden="true" title="' + esc(t("Reihenfolge ändern")) + '">⠿</span>' +
-        '<span class="mt-no">#' + no + "</span>" +
+        (canDrag ? '<span class="mt-grip" aria-hidden="true" title="' + esc(t("Reihenfolge ändern")) + '">⠿</span>' : "") +
+        noHtml +
         '<span class="mt-badge">' + esc(disc + " · " + (m.targetScore || "")) + "</span>" +
+        ctxHtml +
         trnHtml +
         statusHtml +
       "</div>" +
@@ -1316,19 +1719,24 @@ Object.assign(EN, {
         '<span class="' + nameCls("A") + '">' + sideHtml(m.sideA && m.sideA.playerIds) + "</span>" + cells("A") +
         '<span class="' + nameCls("B") + '">' + sideHtml(m.sideB && m.sideB.playerIds) + "</span>" + cells("B") +
       "</div>" +
-      '<div class="mt-match-actions">' +
+      (o.readOnly
+        ? '<div class="mt-match-actions">' +
+            '<button type="button" class="btn small" data-act="openday" data-type="' + esc(normType(m.type)) + '"' +
+              ' data-day="' + esc(m.dateKey || "") + '" data-fixture="' + esc(lgm.fixtureId || "") + '">' + esc(t("Öffnen")) + "</button>" +
+          "</div>"
+        : '<div class="mt-match-actions">' +
         '<button type="button" class="btn small" data-act="edit" data-id="' + esc(m.id) + '">' + esc(t("Bearbeiten")) + "</button>" +
         '<button type="button" class="btn small" data-act="del" data-id="' + esc(m.id) + '">' + esc(t("Löschen")) + "</button>" +
         /* the nudges are the touch path — drag is a desktop convenience */
-        '<span class="mt-nudge">' +
+        (o.league ? "" : '<span class="mt-nudge">' +
           '<button type="button" class="btn mt-move" data-act="moveup" data-id="' + esc(m.id) + '"' +
             (no === 1 ? " disabled" : "") +
             ' aria-label="' + esc(tt("Spiel {0} nach oben", no)) + '">▲</button>' +
           '<button type="button" class="btn mt-move" data-act="movedown" data-id="' + esc(m.id) + '"' +
             (no === total ? " disabled" : "") +
             ' aria-label="' + esc(tt("Spiel {0} nach unten", no)) + '">▼</button>' +
-        "</span>" +
-      "</div>" +
+        "</span>") +
+      "</div>") +
     "</li>";
   }
 
@@ -1370,6 +1778,8 @@ Object.assign(EN, {
         '<div class="mt-card-actions"><button type="button" class="btn" data-act="reload">' + esc(t("Erneut prüfen")) + "</button></div></section>";
       return;
     }
+    if (isAll()) { host.innerHTML = allListHtml(); return; }
+    if (isLeague()) { host.innerHTML = currentFixture() ? leagueSlotsHtml() : ""; return; }
     const list = orderedMatches();
     const addLabel = state.justSaved && list.length ? t("Noch ein Spiel") : t("+ Spiel");
     host.innerHTML =
@@ -1520,7 +1930,7 @@ Object.assign(EN, {
   function slotsHtml(d, sideKey) {
     const ids = sideKey === "A" ? d.sideA : d.sideB;
     return '<div class="mt-side" data-side="' + sideKey + '">' +
-      "<h3>" + esc(t("Seite " + sideKey)) + "</h3>" +
+      "<h3>" + esc(sideLabel(sideKey)) + "</h3>" +
       '<div class="mt-slots">' +
         ids.map((id, i) => slotHtml(d, sideKey, i)).join("") +
       "</div>" +
@@ -1536,7 +1946,7 @@ Object.assign(EN, {
     const g = d.games[gi];
     const field = function (sideKey) {
       const s = sideKey.toLowerCase();
-      const names = namesOf(sideKey === "A" ? d.sideA : d.sideB).join(" / ") || t("Seite " + sideKey);
+      const names = namesOf(sideKey === "A" ? d.sideA : d.sideB).join(" / ") || sideLabel(sideKey);
       return '<label class="mt-res">' +
         '<span class="mt-res-name">' + esc(names) + "</span>" +
         '<input type="number" inputmode="numeric" class="mt-num" min="0" max="' + MAX_SCORE + '" step="1"' +
@@ -1599,15 +2009,18 @@ Object.assign(EN, {
     const currentSpecial = d.resultType === "retired" ? "retired" + (d.retiredSide || "A") : d.resultType;
     host.innerHTML =
       '<section class="panel mt-editor">' +
-        "<h2>" + esc(d.id ? t("Spiel bearbeiten") : t("Neues Spiel")) + " " + winnerBadgeHtml(d) + "</h2>" +
+        "<h2>" + esc(d.id ? t("Spiel bearbeiten") : (isLeague() && d.slot ? tt("{0} eintragen", t(d.slot)) : t("Neues Spiel"))) + " " + winnerBadgeHtml(d) + "</h2>" +
 
         '<div class="mt-opt-row">' +
-          '<div class="mt-toggle" role="group" aria-label="' + esc(t("Disziplin")) + '">' +
-            allowedDisciplines().map(x =>
-              '<button type="button" data-act="disc" data-v="' + x[0] + '"' +
-              ' aria-pressed="' + (normDiscipline(d.discipline) === x[0]) + '">' + esc(t(x[1])) + "</button>"
-            ).join("") +
-          "</div>" +
+          /* a league slot fixes the discipline — a pill says which, no toggle */
+          (isLeague() && d.slot
+            ? '<span class="mt-badge trn phase-ko mt-slot-pill">' + esc(t(d.slot) + " · " + disciplineLabel(d.discipline)) + "</span>"
+            : '<div class="mt-toggle" role="group" aria-label="' + esc(t("Disziplin")) + '">' +
+              allowedDisciplines().map(x =>
+                '<button type="button" data-act="disc" data-v="' + x[0] + '"' +
+                ' aria-pressed="' + (normDiscipline(d.discipline) === x[0]) + '">' + esc(t(x[1])) + "</button>"
+              ).join("") +
+            "</div>") +
           '<div class="mt-toggle" role="group" aria-label="' + esc(t("Ziel")) + '">' +
             TARGETS.map(v => '<button type="button" data-act="target" data-v="' + v + '" aria-pressed="' + (d.targetScore === v) + '">' + v + "</button>").join("") +
           "</div>" +
@@ -1712,11 +2125,43 @@ Object.assign(EN, {
     scrollToEditor();
   }
 
+  /* A league slot: discipline and target are the slot's, both sides start
+     empty — the line-up is the captain's, not last match's. */
+  function newLeagueDraft(slot) {
+    if (!LEAGUE_SLOTS.some(x => x[0] === slot) || !currentFixture()) return;
+    if (slotMatch(slot)) { openDraftFromMatch(slotMatch(slot).id); return; }
+    const disc = slotDiscipline(slot);
+    const d = {
+      id: null,
+      discipline: disc,
+      targetScore: LEAGUE_TARGET,
+      sideA: [], sideB: [],
+      games: [{ a: "", b: "" }],
+      resultType: "normal",
+      retiredSide: null,
+      round: null,
+      opponentClub: "",
+      slot: slot,
+    };
+    normalizeSlots(d);
+    state.draft = d;
+    state.activeSlot = firstEmptySlot(d);
+    state.pickOpen = state.activeSlot;
+    state.pickQuery = "";
+    state.justSaved = false;
+    saveDraftLocal();
+    renderList();
+    renderEditor();
+    scrollToEditor();
+    focusOpenSlot();
+  }
+
   function openDraftFromMatch(id) {
     const m = state.matches.find(x => x.id === id);
     if (!m) return;
     const d = {
       id: m.id,
+      slot: m.slot || null,
       discipline: normDiscipline(m.discipline),
       targetScore: m.targetScore || defaultTarget(m.discipline),
       sideA: ((m.sideA && m.sideA.playerIds) || []).slice(),
@@ -1811,10 +2256,14 @@ Object.assign(EN, {
     const existing = playerByName(clean);
     if (existing) { assignPlayer(existing.id); return; }
     state.pickBusy = true;                 // a double-tap must not create twins
+    /* on a league day a name typed on side B is one of the opponents */
+    const open = state.pickOpen || state.activeSlot;
+    const f = isLeague() ? currentFixture() : null;
+    const club = (f && f.opponent && open && open.side === "B") ? f.opponent : MT.DEFAULT_CLUB;
     try {
-      const id = await MT.repo.addPlayer(clean, MT.DEFAULT_CLUB);
+      const id = await MT.repo.addPlayer(clean, club);
       state.players = state.players.concat([
-        { id: id, name: clean, club: MT.DEFAULT_CLUB, active: true, isMe: false },
+        { id: id, name: clean, club: club, active: true, isMe: false },
       ]);
       assignPlayer(id);
       toast(t("Spieler hinzugefügt"));
@@ -1859,6 +2308,13 @@ Object.assign(EN, {
         opponentClub: club,
       };
     }
+    if (isLeague()) {
+      const f = currentFixture();
+      fields.slot = d.slot || null;
+      fields.opponentClub = f && f.opponent ? f.opponent : null;
+      /* nested object, like `tournament`: what the other views render from */
+      fields.league = f ? { fixtureId: f.id, opponent: f.opponent, home: !!f.home, team: leagueTeam() } : null;
+    }
     return fields;
   }
 
@@ -1895,15 +2351,21 @@ Object.assign(EN, {
         if (state.session) {
           newId = await MT.repo.addMatch(state.session.id, payload, state.session);
         } else {
+          const f = isLeague() ? currentFixture() : null;
+          if (isLeague() && !f) { toast(t("Kein Spiel geplant")); return; }
           const res = await MT.repo.createSessionWithMatch({
             type: state.type,
-            date: dayDate(),
+            /* a team match starts at the fixture's time, so it sorts right in the history */
+            date: f ? fixtureDate(f) : dayDate(),
             locationId: state.locationId,
             locationName: state.locationName,
             tournamentName: trnName() || null,
+            fixtureId: f ? f.id : null,
+            league: f ? { fixtureId: f.id, opponent: f.opponent, home: !!f.home, round: f.round || "", time: f.time || "", team: leagueTeam(), score: null } : null,
           }, payload);
           newId = res.matchId;
           startWatch(res.session);
+          if (isLeague()) loadLeagueSessions();
         }
       }
       toast(t(finish ? "Spiel gespeichert" : "Als offen gespeichert"));
@@ -2067,30 +2529,23 @@ Object.assign(EN, {
 
   /* Switching mode is a full reset: separate flows, separate lists. */
   function switchType(v) {
-    state.type = v === "tournament" ? "tournament" : "training";
-    state.dayKey = "";                               // both modes open on today
+    state.type = normType(v);
+    state.dayKey = "";                               // every mode opens on today
     state.trnEdit = false;
     state.trnCreate = false;
     state.trnList = [];
+    state.lg.fixtureId = null;
+    state.allToday = [];
     pickDefaultLocation();
     closeEditor(false);
     stopWatch();
     state.session = null;
     state.matches = [];
-    state.summary = [];                              // the two modes never merge
+    state.summary = [];                              // the modes never merge
     state.summaryError = false;
     renderAll();
     if (!state.loaded) return;                       // load() picks up state.type
-    const wanted = state.type;
-    MT.repo.findTodaySession(wanted, dayDate())
-      .then(s => {
-        if (state.type !== wanted) return;           // toggled again meanwhile
-        sessionFound(s);
-        renderSession();
-        renderList();
-        renderSummary();
-      })
-      .catch(err => MT.toastError(err, "Laden fehlgeschlagen"));
+    resyncSession();
     loadSummary();
   }
 
@@ -2124,6 +2579,10 @@ Object.assign(EN, {
     }
     if (act === "trnedit") { state.trnEdit = true; renderSession(); renderList(); return; }
     if (act === "openrecent") { switchDay(btn.dataset.day); return; }
+    if (act === "lgopen") { openFixture(btn.dataset.fixture); return; }
+    if (act === "lgback") { closeFixture(); return; }
+    if (act === "lgslot") { newLeagueDraft(btn.dataset.slot); return; }
+    if (act === "openday") { jumpTo(btn.dataset.type, btn.dataset.day, btn.dataset.fixture); return; }
     if (act === "trndelete") { removeTournament(); return; }
     if (act === "trnnew") {
       state.trnCreate = true;
@@ -2413,12 +2872,13 @@ Object.assign(EN, {
     mount: function (host) {
       state.host = host;
       /* Spec: the mode toggle lives in memory only and every mount starts on
-         Training. Coming back from Turnier therefore drops its session/draft. */
-      if (state.type !== "training") {
-        state.type = "training";
+         Alle. Coming back from another mode therefore drops its session/draft. */
+      if (state.type !== "all") {
+        state.type = "all";
         state.dayKey = "";
         state.trnEdit = false;
         state.trnCreate = false;
+        state.lg.fixtureId = null;
         stopWatch();
         state.session = null;
         state.matches = [];
@@ -2429,9 +2889,10 @@ Object.assign(EN, {
         saveDraftLocal();
       }
       host.innerHTML =
-        '<div class="mt-toggle mt-type" id="mtTypeToggle" role="group" aria-label="' + esc(t("Training") + " / " + t("Turnier")) + '">' +
-          '<button type="button" data-act="type" data-v="training" aria-pressed="true">' + esc(t("Training")) + "</button>" +
-          '<button type="button" data-act="type" data-v="tournament" aria-pressed="false">' + esc(t("Turnier")) + "</button>" +
+        '<div class="mt-toggle mt-type" id="mtTypeToggle" role="group" aria-label="' + esc(TYPES.map(k => t(TYPE_LABEL[k])).join(" / ")) + '">' +
+          TYPES.map(k =>
+            '<button type="button" data-act="type" data-v="' + k + '" aria-pressed="' + (state.type === k) + '">' + esc(t(TYPE_LABEL[k])) + "</button>"
+          ).join("") +
         "</div>" +
         '<div id="mtSessionPanel"></div>' +
         '<div id="mtListPanel"></div>' +

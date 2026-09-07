@@ -30,6 +30,7 @@
       "Training": "Training",   /* identical in EN, but mapped explicitly so the
                                    type toggle never relies on key/value coincidence */
       "Turnier": "Tournament",
+      "Liga": "League",
       "Einzel": "Singles",
       "Doppel": "Doubles",
       "Mixed": "Mixed",         /* abbreviation "GD" -> "XD" already lives in app.js */
@@ -583,7 +584,8 @@
   ];
   var TYPES = [
     { id: "training", labelKey: "Training" },
-    { id: "tournament", labelKey: "Turnier" }
+    { id: "tournament", labelKey: "Turnier" },
+    { id: "league", labelKey: "Liga" }
   ];
 
   var state = { period: "year", type: "training" };

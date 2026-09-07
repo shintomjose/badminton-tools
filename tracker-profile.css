@@ -204,6 +204,11 @@
   border-color: transparent;
 }
 .mtp-badge-off { border-style: dashed; }
+.mtp-badge-lg {
+  background: color-mix(in srgb, var(--warn) 18%, transparent);
+  color: var(--warn);
+  border: 1px solid color-mix(in srgb, var(--warn) 50%, transparent);
+}
 .mtp-badge-tour {
   background: var(--team-band);
   color: var(--teal-ink);

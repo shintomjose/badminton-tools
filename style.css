@@ -1671,3 +1671,50 @@
   .mt-outcome.group .mt-outcome-text { color: var(--text); font-weight: 600; }
   .mt-outcome.live { border-color: color-mix(in srgb, var(--warn) 55%, transparent); }
   .mt-outcome.live .mt-outcome-text { color: var(--warn); }
+
+  /* --- Alle · Training · Turnier · Liga --- */
+  #mtTypeToggle { flex-wrap: wrap; }
+  /* type badges on the Alle overview: one colour per record type */
+  .mt-badge.type-training { color: var(--text-muted); }
+  .mt-badge.type-tournament {
+    color: var(--teal-ink);
+    border-color: color-mix(in srgb, var(--brand-teal) 45%, transparent);
+    background: color-mix(in srgb, var(--brand-teal) 10%, transparent);
+  }
+  .mt-badge.type-league {
+    color: var(--warn);
+    border-color: color-mix(in srgb, var(--warn) 50%, transparent);
+    background: color-mix(in srgb, var(--warn) 10%, transparent);
+  }
+
+  /* --- Liga: the eight slots and the team score --- */
+  .mt-slot-empty {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    border-left-style: dashed; border-left-color: var(--border);
+    background: transparent;
+  }
+  .mt-slot-empty .mt-match-top { margin: 0; flex: 1 1 auto; }
+  .mt-slot-pill { align-self: center; }
+  .mt-lg-score {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    margin: 4px 0 8px; flex-wrap: wrap;
+  }
+  .mt-lg-team { flex: 1 1 8em; min-width: 0; font-weight: 600; color: var(--text-strong); overflow-wrap: anywhere; }
+  .mt-lg-team:first-child { text-align: right; }
+  .mt-lg-team:last-child { text-align: left; }
+  .mt-lg-num {
+    flex: none;
+    font-family: var(--font-disp); font-size: 2rem; font-weight: 700; line-height: 1;
+    font-variant-numeric: tabular-nums; color: var(--text-strong);
+  }
+  .mt-lg-colon { color: var(--text-muted); padding: 0 6px; }
+  .mt-lg-score.win .mt-lg-num { color: var(--court-green); }
+  .mt-lg-score.loss .mt-lg-num { color: var(--danger); }
+  /* the team score on a list row */
+  .mt-lg-mini {
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.95em;
+    font-variant-numeric: tabular-nums; color: var(--text-strong);
+    white-space: nowrap;
+  }
+  .mt-trn-list .mt-lg-mini { margin-left: auto; }
+  .mt-trn-list .mt-lg-mini + .btn, .mt-trn-list .mt-badge + .btn { margin-left: 0; }

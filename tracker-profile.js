@@ -48,6 +48,8 @@
     "Nicht angemeldet — Profil nicht verfügbar": "Not signed in — profile unavailable",
     "Bilanz": "Record",
     "Turnier": "Tournament",
+    "Liga": "League",
+    "gegen {0}": "vs {0}",
     "Einzel": "Singles",
     "Doppel": "Doubles",
     /* Mixed reads the same in both languages; listed so the set stays auditable.
@@ -375,10 +377,11 @@
     var out = {
       training: { total: emptyRec(), singles: emptyRec(), doubles: emptyRec(), mixed: emptyRec(), seen: 0 },
       tournament: { total: emptyRec(), singles: emptyRec(), doubles: emptyRec(), mixed: emptyRec(), seen: 0 },
+      league: { total: emptyRec(), singles: emptyRec(), doubles: emptyRec(), mixed: emptyRec(), seen: 0 },
       openCount: 0,
     };
     matches.forEach(function (m) {
-      var bucket = m.type === "tournament" ? out.tournament : out.training;
+      var bucket = m.type === "tournament" ? out.tournament : m.type === "league" ? out.league : out.training;
       bucket.seen++;
       if (!isCounted(m)) { out.openCount++; return; }
       var side = sideOf(m, playerId);
@@ -398,15 +401,15 @@
      each kept split by training / tournament (never merged). */
   function buildH2H(matches, playerId, meId) {
     var out = {
-      vs: { training: emptyRec(), tournament: emptyRec() },
-      with: { training: emptyRec(), tournament: emptyRec() },
+      vs: { training: emptyRec(), tournament: emptyRec(), league: emptyRec() },
+      with: { training: emptyRec(), tournament: emptyRec(), league: emptyRec() },
     };
     matches.forEach(function (m) {
       if (!isCounted(m)) return;
       var mine = sideOf(m, meId);
       var theirs = sideOf(m, playerId);
       if (!mine || !theirs) return;
-      var key = m.type === "tournament" ? "tournament" : "training";
+      var key = m.type === "tournament" ? "tournament" : m.type === "league" ? "league" : "training";
       var iWon = m.winnerSide === mine;
       if (mine === theirs) addRec(out.with[key], iWon);
       else addRec(out.vs[key], iWon);
@@ -415,7 +418,7 @@
   }
 
   function recTotal(pair) {
-    return pair.training.n + pair.tournament.n;
+    return pair.training.n + pair.tournament.n + pair.league.n;
   }
 
   /* ------------------------------------------------------------- rendering */
@@ -467,6 +470,7 @@
     var rows = "";
     if (pair.training.n) rows += statRowHtml(T("Training"), pair.training);
     if (pair.tournament.n) rows += statRowHtml(T("Turnier"), pair.tournament);
+    if (pair.league.n) rows += statRowHtml(T("Liga"), pair.league);
     if (!rows) rows = '<p class="mtp-note">' + E(T("Noch keine gemeinsamen Spiele")) + "</p>";
     return (
       '<div class="mtp-block">' +
@@ -522,6 +526,10 @@
     if (match.type === "tournament") {
       var tname = match.tournament && match.tournament.name ? match.tournament.name : T("Turnier");
       metaBits += '<span class="mtp-badge mtp-badge-tour">' + E(tname) + "</span>";
+    } else if (match.type === "league") {
+      var lg = match.league || {};
+      metaBits += '<span class="mtp-badge mtp-badge-lg">' +
+        E(T("Liga") + (lg.opponent ? " · " + TT("gegen {0}", lg.opponent) : "") + (match.slot ? " · " + T(match.slot) : "")) + "</span>";
     }
     if (match.locationName) metaBits += '<span class="mtp-m-loc">' + E(match.locationName) + "</span>";
     if (match.status === "in_progress") metaBits += '<span class="mtp-chip">' + E(T("läuft")) + "</span>";
@@ -659,6 +667,7 @@
     html += '<section class="mtp-sec"><h3 class="mtp-sec-h">' + E(T("Bilanz")) + "</h3>" + '<div class="mtp-grid">';
     if (rec.training.seen) html += recordBlockHtml(T("Training"), rec.training);
     if (rec.tournament.seen) html += recordBlockHtml(T("Turnier"), rec.tournament);
+    if (rec.league.seen) html += recordBlockHtml(T("Liga"), rec.league);
     html += "</div>";
     if (rec.openCount) {
       html += '<p class="mtp-note">' + E(T("Laufende und abgebrochene Spiele zählen nicht in die Bilanz.")) + "</p>";

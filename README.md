@@ -108,7 +108,7 @@ Do these four steps once:
 
 ### Picking the day
 
-Entry defaults to today, but both modes can log another day — a training
+Entry defaults to today, but Training and Turnier can log another day — a training
 evening entered the morning after, a tournament from last weekend. In
 **Training** the date field sits in the day card: changing it opens that
 day's session (existing matches show up, new ones land there; nothing moves).
@@ -181,3 +181,32 @@ On the `sessions` document this lives in `tournamentName`,
 `category`, which the day list and the history view show as a **Klasse A/B**
 badge; days recorded before this existed keep their free-text category as
 typed.
+
+### Alle overview and Liga team matches
+
+The entry tab has four modes: **Alle · Training · Turnier · Liga**. Every
+visit lands on **Alle**, a read-only overview: today's matches of every type
+(each card with a type badge and an **Öffnen** button into its mode and day)
+and *Letzte Spieltage* across all types, one row per day and type with my W–L,
+sets and win %. Nothing is entered here.
+
+**Liga** logs the Bezirksliga team matches of SG Heilbronn/Leingarten IV. The
+fixture list is the Termine schedule (`window.LEAGUE_FIXTURES`, exported by
+`app.js`) plus every league session ever logged: upcoming fixtures first, then
+played ones with their team score. Opening a fixture shows the opponent, date,
+time, Heim/Auswärts, the team score derived from the finished matches, one
+Sieg/Niederlage chip per match of mine, and the eight slots in playing order:
+HD1, HD2, DD, HE1, HE2, HE3, DE, GD. An empty slot has an **eintragen** button
+that opens the editor with the slot's discipline and target 21 fixed; side A is
+always our team, side B the opponent, and a name typed on side B is quick-added
+with the opponent's club. A filled slot is the usual card. There is no drag or
+nudge — the order is the league's. The first saved match creates the session
+(one per fixture, looked up by `fixtureId`, so two fixtures on one Saturday stay
+apart); the team score is written back to the session whenever it changes.
+
+On the `sessions` document a team match carries `type: "league"`, `fixtureId`
+and `league { fixtureId, opponent, home, round, time, team, score }`; each
+match carries `type: "league"`, `slot` and a denormalised `league` object
+plus `opponentClub`. Verlauf filters on Liga and badges rows with the opponent
+and slot, Statistik has a Liga tab, and player profiles keep a Liga bucket —
+never merged with Training or Turnier.

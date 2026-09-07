@@ -41,6 +41,8 @@
       "Mixed": "Mixed",
       "Training": "Training",
       "Turnier": "Tournament",
+      "Liga": "League",
+      "gegen {0}": "vs {0}",
       "Klasse {0}": "Class {0}",
       "mit {0}": "with {0}",
       "Disziplin": "Discipline",
@@ -557,7 +559,8 @@
                opt("mixed", T("Mixed"), f.discipline);
 
     var typ = opt("training", T("Training"), f.type) +
-              opt("tournament", T("Turnier"), f.type);
+              opt("tournament", T("Turnier"), f.type) +
+              opt("league", T("Liga"), f.type);
 
     var loc = state.locations.slice().sort(byName).map(function (l) {
       return opt(l.id, l.name || l.id, f.locationId);
@@ -793,6 +796,16 @@
         trn += '<span class="mth-badge mth-badge-trn" title="' + ESC(TT("mit {0}", partner)) + '">' +
           ESC(TT("mit {0}", firstName(partner))) + "</span>";
       }
+    }
+    /* league: the fixture and the slot, as a team-match row is read */
+    if (match.type === "league") {
+      var lg = match.league || {};
+      trn = '<span class="mth-badge mth-badge-lg">' + ESC(T("Liga")) + "</span>";
+      if (lg.opponent) {
+        trn += '<span class="mth-badge mth-badge-lg" title="' + ESC(TT("gegen {0}", lg.opponent)) + '">' +
+          ESC(TT("gegen {0}", lg.opponent)) + "</span>";
+      }
+      if (match.slot) trn += '<span class="mth-badge mth-badge-lg mth-phase-ko">' + ESC(T(match.slot)) + "</span>";
     }
     var cap = verdict(match);
 
