@@ -130,10 +130,11 @@ overview, where it now sits under *Anstehende Turniere*.
 
 ### Player list (Spielerliste)
 
-Behind the gear (settings) the tracker offers **Spielerliste**: the club's
-BWBV licence list, Herren and Damen in two tables with pass number, date of
-birth (age), nationality and licence date, a name search, and a JFG badge
-for youth clearance. This is personal data, so it lives only in Firestore
+The gear in the tracker header opens a small menu: **Orte** (the venue
+settings) and **Spielerliste**, the club's BWBV licence list — Herren and
+Damen as two tabs over one table with pass number, date of birth (age),
+nationality and licence date, every column sortable by tapping its header, a
+name search, and a JFG badge for youth clearance. This is personal data, so it lives only in Firestore
 (`roster/{passNr}` plus `roster/_meta`, owner-only rules — add `roster` to the
 collection list when re-publishing the rules) and never in the repo:
 `docs/*.pdf` and `dev/roster-import.json` are gitignored. To load it, run

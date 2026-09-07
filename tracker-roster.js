@@ -5,7 +5,8 @@
  * behind the owner-only rules — never in the repo. It gets there through the
  * import at the bottom of this view: a JSON file made from the PDF by
  * dev/roster-from-pdf.py (gitignored output), picked once from the phone or
- * the desktop. Reached from the settings view (gear), not from the sub-tabs.
+ * the desktop. Reached from the gear menu, not from the sub-tabs. Herren and
+ * Damen are two tabs over one table; every column sorts on tap.
  */
 "use strict";
 
@@ -34,6 +35,7 @@ Object.assign(EN, {
   "{0} Spieler importieren? Die bestehende Liste wird ersetzt.": "Import {0} players? The existing list is replaced.",
   "Spielerliste importiert": "Player list imported",
   "Spielerliste nicht ladbar": "Player list could not be loaded",
+  "Sortieren nach {0}": "Sort by {0}",
 });
 
 (function () {
@@ -46,8 +48,18 @@ Object.assign(EN, {
     loaded: false,
     error: null,
     q: "",               // search text, folded
+    sex: "m",            // the open tab: Herren by default
+    sort: { key: "name", dir: 1 },   // dir 1 = ascending
     busy: false,
   };
+  /* sortable columns: key → how to read the value */
+  const COLS = [
+    { key: "name",   label: "Name",               val: p => String(p.name || "") },
+    { key: "passNr", label: "Pass-Nr.",           val: p => String(p.passNr || "") },
+    { key: "dob",    label: "Geb.-Datum",         val: p => String(p.dob || "") },
+    { key: "nation", label: "Nation",             val: p => String(p.nation || "") },
+    { key: "since",  label: "Spielberechtigt ab", val: p => String(p.since || "") },
+  ];
 
   /* Case- and diacritic-insensitive fold — "muller" finds "Müller". */
   function fold(s) {
@@ -79,9 +91,16 @@ Object.assign(EN, {
 
   function filtered(sex) {
     const q = state.q;
+    const col = COLS.find(c => c.key === state.sort.key) || COLS[0];
+    const dir = state.sort.dir;
     return state.list
       .filter(p => p.sex === sex && (!q || fold(p.name).indexOf(q) >= 0))
-      .sort(byName);
+      .sort((a, b) => {
+        const va = col.val(a), vb = col.val(b);
+        /* ISO dates and pass numbers compare as strings; names by locale */
+        const c = col.key === "name" || col.key === "nation" ? va.localeCompare(vb, DATE_LOCALE) : (va < vb ? -1 : va > vb ? 1 : 0);
+        return (c || byName(a, b)) * dir;
+      });
   }
 
   function rowHtml(p, i) {
@@ -99,31 +118,43 @@ Object.assign(EN, {
 
   function tableHtml(list) {
     if (!list.length) return '<p class="mt-muted">' + esc(t(state.q ? "Keine Treffer" : "Noch keine Spielerliste importiert.")) + "</p>";
+    const th = c => {
+      const on = state.sort.key === c.key;
+      const arrow = on ? (state.sort.dir > 0 ? "▲" : "▼") : "";
+      return '<th class="mtr-sortable' + (on ? " on" : "") + '" data-sort="' + esc(c.key) + '"' +
+        ' aria-sort="' + (on ? (state.sort.dir > 0 ? "ascending" : "descending") : "none") + '">' +
+        '<button type="button" class="mtr-th" aria-label="' + esc(tt("Sortieren nach {0}", t(c.label))) + '">' +
+          esc(t(c.label)) +
+          (c.key === "dob" ? ' <span class="mt-muted">(' + esc(t("Alter")) + ")</span>" : "") +
+          '<span class="mtr-sort" aria-hidden="true">' + arrow + "</span>" +
+        "</button>" +
+      "</th>";
+    };
     return '<div class="mtr-wrap"><table class="mtr-table">' +
       "<thead><tr>" +
         "<th></th>" +
-        "<th>" + esc(t("Name")) + "</th>" +
-        "<th>" + esc(t("Pass-Nr.")) + "</th>" +
-        "<th>" + esc(t("Geb.-Datum")) + ' <span class="mt-muted">(' + esc(t("Alter")) + ")</span></th>" +
-        "<th>" + esc(t("Nation")) + "</th>" +
-        "<th>" + esc(t("Spielberechtigt ab")) + "</th>" +
+        COLS.map(th).join("") +
       "</tr></thead>" +
       "<tbody>" + list.map(rowHtml).join("") + "</tbody>" +
     "</table></div>";
   }
 
-  function sectionHtml(title, list) {
-    return '<section class="panel mt-card mtr-sec">' +
-      "<h2>" + esc(title) + ' <span class="seg-count">' + list.length + "</span></h2>" +
-      tableHtml(list) +
-    "</section>";
+  /* Herren / Damen as tabs over one table; the counts follow the search. */
+  function tabsHtml() {
+    const tab = (sex, label) => {
+      const n = filtered(sex).length;
+      return '<button type="button" role="tab" data-sex="' + sex + '" aria-selected="' + (state.sex === sex) + '">' +
+        esc(t(label)) + ' <span class="seg-count">' + n + "</span></button>";
+    };
+    return '<div class="seg-tabs mtr-tabs" role="tablist" aria-label="' + esc(t("Spielerliste")) + '">' +
+      tab("m", "Herren") + tab("w", "Damen") + "</div>";
   }
 
-  /* The two tables only — the search field keeps its focus and caret. */
+  /* Tabs and table only — the search field keeps its focus and caret. */
   function renderLists() {
     const box = state.host && state.host.querySelector("#mtrLists");
     if (!box) return;
-    box.innerHTML = sectionHtml(t("Herren"), filtered("m")) + sectionHtml(t("Damen"), filtered("w"));
+    box.innerHTML = '<section class="panel mt-card mtr-sec">' + tabsHtml() + tableHtml(filtered(state.sex)) + "</section>";
   }
 
   function render() {
@@ -212,9 +243,21 @@ Object.assign(EN, {
   }
 
   function onClick(e) {
-    const btn = e.target && typeof e.target.closest === "function" ? e.target.closest("[data-act]") : null;
-    if (!btn || !state.host || !state.host.contains(btn)) return;
-    if (btn.dataset.act === "back") { MT.showView("settings"); return; }
+    if (!e.target || typeof e.target.closest !== "function" || !state.host) return;
+    const tab = e.target.closest("[role='tab'][data-sex]");
+    if (tab && state.host.contains(tab)) { state.sex = tab.dataset.sex === "w" ? "w" : "m"; renderLists(); return; }
+    const th = e.target.closest("th[data-sort]");
+    if (th && state.host.contains(th)) {
+      const key = th.dataset.sort;
+      /* same column again flips the direction, a new column starts ascending */
+      if (state.sort.key === key) state.sort.dir = -state.sort.dir;
+      else state.sort = { key: key, dir: 1 };
+      renderLists();
+      return;
+    }
+    const btn = e.target.closest("[data-act]");
+    if (!btn || !state.host.contains(btn)) return;
+    if (btn.dataset.act === "back") { MT.showView("entry"); return; }
   }
 
   function onInput(e) {
@@ -238,6 +281,7 @@ Object.assign(EN, {
     mount: function (host) {
       state.host = host;
       state.q = "";
+      state.sex = "m";
       host.addEventListener("click", onClick);
       host.addEventListener("input", onInput);
       host.addEventListener("change", onChange);

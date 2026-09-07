@@ -33,10 +33,6 @@ Object.assign(EN, {
   "Der Standard-Ort wird bei jedem Training vorausgewählt. Umbenennen ändert alte Spiele nicht.":
     "The default venue is preselected on every training day. Renaming does not change old matches.",
   "Orte nicht ladbar": "Venues could not be loaded",
-  "Spielerliste": "Player list",
-  "Spielerliste öffnen": "Open player list",
-  "Die Spielberechtigungsliste des Vereins — Herren und Damen mit Pass-Nr. und Geburtsdatum. Nur hier, nur nach Anmeldung.":
-    "The club's licence list — men and women with pass number and date of birth. Only here, only after signing in.",
 });
 
 (function () {
@@ -104,11 +100,6 @@ Object.assign(EN, {
         "</div>" +
         '<p class="mt-muted">' + esc(t("Der Standard-Ort wird bei jedem Training vorausgewählt. Umbenennen ändert alte Spiele nicht.")) + "</p>" +
         body +
-      "</section>" +
-      '<section class="panel mt-card mtv-panel">' +
-        "<h2>" + esc(t("Spielerliste")) + "</h2>" +
-        '<p class="mt-muted">' + esc(t("Die Spielberechtigungsliste des Vereins — Herren und Damen mit Pass-Nr. und Geburtsdatum. Nur hier, nur nach Anmeldung.")) + "</p>" +
-        '<button type="button" class="btn" data-act="roster">' + esc(t("Spielerliste öffnen")) + "</button>" +
       "</section>";
   }
 
@@ -147,7 +138,6 @@ Object.assign(EN, {
     if (!btn || !state.host || !state.host.contains(btn)) return;
     const act = btn.dataset.act, id = btn.dataset.id;
     if (act === "back") { MT.showView("entry"); return; }
-    if (act === "roster") { MT.showView("roster"); return; }
     if (act === "cancel") { state.editingId = null; render(); return; }
     if (act === "rename") {
       state.editingId = id;
