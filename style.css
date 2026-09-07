@@ -1444,11 +1444,18 @@
 
   .mt-trn-setup .mt-trn-form { margin: 12px 0 4px; }
   .mt-trn-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  /* tall enough for a thumb, zebra-striped so a long schedule scans by row */
   .mt-trn-list li {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    padding: 6px 10px; background: var(--surface-2);
+    display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap;
+    min-height: 56px; padding: 12px 14px; background: var(--surface-2);
     border: 1px solid var(--border); border-radius: var(--radius-sm);
   }
+  .mt-trn-list li:nth-child(even) { background: color-mix(in srgb, var(--surface-1) 55%, var(--surface-2)); }
+  /* a row that opens something: pointer, hover lift, visible focus */
+  .mt-row-link { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+  .mt-row-link:hover { background: color-mix(in srgb, var(--brand-teal) 10%, var(--surface-2)); }
+  .mt-row-link:focus-visible { outline: none; box-shadow: var(--ring); }
+  .mt-row-link .mt-lg-mini { margin-left: auto; }
   .mt-trn-list-name { font-weight: 600; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
   .mt-trn-list .btn { margin-left: auto; }
   .mt-trn-overview .mt-trn-list-wrap { margin-top: 12px; }
@@ -1556,11 +1563,16 @@
   .mt-day {
     display: flex; flex-wrap: wrap;
     gap: 2px 10px; align-items: baseline;
-    padding: 8px 0;
+    min-height: 52px; padding: 12px 10px;
     border-bottom: 1px solid var(--border);
+    border-radius: var(--radius-sm);
     font-variant-numeric: tabular-nums;
   }
+  .mt-day:nth-child(even) { background: var(--row-hover); }
   .mt-day:last-child { border-bottom: 0; }
+  .mt-day.mt-row-link:hover { background: color-mix(in srgb, var(--brand-teal) 10%, var(--surface-1)); }
+  /* the day already on screen: marked by a teal edge instead of being tappable */
+  .mt-day.open { box-shadow: inset 3px 0 0 var(--brand-teal); }
   .mt-day.today .mt-day-date { color: var(--text-strong); font-weight: 700; }
   .mt-day-date { flex: 1 0 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* Turnier rows: the name is the thing that identifies the day, so it takes

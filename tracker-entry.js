@@ -1302,14 +1302,15 @@ Object.assign(EN, {
     const trn = isTournament(), lg = isLeague(), all = isAll();
     const openK = trn ? (state.session ? sessionKey(state.session) : dayKey()) : null;
     const isOpenRow = r => trn ? r.dateKey === openK : lg ? (!!r.fixtureId && r.fixtureId === state.lg.fixtureId) : false;
-    const openBtn = r => {
+    /* the whole row opens its day — the one already on screen is inert */
+    const rowAttrs = r => {
       if (isOpenRow(r)) return "";
       let attrs;
       if (trn) attrs = 'data-act="openrecent" data-day="' + esc(r.dateKey) + '"';
       else if (lg) attrs = r.fixtureId ? 'data-act="lgopen" data-fixture="' + esc(r.fixtureId) + '"' : "";
       else if (all) attrs = 'data-act="openday" data-type="' + esc(r.type) + '" data-day="' + esc(r.dateKey) + '" data-fixture="' + esc(r.fixtureId || "") + '"';
       else attrs = "";
-      return attrs ? '<button type="button" class="btn small" ' + attrs + ">" + esc(t("Öffnen")) + "</button>" : "";
+      return attrs ? ' role="button" tabindex="0" ' + attrs : "";
     };
     return '<ul class="mt-days' + ((trn || lg || all) ? " trn" : "") + '">' + rows.map(r => {
       const isToday = r.dateKey === todayK;
@@ -1318,7 +1319,8 @@ Object.assign(EN, {
       const withScore = lg || (all && r.type === "league");
       /* The stats group wraps to its own line before anything gets squeezed,
          and the Sätze cell is abbreviated with the long form as its title. */
-      return '<li class="mt-day' + (isToday ? " today" : "") + (isOpenRow(r) ? " open" : "") + '">' +
+      const attrs = rowAttrs(r);
+      return '<li class="mt-day' + (isToday ? " today" : "") + (isOpenRow(r) ? " open" : "") + (attrs ? " mt-row-link" : "") + '"' + attrs + ">" +
         '<span class="mt-day-date">' + esc(isToday ? t("Heute") : shortDate(r.date)) + "</span>" +
         (all ? typeBadgeHtml(r.type) : "") +
         (showName ? '<span class="mt-day-name">' + esc(r.name || (trn ? t("Turnier") : "")) + "</span>" : "") +
@@ -1333,7 +1335,6 @@ Object.assign(EN, {
                 tt("S {0}–{1}", winNum(r.sw), lossNum(r.sl)) + "</span>"
             : "") +
           pctHtml(r.w, r.w + r.l) +
-          openBtn(r) +
         "</span>" +
       "</li>";
     }).join("") + "</ul>";
@@ -1410,12 +1411,12 @@ Object.assign(EN, {
     const up = state.trnList.filter(r => r.dateKey > today)
       .sort((a, b) => (a.dateKey < b.dateKey ? -1 : 1)).slice(0, TRN_LIST_MAX);
     if (!showEmpty && !up.length) return "";
+    /* the whole row opens the day — no button to aim for */
     const row = r =>
-      "<li>" +
+      '<li class="mt-row-link" role="button" tabindex="0" data-act="openrecent" data-day="' + esc(r.dateKey || "") + '"' +
+        ' aria-label="' + esc(t("Öffnen") + ": " + (r.tournamentName || t("Turnier"))) + '">' +
         '<span class="mt-trn-list-name">' + esc(r.tournamentName || t("Turnier")) + "</span>" +
         '<span class="mt-muted">' + esc(shortDate(MT.toDate(r.date) || new Date())) + "</span>" +
-        '<button type="button" class="btn small" data-act="openrecent" data-day="' + esc(r.dateKey || "") + '">' +
-          esc(t("Öffnen")) + "</button>" +
       "</li>";
     const block = (title, list, empty) =>
       '<div class="mt-field mt-trn-list-wrap">' +
@@ -1559,11 +1560,11 @@ Object.assign(EN, {
     const state_ = sc && (sc.us || sc.them)
       ? '<span class="mt-lg-mini">' + esc(scoreText(sc)) + "</span>"
       : (f.session ? '<span class="mt-badge open">' + esc(t("offen")) + "</span>" : "");
-    return "<li>" +
+    return '<li class="mt-row-link" role="button" tabindex="0" data-act="lgopen" data-fixture="' + esc(f.id) + '"' +
+        ' aria-label="' + esc(t("Öffnen") + ": " + tt("gegen {0}", f.opponent || "?")) + '">' +
       '<span class="mt-trn-list-name">' + esc(tt("gegen {0}", f.opponent || "?")) + "</span>" +
       '<span class="mt-muted">' + esc(fixtureWhen(f)) + "</span>" +
       state_ +
-      '<button type="button" class="btn small" data-act="lgopen" data-fixture="' + esc(f.id) + '">' + esc(t("Öffnen")) + "</button>" +
     "</li>";
   }
 
@@ -2830,7 +2831,14 @@ Object.assign(EN, {
 
   function onKeyDown(e) {
     const el2 = e.target;
-    if (!el2 || !el2.classList || !el2.classList.contains("mt-slot-input")) return;
+    if (!el2 || !el2.classList) return;
+    /* a list row that acts as a button: Enter and Space open it like a tap */
+    if (el2.classList.contains("mt-row-link") && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      el2.click();
+      return;
+    }
+    if (!el2.classList.contains("mt-slot-input")) return;
     if (e.key === "Escape") {
       e.preventDefault();
       closeSuggest();

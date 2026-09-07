@@ -118,10 +118,10 @@ The day list, its heading and the *Letzte Spieltage* summary follow the picked
 day. Switching modes always returns to today.
 
 **Turnier** opens on an overview: today's tournament if one exists, plus
-*Anstehende Turniere* (upcoming, nearest first, up to 60 days ahead) with an
-**Öffnen** button each. Below it the *Letzte Turniere* panel lists the last
-five tournament days of the past year with their name, my W–L and set record
-and win %, and an **Öffnen** button (the open day is marked instead). The panel
+*Anstehende Turniere* (upcoming, nearest first, up to 60 days ahead), each row
+a tap target that opens the day. Below it the *Letzte Turniere* panel lists the
+last five tournament days of the past year with their name, my W–L and set
+record and win %; tapping a row opens it (the open day is marked instead). The panel
 stays visible inside an opened tournament; only the setup card hides it. A
 tournament opened from either list carries an **Übersicht** button back. The
 creation card only appears behind **+ Turnier**, always blank. Starting a
@@ -188,12 +188,13 @@ The entry tab has four modes: **Alle · Training · Turnier · Liga**. Every
 visit lands on **Alle**, a read-only overview: today's matches of every type
 (each card with a type badge and an **Öffnen** button into its mode and day)
 and *Letzte Spieltage* across all types, one row per day and type with my W–L,
-sets and win %. Nothing is entered here.
+sets and win %; each row is a tap target into its mode and day. Nothing is
+entered here.
 
 **Liga** logs the Bezirksliga team matches of SG Heilbronn/Leingarten IV. The
 fixture list is the Termine schedule (`window.LEAGUE_FIXTURES`, exported by
 `app.js`) plus every league session ever logged: upcoming fixtures first, then
-played ones with their team score. Opening a fixture shows the opponent, date,
+played ones with their team score; every row is a tap target. Opening a fixture shows the opponent, date,
 time, Heim/Auswärts, the team score derived from the finished matches, one
 Sieg/Niederlage chip per match of mine, and the eight slots in playing order:
 HD1, HD2, DD, HE1, HE2, HE3, DE, GD. An empty slot has an **eintragen** button
