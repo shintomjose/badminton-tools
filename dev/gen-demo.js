@@ -232,12 +232,26 @@ function leagueFixture(fixtureId, opp, home, round, oppPool) {
 }
 leagueFixture("2026-03-21-1400", "TSV Pfedelbach", true, "rueck", guests);
 
+/* ---- roster: the licence list, made up — pass numbers and birthdays are
+   random so demo mode never carries a real person's data ---- */
+const roster = [];
+function licence(p, sex) {
+  const y = ri(1965, 2012), mo = ri(1, 12), d = ri(1, 28);
+  const dob = y + "-" + pad2(mo) + "-" + pad2(d);
+  const since = (y + 8 + ri(0, 20)) + "-" + pad2(ri(1, 12)) + "-" + pad2(ri(1, 28));
+  roster.push({ name: p.name, passNr: "05-0" + String(ri(10000, 79999)), dob, sex, nation: rnd() < 0.8 ? "GER" : "IND (A)", since, first: since, jfg: y >= 2009 });
+}
+club.concat([ME]).forEach(p => licence(p, isW(p) ? "w" : "m"));
+["Adler, Kai", "Braun, Timo", "Frank, Ole", "Lang, Moritz", "Seidel, Jan"].forEach(n => licence({ name: n }, "m"));
+["Engel, Pia", "Frey, Lea", "Koch, Ida"].forEach(n => licence({ name: n }, "w"));
+const rosterSource = "Demo-Spielberechtigungsliste (erfunden), " + keys(TODAY).dateKey;
+
 /* ---- sort: sessions/matches by date asc ---- */
 sessions.sort((a, b) => a.date.localeCompare(b.date));
 matches.sort((a, b) => a.date.localeCompare(b.date) || a.seq - b.seq);
 
 const out = { _comment: "Demo fixture for ?demo=1 - same shape as the Firestore docs, dates as ISO strings. Never written to Firestore.",
-              generatedFor: keys(TODAY).dateKey, players, locations, sessions, matches };
+              generatedFor: keys(TODAY).dateKey, players, locations, sessions, matches, roster, rosterSource };
 fs.writeFileSync(OUT, JSON.stringify(out, null, 1) + "\n");
 const by = {}; matches.forEach(m => { const k = m.yearKey + "/" + m.type; by[k] = (by[k] || 0) + 1; });
 console.log("sessions", sessions.length, "matches", matches.length, by, "me-not-involved", matches.filter(m => !m.involvesMe).length);

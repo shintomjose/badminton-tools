@@ -68,7 +68,7 @@ const MT = (function () {
   const PIN_LAST_KEY = "mt-pin-last";
   const DEFAULT_CLUB = "TSG Heilbronn";
   const DEFAULT_LOCATION = "TSG Heilbronn Hall";
-  const COL = { sessions: "sessions", matches: "matches", players: "players", locations: "locations" };
+  const COL = { sessions: "sessions", matches: "matches", players: "players", locations: "locations", roster: "roster" };
   const OWNER_UID_PLACEHOLDER = "PASTE_OWNER_UID_HERE";
   /* Demo mode (?demo=1): tracker-demo.js swaps the repo for an in-memory copy of
      demo-data.json. The core only (a) waives the owner/access gate and (b) refuses
@@ -663,6 +663,48 @@ const MT = (function () {
     }, extra || {});
     trackWrite(ref.set(data), "Speichern fehlgeschlagen");
     return ref.id;
+  };
+
+  /* ---- Spielerliste: the club's licence list, personal data, owner-only ----
+     One document per licensed player keyed by pass number, plus a "_meta"
+     document that says where the list came from. Replaced as a whole by the
+     import in the Spielerliste view; nothing in the repo ever contains it. */
+  repo.listRoster = async function () {
+    const db = await need();
+    const snap = await db.collection(COL.roster).get();
+    const me = uid();
+    let source = "";
+    const players = [];
+    snap.docs.forEach(d => {
+      const o = docData(d);
+      if (o.ownerUid && o.ownerUid !== me) return;
+      if (d.id === "_meta") { source = String(o.source || ""); return; }
+      players.push(o);
+    });
+    return { players: players, source: source };
+  };
+
+  repo.importRoster = async function (players, source) {
+    const db = await need();
+    const owner = uid();
+    const list = Array.isArray(players) ? players : [];
+    const keep = {};
+    list.forEach(p => { keep[String(p.passNr)] = true; });
+    /* stale documents go first, so a shrinking list never leaves ghosts */
+    const existing = await db.collection(COL.roster).get();
+    const ops = [];
+    existing.docs.forEach(d => { if (d.id !== "_meta" && !keep[d.id]) ops.push({ ref: d.ref, del: true }); });
+    list.forEach(p => {
+      ops.push({ ref: db.collection(COL.roster).doc(String(p.passNr)), data: Object.assign({}, p, { ownerUid: owner, updatedAt: serverTs() }) });
+    });
+    ops.push({ ref: db.collection(COL.roster).doc("_meta"), data: { source: String(source || ""), count: list.length, ownerUid: owner, updatedAt: serverTs() } });
+    /* a batch takes 500 writes; the list is ~100, but stay safe */
+    for (let i = 0; i < ops.length; i += 400) {
+      const batch = db.batch();
+      ops.slice(i, i + 400).forEach(op => { if (op.del) batch.delete(op.ref); else batch.set(op.ref, op.data); });
+      await batch.commit();
+    }
+    return list.length;
   };
 
   repo.updatePlayer = async function (id, patch) {

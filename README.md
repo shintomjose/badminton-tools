@@ -128,6 +128,24 @@ creation card only appears behind **+ Turnier**, always blank. Starting a
 tournament dated today opens it; one planned for another day returns to this
 overview, where it now sits under *Anstehende Turniere*.
 
+### Player list (Spielerliste)
+
+Behind the gear (settings) the tracker offers **Spielerliste**: the club's
+BWBV licence list, Herren and Damen in two tables with pass number, date of
+birth (age), nationality and licence date, a name search, and a JFG badge
+for youth clearance. This is personal data, so it lives only in Firestore
+(`roster/{passNr}` plus `roster/_meta`, owner-only rules — add `roster` to the
+collection list when re-publishing the rules) and never in the repo:
+`docs/*.pdf` and `dev/roster-import.json` are gitignored. To load it, run
+
+```
+python dev/roster-from-pdf.py docs/<licence list>.pdf dev/roster-import.json
+```
+
+(needs PyMuPDF: `pip install pymupdf`) and pick the JSON in the *Liste
+importieren* section at the bottom of the view; the import replaces the whole
+list. Demo mode shows an invented roster.
+
 ### Venues
 
 The gear button in the tracker top bar opens the venue settings: add, rename,

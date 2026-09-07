@@ -5,3 +5,7 @@
 badminton-tools-c6b27-*.json
 *-serviceaccount*.json
 service-account*.json
+
+# personal data: licence list PDF and the JSON made from it (imported via the tracker settings, never committed)
+docs/*.pdf
+dev/roster-import.json

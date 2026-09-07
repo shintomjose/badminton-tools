@@ -23487,5 +23487,178 @@
    "createdAt": "2026-09-03T17:42:00.000Z",
    "updatedAt": "2026-09-03T17:42:00.000Z"
   }
- ]
+ ],
+ "roster": [
+  {
+   "name": "Weber, Nicolas",
+   "passNr": "05-040275",
+   "dob": "1968-11-01",
+   "sex": "m",
+   "nation": "GER",
+   "since": "1977-10-06",
+   "first": "1977-10-06",
+   "jfg": false
+  },
+  {
+   "name": "Hoffmann, Lena",
+   "passNr": "05-058221",
+   "dob": "1984-10-06",
+   "sex": "w",
+   "nation": "GER",
+   "since": "1994-12-18",
+   "first": "1994-12-18",
+   "jfg": false
+  },
+  {
+   "name": "Becker, Jonas",
+   "passNr": "05-056732",
+   "dob": "2003-02-13",
+   "sex": "m",
+   "nation": "GER",
+   "since": "2024-09-01",
+   "first": "2024-09-01",
+   "jfg": false
+  },
+  {
+   "name": "Schulz, Mira",
+   "passNr": "05-057641",
+   "dob": "2005-01-09",
+   "sex": "w",
+   "nation": "GER",
+   "since": "2024-01-25",
+   "first": "2024-01-25",
+   "jfg": false
+  },
+  {
+   "name": "Krüger, Tobias",
+   "passNr": "05-062484",
+   "dob": "1978-01-05",
+   "sex": "m",
+   "nation": "GER",
+   "since": "1999-12-13",
+   "first": "1999-12-13",
+   "jfg": false
+  },
+  {
+   "name": "Lindner, Anna",
+   "passNr": "05-068435",
+   "dob": "1984-11-14",
+   "sex": "w",
+   "nation": "GER",
+   "since": "2002-03-28",
+   "first": "2002-03-28",
+   "jfg": false
+  },
+  {
+   "name": "Brandt, Felix",
+   "passNr": "05-077815",
+   "dob": "2002-08-13",
+   "sex": "m",
+   "nation": "GER",
+   "since": "2019-02-27",
+   "first": "2019-02-27",
+   "jfg": false
+  },
+  {
+   "name": "Kaiser, David",
+   "passNr": "05-063228",
+   "dob": "1993-06-03",
+   "sex": "m",
+   "nation": "GER",
+   "since": "2009-02-26",
+   "first": "2009-02-26",
+   "jfg": false
+  },
+  {
+   "name": "Mathew Jose, Shinto",
+   "passNr": "05-032961",
+   "dob": "1970-04-15",
+   "sex": "m",
+   "nation": "GER",
+   "since": "1986-09-17",
+   "first": "1986-09-17",
+   "jfg": false
+  },
+  {
+   "name": "Adler, Kai",
+   "passNr": "05-021946",
+   "dob": "1977-02-03",
+   "sex": "m",
+   "nation": "GER",
+   "since": "2000-06-12",
+   "first": "2000-06-12",
+   "jfg": false
+  },
+  {
+   "name": "Braun, Timo",
+   "passNr": "05-068166",
+   "dob": "1988-12-01",
+   "sex": "m",
+   "nation": "GER",
+   "since": "2004-05-08",
+   "first": "2004-05-08",
+   "jfg": false
+  },
+  {
+   "name": "Frank, Ole",
+   "passNr": "05-025744",
+   "dob": "1984-03-04",
+   "sex": "m",
+   "nation": "IND (A)",
+   "since": "2012-09-10",
+   "first": "2012-09-10",
+   "jfg": false
+  },
+  {
+   "name": "Lang, Moritz",
+   "passNr": "05-030298",
+   "dob": "1992-03-27",
+   "sex": "m",
+   "nation": "GER",
+   "since": "2005-10-28",
+   "first": "2005-10-28",
+   "jfg": false
+  },
+  {
+   "name": "Seidel, Jan",
+   "passNr": "05-030458",
+   "dob": "1972-10-17",
+   "sex": "m",
+   "nation": "GER",
+   "since": "1982-10-09",
+   "first": "1982-10-09",
+   "jfg": false
+  },
+  {
+   "name": "Engel, Pia",
+   "passNr": "05-033091",
+   "dob": "1980-05-05",
+   "sex": "w",
+   "nation": "GER",
+   "since": "2003-01-20",
+   "first": "2003-01-20",
+   "jfg": false
+  },
+  {
+   "name": "Frey, Lea",
+   "passNr": "05-039610",
+   "dob": "2011-04-03",
+   "sex": "w",
+   "nation": "IND (A)",
+   "since": "2024-12-28",
+   "first": "2024-12-28",
+   "jfg": true
+  },
+  {
+   "name": "Koch, Ida",
+   "passNr": "05-020163",
+   "dob": "2005-10-18",
+   "sex": "w",
+   "nation": "GER",
+   "since": "2028-12-17",
+   "first": "2028-12-17",
+   "jfg": false
+  }
+ ],
+ "rosterSource": "Demo-Spielberechtigungsliste (erfunden), 2026-09-03"
 }

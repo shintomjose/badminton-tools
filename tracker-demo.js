@@ -32,7 +32,7 @@
   var DEFAULT_CLUB = MT.DEFAULT_CLUB, DEFAULT_LOCATION = MT.DEFAULT_LOCATION;
   var toDate = MT.toDate, keys = MT.keys;
   var OWNER = "demo-owner";
-  var store = { players: [], locations: [], sessions: [], matches: [] };
+  var store = { players: [], locations: [], sessions: [], matches: [], roster: [], rosterSource: "" };
   var watchers = [];                  // { sessionId, cb }
   var idn = 1000;
 
@@ -165,6 +165,16 @@
   repo.listPlayers = async function () {
     return store.players.map(hydrate)
       .sort(function (a, b) { return String(a.name || "").localeCompare(String(b.name || ""), "de"); });
+  };
+
+  repo.listRoster = async function () {
+    return { players: store.roster.map(clone), source: store.rosterSource };
+  };
+
+  repo.importRoster = async function (players, source) {
+    store.roster = (players || []).map(clone);
+    store.rosterSource = String(source || "");
+    return store.roster.length;
   };
 
   repo.listLocations = async function () {
@@ -347,6 +357,8 @@
     .then(function (r) { if (!r.ok) throw new Error(DATA_URL + ": HTTP " + r.status); return r.json(); })
     .then(function (json) {
       store.players = json.players || [];
+      store.roster = json.roster || [];
+      store.rosterSource = json.rosterSource || "";
       store.locations = json.locations || [];
       store.sessions = json.sessions || [];
       store.matches = json.matches || [];

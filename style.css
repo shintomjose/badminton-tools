@@ -1453,7 +1453,8 @@
   .mt-trn-list li:nth-child(even) { background: color-mix(in srgb, var(--surface-1) 55%, var(--surface-2)); }
   /* a row that opens something: pointer, hover lift, visible focus */
   .mt-row-link { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
-  .mt-row-link:hover { background: color-mix(in srgb, var(--brand-teal) 10%, var(--surface-2)); }
+  /* beats the zebra rule's specificity, so every row lifts on hover, not just the odd ones */
+  .mt-trn-list li.mt-row-link:hover { background: color-mix(in srgb, var(--brand-teal) 10%, var(--surface-2)); }
   .mt-row-link:focus-visible { outline: none; box-shadow: var(--ring); }
   .mt-row-link .mt-lg-mini { margin-left: auto; }
   .mt-trn-list-name { font-weight: 600; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
@@ -1570,7 +1571,7 @@
   }
   .mt-day:nth-child(even) { background: var(--row-hover); }
   .mt-day:last-child { border-bottom: 0; }
-  .mt-day.mt-row-link:hover { background: color-mix(in srgb, var(--brand-teal) 10%, var(--surface-1)); }
+  .mt-days li.mt-day.mt-row-link:hover { background: color-mix(in srgb, var(--brand-teal) 10%, var(--surface-1)); }
   /* the day already on screen: marked by a teal edge instead of being tappable */
   .mt-day.open { box-shadow: inset 3px 0 0 var(--brand-teal); }
   .mt-day.today .mt-day-date { color: var(--text-strong); font-weight: 700; }
@@ -1683,6 +1684,33 @@
   .mt-outcome.group .mt-outcome-text { color: var(--text); font-weight: 600; }
   .mt-outcome.live { border-color: color-mix(in srgb, var(--warn) 55%, transparent); }
   .mt-outcome.live .mt-outcome-text { color: var(--warn); }
+
+  /* --- Spielerliste: two tables, scroll inside on a phone --- */
+  .mtr-search {
+    width: 100%; max-width: 420px;
+    font: inherit; color: var(--text);
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 12px; min-height: 44px;
+  }
+  .mtr-search:focus-visible { outline: none; box-shadow: var(--ring); }
+  .mtr-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .mtr-table {
+    width: 100%; border-collapse: collapse;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .mtr-table th, .mtr-table td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  .mtr-table th {
+    font-family: var(--font-disp); font-size: 0.76rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted);
+  }
+  .mtr-table tbody tr:nth-child(even) { background: var(--row-hover); }
+  .mtr-table tbody tr:last-child td { border-bottom: 0; }
+  .mtr-n { color: var(--text-muted); font-size: 0.86em; width: 2.2em; }
+  .mtr-name { font-weight: 600; color: var(--text-strong); white-space: normal; min-width: 12em; }
+  .mtr-age { color: var(--text-muted); font-size: 0.86em; margin-left: 6px; }
+  .mtr-age::before { content: "("; } .mtr-age::after { content: ")"; }
+  .mtr-import summary { cursor: pointer; font-weight: 600; }
+  .mtr-import .mtr-file { margin-top: 8px; }
 
   /* --- Alle · Training · Turnier · Liga --- */
   #mtTypeToggle { flex-wrap: wrap; }

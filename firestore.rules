@@ -14,7 +14,7 @@ service cloud.firestore {
 
     match /{col}/{doc} {
       allow read, write: if isOwner()
-        && col in ["sessions", "matches", "players", "locations"];
+        && col in ["sessions", "matches", "players", "locations", "roster"];
     }
 
     // Everything else is denied (no catch-all rule below this point).
