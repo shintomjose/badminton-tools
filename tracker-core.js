@@ -42,6 +42,7 @@ Object.assign(EN, {
   "UID kopiert": "UID copied",
   "Erneut prüfen": "Check again",
   "Firestore-SDK nicht geladen": "Firestore SDK not loaded",
+  "Cache leeren und neu laden": "Clear cache and reload",
   "Das Firestore-SDK konnte nicht geladen werden. Internetverbindung prüfen und die Seite neu laden.":
     "The Firestore SDK could not be loaded. Check your connection and reload the page.",
   "Zugriff verweigert — Firestore-Regeln prüfen": "Access denied — check the Firestore rules",
@@ -1062,9 +1063,49 @@ const MT = (function () {
       "mt-setup");
   }
 
+  /* What exactly is missing — printed on the card so a report from a phone
+     says which script did not run and how the page was served. */
+  function sdkDiagnostics() {
+    const fb = window.firebase;
+    const has = k => (fb && typeof fb[k] === "function") ? "ok" : "fehlt";
+    const bits = [
+      "app " + (fb ? "ok" : "fehlt"),
+      "apps " + (fb && fb.apps ? fb.apps.length : "-"),
+      "auth " + has("auth"),
+      "firestore " + has("firestore"),
+      "sw " + (navigator.serviceWorker && navigator.serviceWorker.controller ? "aktiv" : "keiner"),
+      "modus " + (inStandalonePwa() ? "app" : "browser"),
+      "online " + (navigator.onLine ? "ja" : "nein"),
+      String(navigator.userAgent || "").replace(/^Mozilla\/5\.0 /, "").slice(0, 90),
+    ];
+    return bits.join(" · ");
+  }
+
+  /* Drop the service worker and every cache, then reload from the network —
+     the recovery when a cached script copy does not run. */
+  async function hardReload() {
+    try {
+      if (navigator.serviceWorker) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+      if (window.caches) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+    } catch (e) { console.warn("[MT] Cache leeren fehlgeschlagen:", e); }
+    location.reload();
+  }
+
   function renderNoSdk(gate) {
+    const diag = sdkDiagnostics();
+    console.warn("[MT] SDK-Diagnose:", diag);
     gate.innerHTML = card(t("Firestore-SDK nicht geladen"),
-      "<p>" + esc(t("Das Firestore-SDK konnte nicht geladen werden. Internetverbindung prüfen und die Seite neu laden.")) + "</p>",
+      "<p>" + esc(t("Das Firestore-SDK konnte nicht geladen werden. Internetverbindung prüfen und die Seite neu laden.")) + "</p>" +
+      '<p class="hint mt-hint" style="user-select:text">' + esc(diag) + "</p>" +
+      '<div class="mt-card-actions">' +
+        '<button type="button" class="btn primary" data-mt="hardreload">' + esc(t("Cache leeren und neu laden")) + "</button>" +
+      "</div>",
       "mt-setup");
   }
 
@@ -1158,6 +1199,7 @@ const MT = (function () {
       if (act === "signin") { signIn(); return; }
       if (act === "signout") { signOut(); return; }
       if (act === "menu") { toggleMenu(); return; }
+      if (act === "hardreload") { hardReload(); return; }
       if (act === "settings") { toggleMenu(false); showView("settings"); return; }
       if (act === "roster") { toggleMenu(false); showView("roster"); return; }
       if (act === "copylink") {
