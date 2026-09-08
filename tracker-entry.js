@@ -1300,8 +1300,9 @@ Object.assign(EN, {
        it with one tap — except the one already on screen. Alle: every row
        carries its type and jumps into that mode. */
     const trn = isTournament(), lg = isLeague(), all = isAll();
-    const openK = trn ? (state.session ? sessionKey(state.session) : dayKey()) : null;
-    const isOpenRow = r => trn ? r.dateKey === openK : lg ? (!!r.fixtureId && r.fixtureId === state.lg.fixtureId) : false;
+    /* Training and Turnier: the day on screen; Liga: the fixture on screen */
+    const openK = (trn || (!lg && !all)) ? (state.session ? sessionKey(state.session) : dayKey()) : null;
+    const isOpenRow = r => lg ? (!!r.fixtureId && r.fixtureId === state.lg.fixtureId) : all ? false : r.dateKey === openK;
     /* the whole row opens its day — the one already on screen is inert */
     const rowAttrs = r => {
       if (isOpenRow(r)) return "";
@@ -1309,7 +1310,7 @@ Object.assign(EN, {
       if (trn) attrs = 'data-act="openrecent" data-day="' + esc(r.dateKey) + '"';
       else if (lg) attrs = r.fixtureId ? 'data-act="lgopen" data-fixture="' + esc(r.fixtureId) + '"' : "";
       else if (all) attrs = 'data-act="openday" data-type="' + esc(r.type) + '" data-day="' + esc(r.dateKey) + '" data-fixture="' + esc(r.fixtureId || "") + '"';
-      else attrs = "";
+      else attrs = 'data-act="openrecent" data-day="' + esc(r.dateKey) + '"';   // Training: that day's session
       return attrs ? ' role="button" tabindex="0" ' + attrs : "";
     };
     return '<ul class="mt-days' + ((trn || lg || all) ? " trn" : "") + '">' + rows.map(r => {
