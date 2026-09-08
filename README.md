@@ -34,6 +34,7 @@ data sync between them in both directions.
 | `tracker-settings.js` | Match tracker: venue settings behind the gear button |
 | `tracker-history.js` / `tracker-stats.js` / `tracker-profile.js` | Match tracker: history, stats, player profile views (each with its own `tracker-*.css`) |
 | `anfahrt.html` | Directions map (Leaflet + OSRM), embedded in tab 04 |
+| `vendor/leaflet/` | Leaflet 1.9.4 self-hosted for that map (unpkg answered 503 at page load; files verified against the former SRI hashes) |
 | `database.rules.json` | Realtime Database rules for tabs 1–5 (shape validation) — deploy with `firebase deploy --only database` |
 | `dev/gen-demo.js` | Regenerates `demo-data.json` (`node dev/gen-demo.js demo-data.json`) |
 | `tracker-demo.js` / `demo-data.json` | Match tracker demo mode (`?demo=1`): in-memory fixture, nothing persisted |

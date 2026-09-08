@@ -8,7 +8,7 @@
  */
 "use strict";
 
-const VERSION = "v18";
+const VERSION = "v19";
 const SHELL_CACHE = `shell-${VERSION}`;
 const IMG_CACHE = `img-${VERSION}`;
 const CDN_CACHE = `cdn-${VERSION}`;
@@ -36,13 +36,19 @@ const PRECACHE = [
   "./anfahrt.html",
   "./anfahrt.js",
   "./manifest.webmanifest",
+  "./vendor/leaflet/leaflet.js",
+  "./vendor/leaflet/leaflet.css",
+  "./vendor/leaflet/images/marker-icon.png",
+  "./vendor/leaflet/images/marker-icon-2x.png",
+  "./vendor/leaflet/images/marker-shadow.png",
+  "./vendor/leaflet/images/layers.png",
+  "./vendor/leaflet/images/layers-2x.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
 ];
 
 const CDN_HOSTS = [
   "www.gstatic.com",          // Firebase SDK
-  "unpkg.com",                // Leaflet
   "fonts.googleapis.com",     // Font-CSS
   "fonts.gstatic.com",        // Font-Dateien
 ];
@@ -114,12 +120,12 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (CDN_HOSTS.includes(url.hostname)) {
-    /* CDN scripts stay with the browser. WebKit refuses to run an
+    /* CDN scripts stay with the browser: WebKit refuses to run an
        SRI-checked cross-origin script that a service worker answers from
-       its cache (iOS lost every Firebase script on the second load), and
-       Chrome could not load Leaflet from unpkg through the worker either.
-       The CDNs send scripts with a one-year max-age, so the HTTP cache
-       covers offline use. Fonts and stylesheets keep stale-while-revalidate. */
+       its cache (iOS lost every Firebase script on the second load). The
+       CDN sends them with a one-year max-age, so the HTTP cache covers
+       offline use. Fonts and stylesheets keep stale-while-revalidate.
+       Leaflet is vendored (unpkg answered 503 at page load). */
     if (req.integrity || req.destination === "script" || url.pathname.startsWith("/firebasejs/")) return;
     event.respondWith(staleWhileRevalidate(req, CDN_CACHE, event));
   }
