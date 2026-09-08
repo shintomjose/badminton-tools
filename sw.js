@@ -8,7 +8,7 @@
  */
 "use strict";
 
-const VERSION = "v16";
+const VERSION = "v17";
 const SHELL_CACHE = `shell-${VERSION}`;
 const IMG_CACHE = `img-${VERSION}`;
 const CDN_CACHE = `cdn-${VERSION}`;
@@ -114,6 +114,13 @@ self.addEventListener("fetch", (event) => {
   }
 
   if (CDN_HOSTS.includes(url.hostname)) {
+    /* Scripts with an integrity attribute (the Firebase SDK, Leaflet) stay
+       with the browser: WebKit refuses to run an SRI-checked cross-origin
+       script that a service worker answers from its cache, so on iOS every
+       Firebase script silently failed on the second load. The CDN sends
+       them with a one-year max-age, so the HTTP cache covers offline use.
+       Fonts and stylesheets keep the stale-while-revalidate path. */
+    if (req.integrity || url.pathname.startsWith("/firebasejs/")) return;
     event.respondWith(staleWhileRevalidate(req, CDN_CACHE, event));
   }
 });
