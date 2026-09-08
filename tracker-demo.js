@@ -319,6 +319,30 @@
     return id;
   };
 
+  repo.renamePlayerEverywhere = async function (playerId, name) {
+    var clean = String(name || "").trim();
+    var n = 0;
+    if (!playerId || !clean) return 0;
+    store.matches.forEach(function (m) {
+      ["sideA", "sideB"].forEach(function (k) {
+        var s = m[k] || {};
+        var i = (s.playerIds || []).indexOf(playerId);
+        if (i < 0) return;
+        s.playerNames = (s.playerNames || []).slice();
+        while (s.playerNames.length < s.playerIds.length) s.playerNames.push("");
+        if (s.playerNames[i] !== clean) { s.playerNames[i] = clean; n++; }
+      });
+    });
+    store.sessions.forEach(function (s) {
+      ["doubles", "mixed"].forEach(function (disc) {
+        var p = s.tournamentPartners && s.tournamentPartners[disc];
+        if (p && p.playerId === playerId && p.playerName !== clean) { p.playerName = clean; n++; }
+      });
+    });
+    watchers.forEach(emit);                       // the open day re-renders like a snapshot would
+    return n;
+  };
+
   repo.addLocation = async function (name, extra) {
     var l = Object.assign({
       id: nextId("l"), name: String(name || "").trim(), isDefault: false,

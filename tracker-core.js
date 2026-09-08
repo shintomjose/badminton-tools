@@ -717,6 +717,52 @@ const MT = (function () {
     return id;
   };
 
+  /* A renamed player must read the same everywhere. Names are denormalised
+     onto every match (sideA/sideB.playerNames) and onto tournament sessions
+     (tournamentPartners.<disc>.playerName) so the lists never cost a lookup —
+     this rewrites those copies. Clubs are left alone on purpose: the club at
+     the time of the match is history, a spelling of the name is not. */
+  repo.renamePlayerEverywhere = async function (playerId, name) {
+    const db = await need();
+    const clean = String(name || "").trim();
+    if (!playerId || !clean) return 0;
+    const ops = [];
+    const matches = await db.collection(COL.matches).where("playerIds", "array-contains", playerId).get();
+    matches.docs.forEach(d => {
+      const m = d.data() || {};
+      const patch = {};
+      ["sideA", "sideB"].forEach(k => {
+        const s = m[k] || {};
+        const ids = Array.isArray(s.playerIds) ? s.playerIds : [];
+        const i = ids.indexOf(playerId);
+        if (i < 0) return;
+        const names = Array.isArray(s.playerNames) ? s.playerNames.slice() : ids.map(() => "");
+        while (names.length < ids.length) names.push("");
+        if (names[i] === clean) return;
+        names[i] = clean;
+        patch[k + ".playerNames"] = names;
+      });
+      if (Object.keys(patch).length) { patch.updatedAt = serverTs(); ops.push({ ref: d.ref, patch: patch }); }
+    });
+    for (const disc of ["doubles", "mixed"]) {
+      const sessions = await db.collection(COL.sessions).where("tournamentPartners." + disc + ".playerId", "==", playerId).get();
+      sessions.docs.forEach(d => {
+        const s = d.data() || {};
+        const cur = s.tournamentPartners && s.tournamentPartners[disc] && s.tournamentPartners[disc].playerName;
+        if (cur === clean) return;
+        const patch = { updatedAt: serverTs() };
+        patch["tournamentPartners." + disc + ".playerName"] = clean;
+        ops.push({ ref: d.ref, patch: patch });
+      });
+    }
+    for (let i = 0; i < ops.length; i += 400) {
+      const batch = db.batch();
+      ops.slice(i, i + 400).forEach(op => batch.update(op.ref, op.patch));
+      await batch.commit();
+    }
+    return ops.length;
+  };
+
   repo.listLocations = async function () {
     const db = await need();
     const snap = await db.collection(COL.locations).get();
@@ -1352,6 +1398,13 @@ const MT = (function () {
   api.openPlayerProfile = function (playerId) {
     void playerId;
     toast(t("Profil folgt"));
+  };
+  /* Player master data changed (a rename from the profile): every mounted
+     view re-reads its players so the new spelling shows without a reload. */
+  const playerListeners = [];
+  api.onPlayersChanged = function (fn) { if (typeof fn === "function") playerListeners.push(fn); };
+  api.playersChanged = function () {
+    playerListeners.forEach(fn => { try { fn(); } catch (e) { console.error("[MT] playersChanged:", e); } });
   };
   api.DEFAULT_CLUB = DEFAULT_CLUB;
   api.DEFAULT_LOCATION = DEFAULT_LOCATION;

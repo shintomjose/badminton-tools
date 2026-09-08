@@ -2874,6 +2874,14 @@ Object.assign(EN, {
        (see pickByName), so a new name never costs a detour. */
   }
 
+  /* A rename in the profile: re-read the players (names on the cards and
+     in the type-ahead come from this list) and repaint. The open day's
+     matches arrive through the watch as the rewrite lands. */
+  MT.onPlayersChanged(async function () {
+    try { state.players = await MT.repo.listPlayers(); } catch (e) { return; }
+    if (state.host) renderAll();
+  });
+
   /* ================= view registration ================= */
   MT.registerView("entry", {
     label: t("Eintrag"),

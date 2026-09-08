@@ -1431,6 +1431,13 @@
 
   /* ================= view registration ================= */
 
+  /* A rename in the profile: the mounted ledger re-reads players and matches. */
+  MT.onPlayersChanged(function () {
+    state.loaded = false;                     // loadInitial() is a no-op while loaded
+    if (!root) return;
+    loadInitial().catch(function (err) { console.warn("[tracker-history] reload after rename failed", err); });
+  });
+
   MT.registerView("history", {
     label: T("Verlauf"),
 

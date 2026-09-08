@@ -724,16 +724,28 @@
     if (name === (player.name || "") && club === (player.club || "")) { renderCurrent(); return; }
 
     btn.disabled = true;
+    var renamed = name !== (player.name || "");
     Promise.resolve()
       .then(function () { return MT.repo.updatePlayer(player.id, { name: name, club: club }); })
       .then(function () {
-        /* Keep the cached player list in sync; match documents keep their
-           denormalised historic names on purpose (spec: don't rewrite history). */
+        /* A new spelling of the name is carried into every match and
+           tournament day the player is on, so Verlauf, Statistik and the
+           entry cards read the same; the club stays as it was at the time
+           of each match (that is history, the name is not). */
+        if (renamed && typeof MT.repo.renamePlayerEverywhere === "function") {
+          return MT.repo.renamePlayerEverywhere(player.id, name);
+        }
+        return 0;
+      })
+      .then(function () {
         player.name = name;
         player.club = club;
         setTitle(name);
         notify(T("Profil gespeichert"));
-        renderBody(false);
+        /* the profile's own match rows carry the old spelling — re-read them */
+        if (renamed) load(player.id, true); else renderBody(false);
+        /* the views underneath still show the old spelling — tell them */
+        if (renamed && typeof MT.playersChanged === "function") MT.playersChanged();
       })
       .catch(function (err) {
         btn.disabled = false;
