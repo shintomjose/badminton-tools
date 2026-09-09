@@ -129,6 +129,7 @@
      inline retry button actually retries. */
   var matchCache = new Map();   // playerId -> Promise<match[]>
   var playersPromise = null;    // Promise<player[]>
+  var currentPlayers = [];      // the list behind the open profile, for live names
 
   function getPlayers(force) {
     if (force || !playersPromise) {
@@ -496,7 +497,7 @@
     var count = Math.max(ids.length, names.length);
     if (!count) return '<span class="mtp-name mtp-name-plain">' + E(T("Unbekannter Spieler")) + "</span>";
     var parts = [];
-    for (var i = 0; i < count; i++) parts.push(nameHtml(ids[i] || "", names[i] || "", playerId));
+    for (var i = 0; i < count; i++) parts.push(nameHtml(ids[i] || "", currentName(ids[i], names[i] || ""), playerId));
     return parts.join('<span class="mtp-sep">/</span>');
   }
 
@@ -611,7 +612,13 @@
       "</div>";
   }
 
+  function currentName(id, stored) {
+    for (var i = 0; i < currentPlayers.length; i++) if (currentPlayers[i].id === id) return currentPlayers[i].name || stored;
+    return stored;
+  }
+
   function renderProfile(playerId, players, matches) {
+    currentPlayers = Array.isArray(players) ? players : [];
     var player = null;
     for (var i = 0; i < players.length; i++) if (players[i].id === playerId) { player = players[i]; break; }
     if (!player) {

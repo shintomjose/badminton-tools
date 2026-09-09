@@ -97,6 +97,7 @@
       "Satz hinzufügen": "Add game",
       "Letzten Satz entfernen": "Remove last game",
       "Sieg": "Win",
+      "Spieler & Details": "Players & details",
       "Gruppe auf- oder zuklappen": "Expand or collapse group",
       "Profil von {0} öffnen": "Open profile of {0}",
       "Kein Ergebnis": "No result",
@@ -240,11 +241,30 @@
     return (s && Array.isArray(s.playerIds)) ? s.playerIds : [];
   }
 
+  function matchById(id) {
+    var src = state.mode === "range" ? (state.range.matches || []) : state.matches;
+    for (var i = 0; i < src.length; i++) if (src[i].id === id) return src[i];
+    return null;
+  }
+
+  function playerById(id) {
+    var list = state.players || [];
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+
+  /** Names of one side. The player record wins over the copy stored with
+   *  the match, so a rename shows on every old match too; the stored copy
+   *  (`playerNames`, legacy `names`) covers players that no longer exist. */
   function sideNames(match, side) {
     var s = side === "A" ? match.sideA : match.sideB;
-    /* the core denormalises names as `playerNames`; `names` kept as legacy fallback */
-    if (s && Array.isArray(s.playerNames)) return s.playerNames;
-    return (s && Array.isArray(s.names)) ? s.names : [];
+    var stored = (s && Array.isArray(s.playerNames)) ? s.playerNames : ((s && Array.isArray(s.names)) ? s.names : []);
+    var ids = s && Array.isArray(s.playerIds) ? s.playerIds : [];
+    if (!ids.length) return stored;
+    return ids.map(function (id, i) {
+      var p = playerById(id);
+      return (p && p.name) || stored[i] || "";
+    });
   }
 
   /** The side I was on — "A" / "B", null when I did not play. */
@@ -650,6 +670,9 @@
           ' title="' + ESC(T("Letzten Satz entfernen")) + '">−</button>' +
         '<button type="button" class="btn mth-btn" data-act="addgame"' + (games.length >= 5 ? " disabled" : "") +
           ' title="' + ESC(T("Satz hinzufügen")) + '">+</button>' +
+        /* players, discipline, round … live in the full editor of the entry tab */
+        '<button type="button" class="btn mth-btn" data-act="fulledit" data-id="' + ESC(match.id) + '">' +
+          ESC(T("Spieler & Details")) + "</button>" +
         '<span class="mth-edit-spacer"></span>' +
         '<button type="button" class="btn mth-btn" data-act="cancel">' + ESC(T("Abbrechen")) + "</button>" +
         '<button type="button" class="btn primary mth-btn" data-act="save" data-id="' + ESC(match.id) + '">' +
@@ -1098,6 +1121,16 @@
     if (act === "player") {
       if (typeof MT.openPlayerProfile === "function") MT.openPlayerProfile(btn.dataset.pid);
       return;
+    }
+
+    if (act === "fulledit") {
+
+      var full = matchById(btn.dataset.id);
+
+      if (full && typeof MT.editMatch === "function") MT.editMatch(full);
+
+      return;
+
     }
 
     if (act === "edit") {

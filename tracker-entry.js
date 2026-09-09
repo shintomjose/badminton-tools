@@ -272,6 +272,7 @@ Object.assign(EN, {
     lg: { fixtureId: null, sessions: [] },
     lgScoreBusy: false,    // a team-score write is in flight
     allToday: [],          // Alle: today's matches of every type
+    pendingEdit: null,     // match id to open in the editor once its day is on screen
     session: null,
     matches: [],
     players: [],
@@ -957,8 +958,23 @@ Object.assign(EN, {
       renderSession();
       renderList();
       renderSummary();
+      /* asked from another view to edit one match of this day: open it now */
+      if (state.pendingEdit && state.matches.some(m => m.id === state.pendingEdit)) {
+        const id = state.pendingEdit;
+        state.pendingEdit = null;
+        openDraftFromMatch(id);
+      }
     });
   }
+
+  /* Verlauf → "Spieler & Details": bring the entry tab to this match's mode,
+     day (or fixture) and open the full editor there. */
+  MT.editMatch = function (m) {
+    if (!m || !m.id) return;
+    state.pendingEdit = m.id;
+    MT.showView("entry");
+    jumpTo(normType(m.type), m.dateKey, m.league && m.league.fixtureId);
+  };
 
   /* Result of a day lookup: open the session, or — tournament mode with
      nothing on the picked day — list the tournaments around today so the

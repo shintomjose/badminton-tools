@@ -307,12 +307,12 @@
       var pIds = mySide.playerIds || [], pNames = mySide.playerNames || mySide.names || [];
       if (pIds.length > 1) {
         for (var j = 0; j < pIds.length; j++) {
-          if (pIds[j] !== meId) bumpPerson(out.partners, pIds[j], pNames[j], won);
+          if (pIds[j] !== meId) bumpPerson(out.partners, pIds[j], playersById[pIds[j]] || pNames[j], won);
         }
       }
       // Opponents already span every discipline — singles, doubles and mixed alike.
       var oIds = oppSide.playerIds || [], oNames = oppSide.playerNames || oppSide.names || [];
-      for (var k = 0; k < oIds.length; k++) bumpPerson(out.opponents, oIds[k], oNames[k], won);
+      for (var k = 0; k < oIds.length; k++) bumpPerson(out.opponents, oIds[k], playersById[oIds[k]] || oNames[k], won);
     }
     return out;
   }
@@ -592,6 +592,7 @@
   var cache = new Map();        // period id -> match[]  (mount lifetime only)
   var meId = null;
   var meName = "";
+  var playersById = {};         // id → current name, so renamed players count as one
   var rootEl = null;
   var token = 0;
 
@@ -703,6 +704,8 @@
           var me = (players || []).filter(function (p) { return p && p.isMe; })[0];
           meId = me ? me.id : null;
           meName = me ? me.name : "";
+          playersById = {};
+          players.forEach(function (p) { if (p && p.id) playersById[p.id] = p.name; });
           render();
         });
       }).catch(function (err) {
