@@ -667,6 +667,21 @@
      the scroll box wraps only the list so the toggle never scrolls away. */
   .kd-pane[hidden] { display: none; }
   .kd-addbar { display: flex; margin-top: 10px; }
+  /* Bank: Mannschaftsmitglieder außerhalb des Kaders — ein Tipp wählt aus */
+  .kd-bench { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+  .kd-bench[hidden] { display: none; }
+  .kd-bench-label { width: 100%; color: var(--text-muted); font-size: 0.85rem; margin: 0 2px; }
+  .kd-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    min-height: 40px; max-width: 100%; padding: 6px 12px 6px 10px;
+    font: inherit; cursor: pointer;
+    background: var(--surface-1); color: var(--text-strong);
+    border: 1px dashed var(--brand-teal); border-radius: 999px;
+  }
+  .kd-chip .plus { color: var(--teal-ink); font-weight: 700; }
+  .kd-chip .rank { font-size: 1em; }
+  .kd-chip:hover { background: var(--row-hover); border-style: solid; }
+  .kd-chip:focus-visible { outline: none; box-shadow: var(--ring); }
   .kd-empty {
     margin: 8px 2px;
     color: var(--text-muted);

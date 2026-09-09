@@ -111,6 +111,7 @@ const EN = {
   "Keine Spieler ausgewählt": "No players selected",
   "Keine Spielerinnen ausgewählt": "No players selected",
   "Kein Treffer": "No match",
+  "Weitere aus Mannschaft {0}": "More from Team {0}",
   "— schon 2 Disziplinen: {0}": "— already 2 events: {0}",
 };
 function t(s) { return LANG === "en" && EN[s] !== undefined ? EN[s] : s; }
@@ -1449,9 +1450,24 @@ window.LU_ROSTER_MAP = Object.fromEntries(ORIGINAL.map(p => [p.name, p.g]));
 const STORE_KEY = "nuliga-lineup-v4";
 
 /* Standard: Mannschaft 4 geladen und vorausgewählt */
+/* So viele Herren starten ausgewählt; die übrigen Herren der Mannschaft warten auf der Bank. */
+const DEFAULT_MEN = 4;
+
+/* Standard-Kader einer Mannschaft: alle Damen, aber nur die DEFAULT_MEN bestplatzierten
+   Herren. Die anderen gehen nicht verloren — renderSquad zeigt sie als Bank-Chips. */
+function defaultSelection(team, players) {
+  const byName = Object.fromEntries(players.map(p => [p.name, p]));
+  const members = teamMembers(team).filter(n => byName[n]);
+  const men = members.filter(n => byName[n].g === "m")
+    .sort((a, b) => byName[a].rank - byName[b].rank)
+    .slice(0, DEFAULT_MEN);
+  const women = members.filter(n => byName[n].g === "f");
+  return [...men, ...women];
+}
+
 function defaultState(chem) {
   const players = ORIGINAL.map(p => ({...p}));
-  const selected = teamMembers(4).filter(n => players.some(p => p.name === n));
+  const selected = defaultSelection(4, players);
   return {
     players, selected, team: 4,
     chem: chem || {},
@@ -1487,8 +1503,8 @@ function load() {
         s.he = null; s.de = null;
       }
       if (s.team) {
-        /* Teams-Einteilung (Tab 1) ist die Quelle: Auswahl bei jedem Laden neu übernehmen */
-        s.selected = teamMembers(s.team).filter(n => s.players.some(p => p.name === n));
+        /* Teams-Einteilung (Tab 1) ist die Quelle: Standard-Auswahl bei jedem Laden neu übernehmen */
+        s.selected = defaultSelection(s.team, s.players);
       }
       return s;
     }
@@ -1507,10 +1523,10 @@ function availWomen() { return state.players.filter(p => p.g === "f" && isSel(p.
 
 /* Element-IDs je Geschlechts-Pane — beide Panes verhalten sich gleich und unabhängig */
 const PANE = {
-  m: { sel: "luSelM", count: "luCountM", toggle: "luAddToggleM", box: "luAvailM",
+  m: { sel: "luSelM", bench: "luBenchM", count: "luCountM", toggle: "luAddToggleM", box: "luAvailM",
        filter: "luFilterM", list: "luAvailListM", create: "luCreateM",
        empty: "Keine Spieler ausgewählt" },
-  f: { sel: "luSelF", count: "luCountF", toggle: "luAddToggleF", box: "luAvailF",
+  f: { sel: "luSelF", bench: "luBenchF", count: "luCountF", toggle: "luAddToggleF", box: "luAvailF",
        filter: "luFilterF", list: "luAvailListF", create: "luCreateF",
        empty: "Keine Spielerinnen ausgewählt" },
 };
@@ -1541,8 +1557,30 @@ function renderSquad() {
     document.getElementById(ids.sel).innerHTML = sel.length
       ? `<ul class="rows">${sel.map(squadRow).join("")}</ul>`
       : `<p class="kd-empty">${t(ids.empty)}</p>`;
+    renderBench(g);
     renderAvail(g);
   }
+}
+
+/* Mitglieder der gewählten Mannschaft in diesem Pane, die nicht ausgewählt sind:
+   ein Tipp holt sie in den Kader. Ohne Mannschaft (nach „Auswahl leeren“) keine Bank. */
+function benchOf(g) {
+  if (!state.team) return [];
+  const members = teamMembers(state.team);
+  return state.players.filter(p => p.g === g && members.includes(p.name) && !isSel(p.name))
+    .sort((a, b) => a.rank - b.rank);
+}
+function renderBench(g) {
+  const box = document.getElementById(PANE[g].bench);
+  const bench = benchOf(g);
+  box.hidden = !bench.length;
+  box.innerHTML = bench.length ? `
+    <span class="kd-bench-label">${tt("Weitere aus Mannschaft {0}", state.team)}</span>
+    ${bench.map(p => `
+      <button type="button" class="kd-chip" data-bench="${esc(p.name)}"
+        aria-label="${tt("{0} hinzufügen", esc(p.name))}">
+        <span class="plus">+</span><span class="rank">${p.rank}</span><span class="name">${esc(p.name)}</span>
+      </button>`).join("")}` : "";
 }
 
 /* Noch nicht ausgewählte Spieler dieses Panes, nach Rang. */
@@ -1677,6 +1715,13 @@ for (const id of ["luPaneM", "luPaneF"]) {
     renderAll();
   });
   ul.addEventListener("click", e => {
+    const chip = e.target.closest("button[data-bench]");
+    if (chip) {
+      if (!isSel(chip.dataset.bench)) state.selected.push(chip.dataset.bench);
+      save();
+      renderAll();
+      return;
+    }
     const del = e.target.closest("button[data-del]");
     if (!del) return;
     const name = del.dataset.del;
@@ -2083,7 +2128,7 @@ function renderPills() {
 /* wird vom Teams-Tab aufgerufen, wenn die geteilte Einteilung aus der Cloud ankommt */
 window.luRefreshTeamSelection = function () {
   if (!state.team) return;
-  const members = teamMembers(state.team).filter(n => state.players.some(p => p.name === n));
+  const members = defaultSelection(state.team, state.players);
   if (JSON.stringify(members) === JSON.stringify(state.selected)) return;
   state.selected = members;
   save();
@@ -2095,13 +2140,13 @@ document.querySelectorAll(".team-pills .pill").forEach(btn => {
     const n = +btn.dataset.team;
     const members = teamMembers(n).filter(nm => state.players.some(p => p.name === nm));
     if (!members.length) { toast(tt("Mannschaft {0} ist leer", n)); return; }
-    state.selected = members;
+    state.selected = defaultSelection(n, state.players);
     state.team = n;
     state.hd1 = null; state.hd2 = null; state.dd = null; state.gd = null;
     state.he = null; state.de = null;
     save();
     renderAll();
-    toast(tt("Mannschaft {0}: {1} Spieler übernommen", n, members.length));
+    toast(tt("Mannschaft {0}: {1} Spieler übernommen", n, state.selected.length));
   });
 });
 
