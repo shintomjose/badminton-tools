@@ -43,6 +43,8 @@ Object.assign(EN, {
   "Erneut prüfen": "Check again",
   "Firestore-SDK nicht geladen": "Firestore SDK not loaded",
   "Cache leeren und neu laden": "Clear cache and reload",
+  "App neu laden": "Reload app",
+  "Lade neu …": "Reloading …",
   "Das Firestore-SDK konnte nicht geladen werden. Internetverbindung prüfen und die Seite neu laden.":
     "The Firestore SDK could not be loaded. Check your connection and reload the page.",
   "Zugriff verweigert — Firestore-Regeln prüfen": "Access denied — check the Firestore rules",
@@ -1032,6 +1034,10 @@ const MT = (function () {
             '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>' +
             esc(t("Orte")) +
           "</button>" +
+          '<button type="button" class="mt-menu-item" role="menuitem" data-mt="reload">' +
+            '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>' +
+            esc(t("App neu laden")) +
+          "</button>" +
           '<button type="button" class="mt-menu-item" role="menuitem" data-mt="roster">' +
             '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>' +
             esc(t("Spielerliste")) +
@@ -1246,6 +1252,7 @@ const MT = (function () {
       if (act === "signout") { signOut(); return; }
       if (act === "menu") { toggleMenu(); return; }
       if (act === "hardreload") { hardReload(); return; }
+      if (act === "reload") { toggleMenu(false); toast(t("Lade neu …")); hardReload(); return; }
       if (act === "settings") { toggleMenu(false); showView("settings"); return; }
       if (act === "roster") { toggleMenu(false); showView("roster"); return; }
       if (act === "copylink") {
