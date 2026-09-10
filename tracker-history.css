@@ -325,6 +325,11 @@ button.mth-reset { flex: 0 0 auto; }
   white-space: nowrap;
   transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
 }
+/* icon-only: the label lives in aria-label / title */
+.mth-icon { width: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+.mth-icon svg { display: block; }
+/* the phone scoreboard exists only under the phone breakpoint */
+.mth-board { display: none; }
 .mth-editbtn {
   background: transparent; color: var(--text);
   border: 1px solid var(--border);
@@ -416,45 +421,66 @@ button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
   .mth-daycount.mth-gs { padding-left: 0; }   /* the day banner stays centred */
   .mth-gt { font-size: 0.96rem; }
 
-  /* The ledger cannot hold one line here. Two lines instead:
-       [chip · date · venue ................ edit  delete]
-       [    side A     |  score  |     side B        ]
-     Names wrap rather than truncate, so nothing needs horizontal scroll. */
-  /* Three lines here, not two: the ▲/▼ nudges add two more 44px targets, and
-     lead + 4 controls cannot share one line at 360px without scrolling. */
-  /* The caption (verdict + tournament / league pills) gets a row of its
-     own: inside the middle column it grew to the whole width and squeezed
-     both name columns to nothing (one letter per line). */
+  /* ---- phone: the row becomes a card, results first ----
+       [Sieg] [Turnier] [Klasse B] [KO - VF] [mit Jonas]      what happened
+       Mathew Jose, Shinto        21  12  21                  side A, one name per line
+       Becker, Jonas
+       Fischer, Leon              19  21  19                  side B
+       Roth, Daniel
+       2v2 #1 TSG Heilbronn Hall             [edit] [delete]  meta and actions
+     The desktop team blocks and the "19:21 / 21:18" text are hidden; the
+     scoreboard carries names and per-game cells instead. */
   .mth-row {
-    grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
-      "lead  lead  lead"
-      "teama score teamb"
-      "cap   cap   cap"
-      "acts  acts  acts";
-    align-items: start;
-    gap: 8px;
-    padding: 12px 2px;
+      "cap   cap"
+      "board board"
+      "lead  acts";
+    align-items: center;
+    gap: 8px 6px;
+    padding: 12px 8px 10px 10px;
   }
-  .mth-lead   { grid-area: lead; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 6px; }
-  .mth-rowacts{ grid-area: acts; justify-content: flex-end; flex-wrap: wrap; }
-  /* HTML5 drag never fires on touch — nudges only */
+  .mth-lead    { grid-area: lead; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 6px; }
+  .mth-rowacts { grid-area: acts; justify-content: flex-end; }
+  /* HTML5 drag never fires on touch: nudges only */
   .mth-grip { display: none; }
-  .mth-move { width: 44px; min-height: 44px; font-size: 0.8em; }
-  .mth-team-a { grid-area: teama; }
-  .mth-score  { display: contents; }          /* games and caption become grid items */
-  .mth-games  { grid-area: score; align-self: center; max-width: 44vw; white-space: normal; text-align: center; }
-  .mth-cap    { grid-area: cap; max-width: 100%; }
-  .mth-team-b { grid-area: teamb; }
+  .mth-move { width: 40px; min-height: 40px; font-size: 0.8em; }
+  .mth-team, .mth-games { display: none; }
+  .mth-score { display: contents; }
+  .mth-cap   { grid-area: cap; justify-content: flex-start; gap: 6px; }
+  .mth-cap .mth-badge { font-size: 0.72rem; padding: 3px 9px; }
+  .mth-cap .mth-res-win, .mth-cap .mth-res-loss { font-size: 0.78rem; padding: 4px 11px; }
+  .mth-cap .mth-verdict { font-size: 0.68rem; }
 
-  /* one comfortable tap target per player name */
-  button.mth-name {
-    min-height: 44px; padding: 10px 2px;
-    white-space: normal; overflow-wrap: anywhere; text-overflow: clip;
+  .mth-board { grid-area: board; display: grid; gap: 6px; }
+  .mth-board-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(var(--g, 1), 2.6em);
+    gap: 4px 6px; align-items: center;
   }
-  .mth-editbtn, .mth-del { min-height: 44px; padding: 10px 12px; }
-  .mth-games { font-size: 1em; }
-  .mth-verdict { font-size: 0.62rem; letter-spacing: 0.07em; white-space: normal; }
+  .mth-board-names { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  /* names: one per line, whole words, never clipped */
+  .mth-board-names .mth-name {
+    display: block; text-align: left;
+    font-size: 1rem; line-height: 1.25; padding: 4px 0; min-height: 0;
+    white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: normal;
+    color: var(--text);
+  }
+  .mth-board-row.win .mth-name { color: var(--court-green); font-weight: 700; }
+  .mth-board-row.lost .mth-name { color: var(--danger); }
+  .mth-board-row.me .mth-name { color: var(--text-strong); font-weight: 700; }
+  .mth-board-row.me.win .mth-name { color: var(--court-green); }
+  .mth-board-row.me.lost .mth-name { color: var(--danger); }
+  .mth-cell {
+    text-align: center; font-weight: 700; font-size: 1.05rem;
+    font-variant-numeric: tabular-nums;
+    padding: 7px 0; border-radius: 4px;
+    background: var(--surface-1); color: var(--text-muted);
+  }
+  .mth-cell.won { color: var(--text-strong); }
+
+  .mth-editbtn, .mth-del { min-height: 40px; }
+  .mth-icon { width: 40px; }
   .mth-edit-lbl { flex-basis: 4.6em; font-size: 0.7rem; }
   .mth-num { width: 100%; }
   .mth-editctx { flex-direction: column; gap: 6px; }

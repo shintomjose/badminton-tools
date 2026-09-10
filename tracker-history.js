@@ -624,6 +624,35 @@
     "</div>";
   }
 
+  var ICON_EDIT = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+  var ICON_TRASH = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+
+  /** Phone scoreboard: one row per side — names one per line, one cell per
+   *  game, the won cells strong. Hidden on desktop, where the three-column
+   *  ledger stays. Colour follows the same my-side rule as teamBlock(). */
+  function boardHtml(match) {
+    var games = Array.isArray(match.games) ? match.games : [];
+    var target = Number(match.targetScore) || defaultTarget(match.discipline);
+    var mine = mySide(match);
+    var res = myOutcome(match);
+    var winner = match.winnerSide;
+    function row(side) {
+      var cls = "mth-board-row mth-board-" + side.toLowerCase();
+      if (mine) { if (side === mine) cls += " me" + (res === "win" ? " win" : res === "loss" ? " lost" : ""); }
+      else if (winner === side) cls += " win";
+      else if (winner) cls += " lost";
+      var cells = games.map(function (g) {
+        var v = side === "A" ? g.a : g.b;
+        var w = gameWinnerOf(g, target);
+        return '<span class="mth-cell' + (w === side ? " won" : "") + '">' + ESC(String(v == null ? "" : v)) + "</span>";
+      }).join("");
+      return '<div class="' + cls + '" style="--g:' + (games.length || 1) + '">' +
+        '<div class="mth-board-names">' + nameButtons(match, side) + "</div>" + cells +
+      "</div>";
+    }
+    return '<div class="mth-board">' + row("A") + row("B") + "</div>";
+  }
+
   function nameButtons(match, side) {
     var ids = sideIds(match, side);
     var names = sideNames(match, side);
@@ -764,10 +793,10 @@
               ' aria-label="' + ESC(TT("Spiel {0} nach unten", no)) + '">▼</button>' +
           "</span>"
         : "") +
-      '<button type="button" class="mth-editbtn" data-act="edit" data-id="' + ESC(match.id) + '">' +
-        ESC(T("Bearbeiten")) + "</button>" +
-      '<button type="button" class="mth-del" data-act="del" data-id="' + ESC(match.id) + '">' +
-        ESC(T("Löschen")) + "</button>" +
+      '<button type="button" class="mth-editbtn mth-icon" data-act="edit" data-id="' + ESC(match.id) + '"' +
+        ' aria-label="' + ESC(T("Bearbeiten")) + '" title="' + ESC(T("Bearbeiten")) + '">' + ICON_EDIT + "</button>" +
+      '<button type="button" class="mth-del mth-icon" data-act="del" data-id="' + ESC(match.id) + '"' +
+        ' aria-label="' + ESC(T("Löschen")) + '" title="' + ESC(T("Löschen")) + '">' + ICON_TRASH + "</button>" +
     "</div>";
   }
 
@@ -844,6 +873,7 @@
         ((cap || trn) ? '<div class="mth-cap">' + cap + trn + "</div>" : "") +
       "</div>" +
       teamBlock(match, "B", match.winnerSide) +
+      boardHtml(match) +
       rowActions(match, pos, canOrder) +
     "</article>";
   }
