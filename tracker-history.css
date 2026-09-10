@@ -422,11 +422,15 @@ button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
      Names wrap rather than truncate, so nothing needs horizontal scroll. */
   /* Three lines here, not two: the ▲/▼ nudges add two more 44px targets, and
      lead + 4 controls cannot share one line at 360px without scrolling. */
+  /* The caption (verdict + tournament / league pills) gets a row of its
+     own: inside the middle column it grew to the whole width and squeezed
+     both name columns to nothing (one letter per line). */
   .mth-row {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr);
     grid-template-areas:
       "lead  lead  lead"
       "teama score teamb"
+      "cap   cap   cap"
       "acts  acts  acts";
     align-items: start;
     gap: 8px;
@@ -438,7 +442,9 @@ button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
   .mth-grip { display: none; }
   .mth-move { width: 44px; min-height: 44px; font-size: 0.8em; }
   .mth-team-a { grid-area: teama; }
-  .mth-score  { grid-area: score; min-width: 0; }
+  .mth-score  { display: contents; }          /* games and caption become grid items */
+  .mth-games  { grid-area: score; align-self: center; max-width: 44vw; white-space: normal; text-align: center; }
+  .mth-cap    { grid-area: cap; max-width: 100%; }
   .mth-team-b { grid-area: teamb; }
 
   /* one comfortable tap target per player name */
