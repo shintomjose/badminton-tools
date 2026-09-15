@@ -1019,31 +1019,12 @@ const MT = (function () {
       '<div class="mt-topbar">' +
         '<p class="tab-sub" id="mtSub">' + esc(t("Private Spieldaten — nur mit deinem Google-Konto sichtbar.")) + "</p>" +
         '<span class="mt-sync" id="mtSync" role="status" aria-live="polite"></span>' +
-        /* the gear opens a small menu: venues and the player list */
-        '<div class="mt-menu" id="mtMenu">' +
-        '<button type="button" class="btn mt-icon-btn mt-settings-btn" data-mt="menu"' +
-          ' aria-haspopup="menu" aria-expanded="false" aria-controls="mtMenuList"' +
-          ' aria-label="' + esc(t("Einstellungen")) + '" title="' + esc(t("Einstellungen")) + '">' +
-          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
-            '<circle cx="12" cy="12" r="3"/>' +
-            '<path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>' +
-          "</svg>" +
+        /* the player list stays in this tab; venues and reload moved to the
+           app-wide gear in the header (index.html / app.js) */
+        '<button type="button" class="btn mt-icon-btn mt-roster-btn" data-mt="roster"' +
+          ' aria-label="' + esc(t("Spielerliste")) + '" title="' + esc(t("Spielerliste")) + '">' +
+          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>' +
         "</button>" +
-        '<div class="mt-menu-list" id="mtMenuList" role="menu" hidden>' +
-          '<button type="button" class="mt-menu-item" role="menuitem" data-mt="settings">' +
-            '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>' +
-            esc(t("Orte")) +
-          "</button>" +
-          '<button type="button" class="mt-menu-item" role="menuitem" data-mt="reload">' +
-            '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>' +
-            esc(t("App neu laden")) +
-          "</button>" +
-          '<button type="button" class="mt-menu-item" role="menuitem" data-mt="roster">' +
-            '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>' +
-            esc(t("Spielerliste")) +
-          "</button>" +
-        "</div>" +
-        "</div>" +
       "</div>" +
       '<div id="mtGate"></div>';
     p.dataset.mtReady = "1";
@@ -1134,18 +1115,10 @@ const MT = (function () {
   }
 
   /* Drop the service worker and every cache, then reload from the network —
-     the recovery when a cached script copy does not run. */
-  async function hardReload() {
-    try {
-      if (navigator.serviceWorker) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(r => r.unregister()));
-      }
-      if (window.caches) {
-        const keys = await caches.keys();
-        await Promise.all(keys.map(k => caches.delete(k)));
-      }
-    } catch (e) { console.warn("[MT] Cache leeren fehlgeschlagen:", e); }
+     the recovery when a cached script copy does not run. Lives in app.js
+     (the header gear uses it too); this is the fallback if app.js is missing. */
+  function hardReload() {
+    if (typeof window.hardReload === "function") return window.hardReload();
     location.reload();
   }
 
@@ -1217,31 +1190,6 @@ const MT = (function () {
     return state.access;
   }
 
-  /* ================= gear menu ================= */
-  function toggleMenu(open) {
-    const btn = document.querySelector("#mtMenu [data-mt='menu']");
-    const list = document.getElementById("mtMenuList");
-    if (!btn || !list) return;
-    const want = open === undefined ? list.hidden : !!open;
-    list.hidden = !want;
-    btn.setAttribute("aria-expanded", String(want));
-    if (want) {
-      const first = list.querySelector("[role='menuitem']");
-      if (first) first.focus();
-    }
-  }
-  /* a tap anywhere else, or Escape, closes the menu */
-  document.addEventListener("click", function (e) {
-    const menu = document.getElementById("mtMenu");
-    if (!menu || !e.target || typeof e.target.closest !== "function") return;
-    if (!menu.contains(e.target)) toggleMenu(false);
-  });
-  document.addEventListener("keydown", function (e) {
-    if (e.key !== "Escape") return;
-    const list = document.getElementById("mtMenuList");
-    if (list && !list.hidden) { toggleMenu(false); const b = document.querySelector("#mtMenu [data-mt='menu']"); if (b) b.focus(); }
-  });
-
   /* ================= events ================= */
   function onGateClick(e) {
     if (!e.target || typeof e.target.closest !== "function") return;
@@ -1250,11 +1198,9 @@ const MT = (function () {
       const act = btn.dataset.mt;
       if (act === "signin") { signIn(); return; }
       if (act === "signout") { signOut(); return; }
-      if (act === "menu") { toggleMenu(); return; }
       if (act === "hardreload") { hardReload(); return; }
-      if (act === "reload") { toggleMenu(false); toast(t("Lade neu …")); hardReload(); return; }
-      if (act === "settings") { toggleMenu(false); showView("settings"); return; }
-      if (act === "roster") { toggleMenu(false); showView("roster"); return; }
+      if (act === "settings") { showView("settings"); return; }
+      if (act === "roster") { showView("roster"); return; }
       if (act === "copylink") {
         const url = location.origin + location.pathname + "#tracker";
         navigator.clipboard.writeText(url)

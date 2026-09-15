@@ -31,7 +31,7 @@ data sync between them in both directions.
 | `app.js` | i18n (DE default / EN dictionary), theme, tabs, PIN, tabs 1–5 |
 | `tracker-core.js` | Match tracker: Firestore layer, Google owner auth, PIN gate, view registry (`MT`) |
 | `tracker-entry.js` | Match tracker: training and tournament entry flow |
-| `tracker-settings.js` | Match tracker: venue settings behind the gear button |
+| `tracker-settings.js` | Match tracker: venue settings behind the header gear (Orte) |
 | `tracker-history.js` / `tracker-stats.js` / `tracker-profile.js` | Match tracker: history, stats, player profile views (each with its own `tracker-*.css`) |
 | `anfahrt.html` | Directions map (Leaflet + OSRM), embedded in tab 04 |
 | `vendor/leaflet/` | Leaflet 1.9.4 self-hosted for that map (unpkg answered 503 at page load; files verified against the former SRI hashes) |
@@ -131,8 +131,8 @@ overview, where it now sits under *Anstehende Turniere*.
 
 ### Player list (Spielerliste)
 
-The gear in the tracker header opens a small menu: **Orte** (the venue
-settings) and **Spielerliste**, the club's BWBV licence list — Herren and
+The people button in the tracker top bar opens the **Spielerliste**, the
+club's BWBV licence list — Herren and
 Damen as two tabs over one table with pass number, date of birth (age),
 nationality and licence date, every column sortable by tapping its header, a
 name search, and a JFG badge for youth clearance. This is personal data, so it lives only in Firestore
@@ -150,7 +150,9 @@ list. Demo mode shows an invented roster.
 
 ### Venues
 
-The gear button in the tracker top bar opens the venue settings: add, rename,
+The app-wide gear in the header (next to the theme and language buttons)
+opens a small menu: **Orte** (the venue settings) and **App neu laden** (drops
+the service worker and caches, then reloads). The venue settings: add, rename,
 delete, and star one venue as the default. The default is preselected on every
 new training day and on new tournaments; the day card and the tournament card
 carry a venue dropdown to pick another one. Renaming or deleting a venue never

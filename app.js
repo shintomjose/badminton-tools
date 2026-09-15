@@ -40,6 +40,7 @@ const EN = {
   "○ Verbindung abgebrochen ({0}) — Versuch {1}/5": "○ listener cancelled ({0}) — retry {1}/5",
   "○ Zugriff verweigert ({0}) — DB-Regeln prüfen": "○ access denied ({0}) — check DB rules",
   "Verbinde mit Datenbank…": "Connecting to database…",
+  "Lade neu …": "Reloading …",
   "zur Liste hinzugefügt": "added to the list",
   "✓ verfügbar": "✓ available",
   "✓ Dabei": "✓ I'm in",
@@ -132,6 +133,8 @@ const STATIC_EN = [
   ["#tabbtn-termine .tlabel", "Matches"],
   ["#tabbtn-anfahrt .tlabel", "Directions"],
   ["#tabbtn-shop .tlabel", "Shop"],
+  ["#appMenuList [data-app='venues'] span", "Venues"],
+  ["#appMenuList [data-app='reload'] span", "Reload app"],
   [".brand-eyebrow", "TSG - Heilbronn · Season 2026/27"],
   ["#tab-teams .tab-sub", "BWBV ranking — drag players to change position · 5 teams · rest on waitlist · shared live"],
   ["#rkCopyBtn", "Copy list"],
@@ -190,6 +193,8 @@ const STATIC_EN_ATTR = [
   ["#luFilterM", "aria-label", "Search player"],
   ["#luFilterF", "aria-label", "Search player"],
   ["#shopSearch", "placeholder", "Search: name, article no., colour …"],
+  ["#gearBtn", "aria-label", "Settings"],
+  ["#gearBtn", "title", "Settings"],
 ];
 function applyStaticEn() {
   if (LANG !== "en") return;
@@ -252,6 +257,59 @@ document.getElementById("themeBtn").addEventListener("click", () => {
 });
 const savedTheme = localStorage.getItem(THEME_KEY);
 applyTheme(savedTheme || "light");
+
+/* ---- app-wide gear menu (header): Orte → tracker settings view, hard reload ---- */
+/* Drop the service worker and every cache, then reload from the network —
+   the recovery when a cached script copy does not run. Also used by the
+   tracker's "SDK not loaded" card. */
+window.hardReload = async function hardReload() {
+  try {
+    if (navigator.serviceWorker) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    if (window.caches) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch (e) { console.warn("[app] Cache leeren fehlgeschlagen:", e); }
+  location.reload();
+};
+(function initAppMenu() {
+  const wrap = document.getElementById("appMenu");
+  const btn = document.getElementById("gearBtn");
+  const list = document.getElementById("appMenuList");
+  if (!wrap || !btn || !list) return;
+  function toggle(open) {
+    const want = open === undefined ? list.hidden : !!open;
+    list.hidden = !want;
+    btn.setAttribute("aria-expanded", String(want));
+    if (want) {
+      const first = list.querySelector("[role='menuitem']");
+      if (first) first.focus();
+    }
+  }
+  btn.addEventListener("click", () => toggle());
+  list.addEventListener("click", e => {
+    const item = e.target.closest("[data-app]");
+    if (!item) return;
+    toggle(false);
+    const act = item.dataset.app;
+    if (act === "reload") { toast(t("Lade neu …")); window.hardReload(); return; }
+    if (act === "venues") {
+      /* the venue list is a tracker view — open that tab, then the view */
+      showTab("tracker");
+      if (window.MT && typeof MT.showView === "function") MT.showView("settings");
+    }
+  });
+  /* a tap anywhere else, or Escape, closes the menu */
+  document.addEventListener("click", e => {
+    if (!list.hidden && !wrap.contains(e.target)) toggle(false);
+  });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && !list.hidden) { toggle(false); btn.focus(); }
+  });
+})();
 
 document.getElementById("distFrame").addEventListener("load", () => {
   applyTheme(document.documentElement.dataset.theme);

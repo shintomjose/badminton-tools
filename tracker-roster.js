@@ -5,7 +5,7 @@
  * behind the owner-only rules — never in the repo. It gets there through the
  * import at the bottom of this view: a JSON file made from the PDF by
  * dev/roster-from-pdf.py (gitignored output), picked once from the phone or
- * the desktop. Reached from the gear menu, not from the sub-tabs. Herren and
+ * the desktop. Reached from the Spielerliste button in the tracker top bar, not from the sub-tabs. Herren and
  * Damen are two tabs over one table; every column sorts on tap.
  */
 "use strict";

@@ -1135,7 +1135,7 @@ Object.assign(EN, {
   /* Venue picker — identical for both modes. The quick-add input hides behind
      a "+" toggle (same pattern as the Rangliste tab) so it costs no space. */
   /* Venue as a dropdown, default preselected. Adding, renaming, deleting and
-     the default flag live in the settings view behind the gear button. */
+     the default flag live in the settings view behind the header gear (Orte). */
   function venueSelectHtml() {
     return '<label class="mt-field mt-venue">' +
       '<span class="mt-label">' + esc(t("Ort")) + "</span>" +

@@ -1,7 +1,7 @@
 /* =====================================================================
  * Match Tracker — settings view (venues)
  *
- * Reached through the gear button in the tracker top bar; not a sub-tab.
+ * Reached through the app-wide gear in the header (Orte); not a sub-tab.
  * Manages the `locations` collection: add, rename, delete, pick the
  * default. The entry view's venue dropdown reads the same list, so a
  * change here shows up on the next mount of the entry view.
@@ -200,7 +200,7 @@ Object.assign(EN, {
 
   MT.registerView("settings", {
     label: t("Einstellungen"),
-    hidden: true,                      // reached via the gear, not the sub-tabs
+    hidden: true,                      // reached via the header gear, not the sub-tabs
     mount: function (host) {
       state.host = host;
       state.editingId = null;

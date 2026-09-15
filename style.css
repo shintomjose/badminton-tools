@@ -88,7 +88,7 @@
     color: var(--text-strong);
     margin: 0; line-height: 1.05;
   }
-  #themeBtn, #langBtn, #notifBtn {
+  #themeBtn, #langBtn, #notifBtn, #gearBtn {
     font-weight: 700;
     font: inherit;
     background: var(--surface-1);
@@ -98,8 +98,13 @@
     padding: 8px 14px; min-height: 42px;
     cursor: pointer;
   }
-  #themeBtn:hover, #langBtn:hover, #notifBtn:hover { background: var(--row-hover); }
-  #themeBtn:focus-visible, #langBtn:focus-visible, #notifBtn:focus-visible { outline: none; box-shadow: var(--ring); }
+  #themeBtn:hover, #langBtn:hover, #notifBtn:hover, #gearBtn:hover { background: var(--row-hover); }
+  #themeBtn:focus-visible, #langBtn:focus-visible, #notifBtn:focus-visible, #gearBtn:focus-visible { outline: none; box-shadow: var(--ring); }
+  /* app-wide gear next to theme/language; its dropdown reuses .mt-menu-list */
+  .app-menu { position: relative; }
+  #gearBtn { display: inline-flex; align-items: center; justify-content: center; padding: 8px 12px; }
+  #gearBtn svg { display: block; }
+  #gearBtn[aria-expanded="true"] { background: var(--row-hover); }
   .tabs {
     flex-basis: 100%;
     display: flex; gap: 2px;
@@ -1149,8 +1154,8 @@
     margin-bottom: 10px;
   }
   .mt-topbar .tab-sub { margin: 0; flex: 1 1 240px; }
-  .mt-topbar .mt-menu { margin-left: auto; align-self: center; position: relative; }
-  /* the gear's dropdown: two rows, anchored under the button */
+  .mt-topbar .mt-roster-btn { margin-left: auto; align-self: center; }
+  /* dropdown of the header gear: anchored under the button */
   .mt-menu-list {
     position: absolute; right: 0; top: calc(100% + 6px);
     min-width: 200px; padding: 6px;
