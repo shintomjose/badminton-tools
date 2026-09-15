@@ -34,7 +34,11 @@ const EN = {
   "Speichern fehlgeschlagen": "Save failed",
   "Spieler existiert bereits": "Player already exists",
   "○ offline — keine Verbindung": "○ offline — no connection",
-  "○ Zugriff verweigert — DB-Regeln prüfen": "○ access denied — check DB rules",
+  "○ offline — Firebase-SDK nicht geladen": "○ offline — Firebase SDK not loaded",
+  "○ offline — Anmeldung fehlgeschlagen ({0})": "○ offline — sign-in failed ({0})",
+  "○ Anmeldung antwortet nicht — App neu laden": "○ sign-in not responding — reload the app",
+  "○ Verbindung abgebrochen ({0}) — Versuch {1}/5": "○ listener cancelled ({0}) — retry {1}/5",
+  "○ Zugriff verweigert ({0}) — DB-Regeln prüfen": "○ access denied ({0}) — check DB rules",
   "Verbinde mit Datenbank…": "Connecting to database…",
   "zur Liste hinzugefügt": "added to the list",
   "✓ verfügbar": "✓ available",
@@ -389,9 +393,14 @@ const FB_CONFIG = {
   messagingSenderId: "446320933164",
   appId: "1:446320933164:web:468c9ce5a053c5ee1d5489",
 };
+/* Why fbReady resolved to null — "no-sdk", "init: …" or "auth: <code>". The
+   availability status label shows it, so a phone that cannot connect says
+   which layer failed instead of a generic "offline". */
+window.fbFail = null;
 window.fbReady = new Promise(resolve => {
-  if (!window.firebase || !firebase.initializeApp) { resolve(null); return; }
-  try { firebase.initializeApp(FB_CONFIG); } catch (e) { resolve(null); return; }
+  const fail = why => { window.fbFail = why; console.warn("[fb] " + why); resolve(null); };
+  if (!window.firebase || !firebase.initializeApp) { fail("no-sdk"); return; }
+  try { firebase.initializeApp(FB_CONFIG); } catch (e) { fail("init: " + ((e && e.message) || e)); return; }
   if (APP_CHECK_SITE_KEY && firebase.appCheck) {
     if (location.hostname === "localhost") self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
     try { firebase.appCheck().activate(APP_CHECK_SITE_KEY, true); }
@@ -408,7 +417,7 @@ window.fbReady = new Promise(resolve => {
        fail until the next reload */
     if (signingIn) return;
     signingIn = true;
-    firebase.auth().signInAnonymously().catch(() => { signingIn = false; resolve(null); });
+    firebase.auth().signInAnonymously().catch(e => { signingIn = false; fail("auth: " + ((e && e.code) || e)); });
   });
 });
 
@@ -1302,9 +1311,15 @@ document.getElementById("avLogClear").addEventListener("click", e => {
 
 /* ---- Firebase-Verbindung ---- */
 (async function initAvailSync() {
+  /* onAuthStateChanged never firing leaves "verbinde…" forever — say so */
+  const hang = setTimeout(() => avStatus(t("○ Anmeldung antwortet nicht — App neu laden")), 12000);
   const db = window.fbReady ? await window.fbReady : null;
+  clearTimeout(hang);
   if (!db) {
-    avStatus(t("○ offline — keine Verbindung"));
+    const why = window.fbFail || "";
+    avStatus(why === "no-sdk" ? t("○ offline — Firebase-SDK nicht geladen")
+      : why.startsWith("auth: ") ? tt("○ offline — Anmeldung fehlgeschlagen ({0})", why.slice(6))
+      : t("○ offline — keine Verbindung"));
     renderAvail();
     return;
   }
@@ -1330,8 +1345,11 @@ document.getElementById("avLogClear").addEventListener("click", e => {
       renderWho();
     }, err => {
       console.error("[avail] listener cancelled:", err);
-      if (++availTries <= 5) setTimeout(attachAvail, 1000 * availTries);
-      else avStatus(t("○ Zugriff verweigert — DB-Regeln prüfen"));
+      const code = (err && err.code) || String(err);
+      if (++availTries <= 5) {
+        avStatus(tt("○ Verbindung abgebrochen ({0}) — Versuch {1}/5", code, availTries));
+        setTimeout(attachAvail, 1000 * availTries);
+      } else avStatus(tt("○ Zugriff verweigert ({0}) — DB-Regeln prüfen", code));
     });
   })();
 
