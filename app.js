@@ -152,7 +152,11 @@ const STATIC_EN = [
   ["#avTabRueck", "Second half"],
   ["label[for=avWho]", "I am:"],
   ["#avWho option", "— pick your name —"],
-  ["#avLogClear", "Delete all"],
+  ["#avLogConfirmText", "Really delete all entries?"],
+  ["#avLogConfirmYes", "Delete"],
+  ["#avLogConfirmNo", "Cancel"],
+  ["#avHint", "Tap a cell: — → ✓ → ✗ · shared live with the team"],
+  ["#avPanel .panel-head h2", "Availability"],
   [".av-log-empty", "No changes yet"],
   ["#avStatus", "connecting…"],
   ["#tab-anfahrt .tab-sub", "Club distances Bezirksliga „Neckar-Odenwald“ (3-4) 2026/2027 — click a row or marker for the driving route"],
@@ -195,6 +199,8 @@ const STATIC_EN_ATTR = [
   ["#shopSearch", "placeholder", "Search: name, article no., colour …"],
   ["#gearBtn", "aria-label", "Settings"],
   ["#gearBtn", "title", "Settings"],
+  ["#avLogClear", "aria-label", "Delete all"],
+  ["#avLogClear", "title", "Delete all"],
 ];
 function applyStaticEn() {
   if (LANG !== "en") return;
@@ -217,17 +223,11 @@ function applyStaticEn() {
     if (h && h.textContent.includes("Verlauf")) { h.textContent = "🔒 History locked"; p.textContent = "Enter PIN to view the history."; }
     else if (h) { h.textContent = "🔒 Protected area"; p.textContent = "Enter PIN to continue."; }
   });
-  const verlaufH2 = document.querySelector("#tab-termine [data-pin-protect] > h2");
+  const verlaufH2 = document.querySelector("#tab-termine [data-pin-protect] .panel-head h2");
   if (verlaufH2) {
     verlaufH2.childNodes[0].textContent = "History ";
     verlaufH2.querySelector(".hint").textContent = "— who changed what";
   }
-  const availH2 = document.querySelector("#tab-termine .panel:nth-child(3) h2");
-  if (availH2 && availH2.querySelector(".hint"))
-    availH2.innerHTML = availH2.innerHTML
-      .replace("Verfügbarkeit", "Availability")
-      .replace("— Klick auf Zelle: — → ✓ → ✗ · live geteilt mit dem Team", "— tap a cell: — → ✓ → ✗ · shared live with the team")
-      .replace(">verbinde…<", ">connecting…<");
 }
 applyStaticEn();
 
@@ -1039,7 +1039,12 @@ function avState(name, dayKey) {
   const v = (av.marks[dayKey] || {})[avKey(name)];
   return v === "y" || v === "n" ? v : "u";
 }
-function avStatus(txt) { document.getElementById("avStatus").textContent = txt; }
+/* status pill: ● = live (green), ○ = offline/denied (red), anything else = waiting (amber) */
+function avStatus(txt) {
+  const el = document.getElementById("avStatus");
+  el.textContent = txt;
+  el.className = "av-status " + (txt.startsWith("●") ? "live" : txt.startsWith("○") ? "off" : "wait");
+}
 
 /* Ehrlichkeitsprinzip: jeder wählt einmal seinen Namen, Änderungen werden damit protokolliert */
 const WHO_KEY = "termine-whoami";
@@ -1067,6 +1072,11 @@ function avLogWrite(entry) {
 function renderLog(items) {
   const el = document.getElementById("avLog");
   document.getElementById("avLogClear").hidden = !items.length;
+  if (!items.length) document.getElementById("avLogConfirm").hidden = true;
+  /* one row: mark | name + change on the first line, who/when muted below | delete */
+  const logRow = (cls, mark, main, meta, key) => `<div class="log-row${cls}"><span class="log-mark">${mark}</span>
+    <span class="log-body"><span class="log-main">${main}</span><span class="log-meta">${meta}</span></span>
+    <button type="button" class="log-del" data-logdel="${esc(key)}" aria-label="${t("Eintrag löschen")}">×</button></div>`;
   if (!items.length) {
     el.innerHTML = `<li class="av-log-empty">${t("Noch keine Änderungen")}</li>`;
     return;
@@ -1091,20 +1101,15 @@ function renderLog(items) {
       ${list.map(it => {
         const m = dt.matches.find(x => x.key === it.day);
         const cls = it.to === "y" ? " y" : it.to === "n" ? " n" : "";
-        return `<div class="log-row${cls}"><span class="log-mark">${avSym(it.to)}</span>
-          <span class="log-entry"><strong>${esc(it.player)}</strong>${multi && m ? ` <span class="log-time">${m.time}</span>` : ""}
-          ${avSym(it.from)} → ${avSym(it.to)}
-          <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span>
-          <button type="button" class="log-del" data-logdel="${esc(it._k)}" aria-label="${t("Eintrag löschen")}">×</button></div>`;
+        const main = `<strong>${esc(it.player)}</strong>${multi && m ? ` <span class="log-time">${m.time}</span>` : ""}
+          <span class="log-change">${avSym(it.from)} → ${avSym(it.to)}</span>`;
+        return logRow(cls, avSym(it.to), main, `${esc(it.by || "?")} · ${fmtT(it.t)}`, it._k);
       }).join("")}
     </li>`);
   });
   adds.forEach(it => {
     parts.push(`<li class="log-day">
-      <div class="log-row"><span class="log-mark">+</span>
-        <span class="log-entry"><strong>${esc(it.player)}</strong> ${t("zur Liste hinzugefügt")}
-        <em>(${esc(it.by || "?")}, ${fmtT(it.t)})</em></span>
-        <button type="button" class="log-del" data-logdel="${esc(it._k)}" aria-label="${t("Eintrag löschen")}">×</button></div>
+      ${logRow("", "+", `<strong>${esc(it.player)}</strong> ${t("zur Liste hinzugefügt")}`, `${esc(it.by || "?")} · ${fmtT(it.t)}`, it._k)}
     </li>`);
   });
   el.innerHTML = parts.length ? parts.join("") : `<li class="av-log-empty">${t("Noch keine Änderungen")}</li>`;
@@ -1359,12 +1364,20 @@ document.getElementById("avLog").addEventListener("click", e => {
       .catch(() => toast(t("Löschen fehlgeschlagen"))));
 });
 
-document.getElementById("avLogClear").addEventListener("click", e => {
+/* "Alle löschen" is an icon button — confirmation is an inline bar, not a relabel */
+const avLogConfirm = document.getElementById("avLogConfirm");
+document.getElementById("avLogClear").addEventListener("click", () => {
   if (!avDb) { toast(t("Keine Verbindung zur Datenbank")); return; }
-  armThenRun(e.currentTarget, t("Wirklich ALLE löschen?"), () =>
-    avDb.ref("avail/log").remove()
-      .then(() => toast(t("Verlauf komplett gelöscht")))
-      .catch(() => toast(t("Löschen fehlgeschlagen"))));
+  avLogConfirm.hidden = false;
+  document.getElementById("avLogConfirmNo").focus();
+});
+document.getElementById("avLogConfirmNo").addEventListener("click", () => { avLogConfirm.hidden = true; });
+document.getElementById("avLogConfirmYes").addEventListener("click", () => {
+  avLogConfirm.hidden = true;
+  if (!avDb) { toast(t("Keine Verbindung zur Datenbank")); return; }
+  avDb.ref("avail/log").remove()
+    .then(() => toast(t("Verlauf komplett gelöscht")))
+    .catch(() => toast(t("Löschen fehlgeschlagen")));
 });
 
 /* ---- Firebase-Verbindung ---- */

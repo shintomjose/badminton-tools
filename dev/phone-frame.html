@@ -1,0 +1,16 @@
+<!doctype html>
+<!-- Dev only: an app inside a phone-sized iframe, so the mobile media queries
+     apply even in a large desktop window. Serve the repo root (start-local.cmd)
+     and open http://localhost:8010/dev/phone-frame.html — or pass another app
+     with ?src=http://localhost:8000/ (the Team 4 app). -->
+<meta charset="utf-8">
+<title>Phone frame</title>
+<style>
+  body { margin: 0; padding: 16px; background: #444; display: flex; gap: 16px; align-items: flex-start; }
+  iframe { width: 390px; height: 844px; border: 0; border-radius: 12px; background: #fff; }
+</style>
+<iframe id="f" src="../index.html#termine"></iframe>
+<script>
+  const src = new URLSearchParams(location.search).get("src");
+  if (src) document.getElementById("f").src = src;
+</script>
