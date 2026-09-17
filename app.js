@@ -1018,14 +1018,21 @@ const DAYS = MATCHES.map(m => ({ key: m.id, date: m.date, day: m.day, time: m.ti
 const MIN_M = 4;
 const MIN_F = 2;
 
+/* Feste Namen der Termine-Tabelle (Mannschaft 4 + Ersatz). Die Liste selbst lebt in der
+   Datenbank unter avail/players; Namen, die dort fehlen, werden beim Laden angehängt —
+   ein Name hier ist also dauerhaft, ohne bestehende Zu-/Absagen anzufassen. */
 const AV_DEFAULT_PLAYERS = [
   "Bolt-Bevilacqua, Nicolas",
   "Rajendraprasad, Anurag",
   "Chu, Cuong Xuan",
   "Mathew Jose, Shinto",
+  "Banik, Udayan",
+  "Oechsle, Marc",
+  "Vogt, Alexander",
   "Dujic, Lucija",
   "Schebesch, Carolin",
   "Croll, Alessia",
+  "Pflugfelder, Susanne",
 ];
 
 let av = { players: [], marks: {} };
@@ -1405,10 +1412,13 @@ document.getElementById("avLogConfirmYes").addEventListener("click", () => {
       availTries = 0;
       const v = snap.val() || {};
       const players = Array.isArray(v.players) ? v.players.filter(n => typeof n === "string") : [];
-      if (!players.length && !avSeeded) {
+      /* Fehlende Standardnamen einmal pro Sitzung anhängen (Reihenfolge und Marks bleiben);
+         der Schreibvorgang löst den nächsten Snapshot aus, der dann die volle Liste rendert. */
+      const missing = AV_DEFAULT_PLAYERS.filter(n => !players.includes(n));
+      if (missing.length && !avSeeded) {
         avSeeded = true;
-        avDb.ref("avail/players").set(AV_DEFAULT_PLAYERS).catch(() => {});
-        return;
+        avDb.ref("avail/players").set([...players, ...missing]).catch(() => {});
+        if (!players.length) return;
       }
       av.players = players;
       av.marks = v.marks || {};
