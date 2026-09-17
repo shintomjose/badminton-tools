@@ -1129,8 +1129,17 @@ function renderAvail() {
   const days = visDays();
   document.getElementById("avTabVor").setAttribute("aria-selected", avRound === "vor");
   document.getElementById("avTabRueck").setAttribute("aria-selected", avRound === "rueck");
-  const head = `<thead><tr><th>${t("Spieler")}</th>${days.map(d =>
-    `<th>${d.date.slice(0, 6)}<br><span class="th-time">${d.time}</span></th>`).join("")}</tr></thead>`;
+  /* Two header rows: one date cell per match day spanning its games, the times beneath */
+  const dateGroups = [];
+  days.forEach(d => {
+    const last = dateGroups[dateGroups.length - 1];
+    if (last && last.date === d.date) last.n++; else dateGroups.push({ date: d.date, n: 1 });
+  });
+  const head = `<thead>
+    <tr><th rowspan="2" class="th-player">${t("Spieler")}</th>${dateGroups.map(g =>
+      `<th colspan="${g.n}" class="th-date">${g.date.slice(0, 6)}</th>`).join("")}</tr>
+    <tr class="th-times">${days.map(d => `<th class="th-time">${d.time}</th>`).join("")}</tr>
+  </thead>`;
   const body = av.players.map(name => `<tr>
     <td class="avname">${esc(name)}</td>
     ${days.map(d => {

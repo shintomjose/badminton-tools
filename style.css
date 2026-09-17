@@ -441,7 +441,9 @@
     font-size: 0.76rem; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--text-muted);
   }
-  .avail-table th:first-child, .avail-table td.avname { text-align: left; }
+  .avail-table th.th-player, .avail-table td.avname { text-align: left; }
+  /* second header row: its first cell sits next to the name column, not first in the row */
+  .avail-table tr.th-times th { border-left: 1px solid var(--border); }
   .avail-table td.avname { color: var(--text-strong); font-weight: 500; }
   .avail-table td.av { cursor: pointer; user-select: none; font-weight: 700; font-size: 1.05em; min-width: 3em; }
   .avail-table td.av:hover { background: var(--row-hover); }
@@ -617,7 +619,7 @@
     /* sticky name column: full names wrap onto a second line instead of
        being cut off; the inset shadow is its right border (a real border
        would not stick) */
-    .av-table-mode .avail-table th:first-child,
+    .av-table-mode .avail-table th.th-player,
     .av-table-mode .avail-table td:first-child {
       position: sticky; left: 0; z-index: 1;
       background: var(--surface-1);
