@@ -51,6 +51,12 @@
           ".validate": "newData.val() == 'm' || newData.val() == 'f'"
         }
       },
+      "role": {
+        ".write": "auth != null && auth.uid == 'X24oeicEQwdi56CepWURZeHqoK93'",
+        "$name": {
+          ".validate": "newData.val() == 'sub'"
+        }
+      },
       "marks": {
         "$day": {
           "$name": {

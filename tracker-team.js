@@ -7,7 +7,10 @@
  * every other tracker view. Removing a name keeps its marks in the database
  * — they merely stop being shown — so an undo is one add away. A player's
  * gender (for the Herren/Damen counters) is written next to the list under
- * avail/gender/{nameKey}; the ranking in app.js stays the fallback.
+ * avail/gender/{nameKey}; the ranking in app.js stays the fallback. The
+ * Ersatz toggle marks a replacement player (avail/role/{nameKey} = "sub"):
+ * both apps list them behind a divider and count their ✓ as "+n" beside
+ * the Herren/Damen minimum instead of inside it.
  * Reached from the checklist button in the tracker top bar.
  */
 "use strict";
@@ -24,6 +27,12 @@ Object.assign(EN, {
   "{0} weitere — Suche eingrenzen": "{0} more — narrow the search",
   "{0} hinzugefügt": "{0} added",
   "{0} entfernt": "{0} removed",
+  "Ersatz": "Sub",
+  "{0} Ersatz": "{0} subs",
+  "Als Ersatzspieler markieren": "Mark as replacement player",
+  "Als Stammspieler markieren": "Mark as regular player",
+  "{0} ist Ersatzspieler": "{0} is a replacement player",
+  "{0} ist Stammspieler": "{0} is a regular player",
   "Nach oben": "Move up",
   "Nach unten": "Move down",
   "Entfernen": "Remove",
@@ -44,6 +53,7 @@ Object.assign(EN, {
     onValue: null,
     players: [],
     gender: {},           // nameKey → "m" | "f", as stored under avail/gender
+    role: {},             // nameKey → "sub" for replacement players (avail/role)
     loaded: false,
     error: "",
     roster: [],           // the licence list from Firestore
@@ -60,6 +70,8 @@ Object.assign(EN, {
     return String(s == null ? "" : s).toLowerCase().replace(/ß/g, "ss")
       .normalize("NFD").replace(/[̀-ͯ]/g, "");
   }
+
+  function isSub(name) { return state.role[avKey(name)] === "sub"; }
 
   function genderOf(name) {
     const g = state.gender[avKey(name)];
@@ -93,10 +105,16 @@ Object.assign(EN, {
 
   function rowHtml(name, i) {
     const last = state.players.length - 1;
-    return '<li class="mtt-row">' +
+    const sub = isSub(name);
+    return '<li class="mtt-row' + (sub ? " sub" : "") + '">' +
       '<span class="mtt-n">' + (i + 1) + "</span>" +
-      '<span class="mtt-name">' + esc(name) + badge(genderOf(name)) + "</span>" +
+      '<span class="mtt-name">' + esc(name) + badge(genderOf(name)) +
+        (sub ? ' <span class="mt-badge mtt-g">' + esc(t("Ersatz")) + "</span>" : "") + "</span>" +
       '<span class="mtt-actions">' +
+        '<button type="button" class="btn small mtt-sub' + (sub ? " on" : "") + '" data-act="sub" data-name="' + esc(name) + '"' +
+          ' aria-pressed="' + sub + '" aria-label="' + esc(t(sub ? "Als Stammspieler markieren" : "Als Ersatzspieler markieren")) + '"' +
+          ' title="' + esc(t(sub ? "Als Stammspieler markieren" : "Als Ersatzspieler markieren")) + '"' + (state.busy ? " disabled" : "") + ">" +
+          esc(t("Ersatz")) + "</button>" +
         iconBtn("up", name, "▲", t("Nach oben"), i === 0) +
         iconBtn("down", name, "▼", t("Nach unten"), i === last) +
         iconBtn("remove", name, "✕", t("Entfernen"), false) +
@@ -114,8 +132,10 @@ Object.assign(EN, {
     else body = '<ol class="mtt-list">' + state.players.map(rowHtml).join("") + "</ol>";
     const m = state.players.filter(n => genderOf(n) === "m").length;
     const f = state.players.filter(n => genderOf(n) === "f").length;
+    const subs = state.players.filter(isSub).length;
     box.innerHTML = '<section class="panel mt-card">' +
-      '<p class="mt-sess-meta">' + esc(tt("{0} Spieler · {1} Herren · {2} Damen", state.players.length, m, f)) + "</p>" +
+      '<p class="mt-sess-meta">' + esc(tt("{0} Spieler · {1} Herren · {2} Damen", state.players.length, m, f) +
+        (subs ? " · " + tt("{0} Ersatz", subs) : "")) + "</p>" +
       body + "</section>";
   }
 
@@ -174,6 +194,7 @@ Object.assign(EN, {
       const v = snap.val() || {};
       state.players = Array.isArray(v.players) ? v.players.filter(n => typeof n === "string") : [];
       state.gender = v.gender && typeof v.gender === "object" ? v.gender : {};
+      state.role = v.role && typeof v.role === "object" ? v.role : {};
       state.loaded = true;
       state.error = "";
       renderList();
@@ -206,11 +227,12 @@ Object.assign(EN, {
     renderHits();
   }
 
-  /* One multi-path update: the list and, for a new name, its gender. */
-  async function write(players, genderPatch) {
+  /* One multi-path update: the list plus gender and role patches (null deletes). */
+  async function write(players, genderPatch, rolePatch) {
     if (!state.ref) { toast(t("Keine Verbindung zur Datenbank")); throw new Error("no db"); }
     const upd = { players: players };
     Object.keys(genderPatch || {}).forEach(k => { upd["gender/" + k] = genderPatch[k]; });
+    Object.keys(rolePatch || {}).forEach(k => { upd["role/" + k] = rolePatch[k]; });
     state.busy = true;
     renderList();
     renderHits();
@@ -244,9 +266,21 @@ Object.assign(EN, {
 
   async function remove(name) {
     if (!state.players.includes(name) || state.busy) return;
+    const k = avKey(name);
+    const clear = {}; clear[k] = null;
     try {
-      await write(state.players.filter(n => n !== name));
+      await write(state.players.filter(n => n !== name), clear, clear);
       toast(tt("{0} entfernt", name));
+    } catch (e) {}
+  }
+
+  async function toggleSub(name) {
+    if (!state.players.includes(name) || state.busy) return;
+    const makeSub = !isSub(name);
+    const patch = {}; patch[avKey(name)] = makeSub ? "sub" : null;
+    try {
+      await write(state.players, null, patch);
+      toast(tt(makeSub ? "{0} ist Ersatzspieler" : "{0} ist Stammspieler", name));
     } catch (e) {}
   }
 
@@ -270,6 +304,7 @@ Object.assign(EN, {
     if (act === "back") { MT.showView("entry"); return; }
     if (act === "add") { add(name, btn.dataset.g); return; }
     if (act === "remove") { remove(name); return; }
+    if (act === "sub") { toggleSub(name); return; }
     if (act === "up") { move(name, -1); return; }
     if (act === "down") { move(name, 1); return; }
   }

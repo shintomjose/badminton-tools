@@ -141,7 +141,11 @@ and add a replacement from the search below the list, which offers the
 Spielerliste and the BWBV ranking minus the names already listed. Each added
 name also writes its gender to `avail/gender/{nameKey}`, which the
 Herren/Damen counters of both apps read (the ranking is the fallback). The
-database rules bind writes to `avail/players` and `avail/gender` to the
+**Ersatz** toggle on a row marks a replacement player (`avail/role/{nameKey}`
+= `sub`): both apps list them behind an *Ersatzspieler* divider with a badge,
+the cards suffix them with (E), and their ✓ show as "+n" beside the
+Herren/Damen minimum instead of filling it. The
+database rules bind writes to `avail/players`, `avail/gender` and `avail/role` to the
 owner's uid (`database.rules.json` — deploy with `firebase deploy --only
 database`), so the view is only reachable behind the tracker's Google sign-in
 and no anonymous client can change the list.
