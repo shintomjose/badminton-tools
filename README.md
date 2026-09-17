@@ -33,6 +33,7 @@ data sync between them in both directions.
 | `tracker-entry.js` | Match tracker: training and tournament entry flow |
 | `tracker-settings.js` | Match tracker: venue settings behind the header gear (Orte) |
 | `tracker-history.js` / `tracker-stats.js` / `tracker-profile.js` | Match tracker: history, stats, player profile views (each with its own `tracker-*.css`) |
+| `tracker-roster.js` / `tracker-team.js` | Match tracker: Spielerliste (licence list) and the Mannschaft 4 editor of the Termine availability names |
 | `anfahrt.html` | Directions map (Leaflet + OSRM), embedded in tab 04 |
 | `vendor/leaflet/` | Leaflet 1.9.4 self-hosted for that map (unpkg answered 503 at page load; files verified against the former SRI hashes) |
 | `database.rules.json` | Realtime Database rules for tabs 1–5 (shape validation) — deploy with `firebase deploy --only database` |
@@ -128,6 +129,22 @@ tournament opened from either list carries an **Übersicht** button back. The
 creation card only appears behind **+ Turnier**, always blank. Starting a
 tournament dated today opens it; one planned for another day returns to this
 overview, where it now sits under *Anstehende Turniere*.
+
+### Mannschaft 4 (availability names)
+
+The checklist button in the tracker top bar opens **Mannschaft 4**: the names
+of the Termine availability table, which live only in the Realtime Database
+under `avail/players` (shared live with the Team 4 app) — nothing is hard-coded
+in either app any more. Remove a name with ✕ (its marks stay in the database
+and simply stop being shown, so re-adding restores them), reorder with ▲ ▼,
+and add a replacement from the search below the list, which offers the
+Spielerliste and the BWBV ranking minus the names already listed. Each added
+name also writes its gender to `avail/gender/{nameKey}`, which the
+Herren/Damen counters of both apps read (the ranking is the fallback). The
+database rules bind writes to `avail/players` and `avail/gender` to the
+owner's uid (`database.rules.json` — deploy with `firebase deploy --only
+database`), so the view is only reachable behind the tracker's Google sign-in
+and no anonymous client can change the list.
 
 ### Player list (Spielerliste)
 

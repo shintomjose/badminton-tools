@@ -40,9 +40,15 @@
     "avail": {
       ".read": "auth != null",
       "players": {
-        ".write": "auth != null",
+        ".write": "auth != null && auth.uid == 'X24oeicEQwdi56CepWURZeHqoK93'",
         "$i": {
           ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+        }
+      },
+      "gender": {
+        ".write": "auth != null && auth.uid == 'X24oeicEQwdi56CepWURZeHqoK93'",
+        "$name": {
+          ".validate": "newData.val() == 'm' || newData.val() == 'f'"
         }
       },
       "marks": {

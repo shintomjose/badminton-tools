@@ -1196,6 +1196,7 @@
   }
   .mt-topbar .tab-sub { margin: 0; flex: 1 1 240px; }
   .mt-topbar .mt-roster-btn { margin-left: auto; align-self: center; }
+  .mt-topbar .mt-team-btn { align-self: center; }
   /* dropdown of the header gear: anchored under the button */
   .mt-menu-list {
     position: absolute; right: 0; top: calc(100% + 6px);
@@ -1804,6 +1805,18 @@
   .mtr-age::before { content: "("; } .mtr-age::after { content: ")"; }
   .mtr-import summary { cursor: pointer; font-weight: 600; }
   .mtr-import .mtr-file { margin-top: 8px; }
+  /* Mannschaft 4: the editor of the Termine availability list (tracker-team.js) */
+  .mtt-list { list-style: none; margin: 0; padding: 0; }
+  .mtt-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+  .mtt-row:last-child { border-bottom: 0; }
+  .mtt-n { color: var(--text-muted); font-size: 0.86em; min-width: 1.6em; text-align: right; font-variant-numeric: tabular-nums; }
+  .mtt-name { flex: 1 1 auto; min-width: 0; font-weight: 600; color: var(--text-strong); overflow-wrap: anywhere; }
+  .mtt-actions { display: flex; gap: 4px; flex: none; }
+  .mtt-btn { min-width: 44px; }
+  .mtt-add h3 { margin: 0 0 6px; }
+  .mtt-hits { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .mtt-hit { text-align: left; }
+  .mt-badge.mtt-g.f { color: var(--danger); border-color: currentColor; }
 
   /* --- Alle · Training · Turnier · Liga --- */
   #mtTypeToggle { flex-wrap: wrap; }

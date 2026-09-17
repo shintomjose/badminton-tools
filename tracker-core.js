@@ -1025,6 +1025,11 @@ const MT = (function () {
           ' aria-label="' + esc(t("Spielerliste")) + '" title="' + esc(t("Spielerliste")) + '">' +
           '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>' +
         "</button>" +
+        /* Mannschaft 4: the names of the Termine availability table (tracker-team.js) */
+        '<button type="button" class="btn mt-icon-btn mt-team-btn" data-mt="team"' +
+          ' aria-label="' + esc(t("Mannschaft 4")) + '" title="' + esc(t("Mannschaft 4")) + '">' +
+          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 6h10"/><path d="M10 12h10"/><path d="M10 18h10"/><path d="m3 6 1.5 1.5L7 5"/><path d="m3 12 1.5 1.5L7 11"/><path d="m3 18 1.5 1.5L7 17"/></svg>' +
+        "</button>" +
       "</div>" +
       '<div id="mtGate"></div>';
     p.dataset.mtReady = "1";
@@ -1201,6 +1206,7 @@ const MT = (function () {
       if (act === "hardreload") { hardReload(); return; }
       if (act === "settings") { showView("settings"); return; }
       if (act === "roster") { showView("roster"); return; }
+      if (act === "team") { showView("team"); return; }
       if (act === "copylink") {
         const url = location.origin + location.pathname + "#tracker";
         navigator.clipboard.writeText(url)
