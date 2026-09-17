@@ -2348,9 +2348,15 @@ Object.assign(EN, {
        rejects values that are outright unusable. */
     const badScore = validateGames(d, !!finish);
     if (badScore) { toast(badScore); return; }
+    /* Fertig needs a winner in Turnier and Liga. Training is looser: an evening
+       of 18-21, 21-18 is a finished match with no winner (the views show it as
+       "Kein Sieger" and keep it out of W–L), as long as one game is decided. */
     if (finish && d.resultType === "normal" && !MT.deriveWinner(d.games, d.targetScore)) {
-      toast(t("Kein Ergebnis — mindestens ein Satz muss entschieden sein"));
-      return;
+      const trainingTie = state.type === "training" && decidedGames(d) > 0;
+      if (!trainingTie) {
+        toast(t("Kein Ergebnis — mindestens ein Satz muss entschieden sein"));
+        return;
+      }
     }
     const fields = buildFields(d);
     try {
