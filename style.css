@@ -1555,6 +1555,19 @@
   .mt-trn-list-name { font-weight: 600; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
   .mt-trn-list .btn { margin-left: auto; }
   .mt-trn-overview .mt-trn-list-wrap { margin-top: 12px; }
+  /* Liga: one collapsible block per season */
+  .mt-season { margin-top: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 10px 8px; }
+  .mt-season summary {
+    cursor: pointer; user-select: none; list-style: none;
+    display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; padding: 10px 0;
+  }
+  .mt-season summary::-webkit-details-marker { display: none; }
+  .mt-season summary::before { content: "\25B8"; color: var(--text-muted); }
+  .mt-season[open] summary::before { content: "\25BE"; }
+  .mt-season-title { font-weight: 700; color: var(--text-strong); }
+  .mt-season-meta { color: var(--text-muted); font-size: 0.88em; flex: 1 1 12em; min-width: 0; overflow-wrap: anywhere; }
+  .mt-season-n { color: var(--text-muted); font-size: 0.86em; }
+  .mt-season .mt-trn-list-wrap { margin-top: 6px; }
   .mt-trn-overview .mt-trn-list-wrap:last-child { margin-bottom: 0; }
   .mt-venue { max-width: 420px; }
   /* inline "Neuer Ort" row under the venue dropdown */

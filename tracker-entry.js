@@ -173,6 +173,7 @@ Object.assign(EN, {
   /* not "the last few days" — a row can be weeks old if that is when you last played */
   "Letzte Spieltage": "Last match days",
   "Noch kein Turnier erfasst": "No tournament logged yet",
+  "Saison {0}": "Season {0}",
   "+ Neuer Ort …": "+ New venue …",
   "Neuer Ort": "New venue",
   "Ort hinzufügen": "Add venue",
@@ -276,7 +277,7 @@ Object.assign(EN, {
     trnCreate: false,      // "+ Turnier" opened the creation card
     /* Liga: the fixture on screen and every league session ever logged
        (the fixture list is the season schedule plus these) */
-    lg: { fixtureId: null, sessions: [] },
+    lg: { fixtureId: null, sessions: [], openSeasons: {} },   // openSeasons: season key -> user toggled open/closed
     lgScoreBusy: false,    // a team-score write is in flight
     allToday: [],          // Alle: today's matches of every type
     pendingEdit: null,     // match id to open in the editor once its day is on screen
@@ -1673,25 +1674,68 @@ Object.assign(EN, {
     "</li>";
   }
 
+  /* ---- seasons: July to June, labelled "2025/26"; Vorrunde until December,
+     Rückrunde from January (the schedule's own round wins where it has one) ---- */
+  function seasonOf(dateKey) {
+    const y = Number(dateKey.slice(0, 4)), m = Number(dateKey.slice(5, 7));
+    const start = m >= 7 ? y : y - 1;
+    return { key: String(start), label: start + "/" + String(start + 1).slice(2) };
+  }
+  function roundOf(f) {
+    if (f.round === "vor" || f.round === "rueck") return f.round;
+    return Number(f.dateKey.slice(5, 7)) >= 7 ? "vor" : "rueck";
+  }
+  /* the team I played for: the session's own, otherwise the schedule's team */
+  function fixtureTeam(f) {
+    const lg = f.session && f.session.league;
+    return (lg && String(lg.team || "").trim()) || String(window.LEAGUE_TEAM || "").trim() || t("Unser Team");
+  }
+  /* the division: stored on an imported session, the schedule's name otherwise
+     (minus a trailing "2026/27" — the season heading already says that) */
+  function fixtureDivision(f) {
+    const lg = f.session && f.session.league;
+    if (lg && String(lg.division || "").trim()) return String(lg.division).trim();
+    if (f.session) return "";
+    return String(window.LEAGUE_NAME || "").trim().replace(/\s*\d{4}\/\d{2}$/, "");
+  }
+
+  /* One collapsible block per season, newest first, only the current one open
+     unless the user toggled it; inside, Vorrunde and Rückrunde in playing order.
+     The heading names the division and the team(s) I played for that season. */
   function leagueListHtml() {
-    const today = todayKey();
-    const all = allFixtures();
+    const cur = seasonOf(todayKey()).key;
     const byStart = (a, b) => a.dateKey === b.dateKey ? a.time.localeCompare(b.time) : (a.dateKey < b.dateKey ? -1 : 1);
-    const up = all.filter(f => f.dateKey >= today).sort(byStart);
-    const past = all.filter(f => f.dateKey < today).sort((a, b) => -byStart(a, b));
-    const block = (title, list, empty) =>
-      '<div class="mt-field mt-trn-list-wrap">' +
-        '<span class="mt-label">' + esc(title) + "</span>" +
-        (list.length
-          ? '<ul class="mt-trn-list">' + list.map(fixtureRowHtml).join("") + "</ul>"
-          : (empty ? '<p class="mt-muted">' + esc(empty) + "</p>" : "")) +
-      "</div>";
-    const meta = [String(window.LEAGUE_NAME || "").trim(), leagueTeam()].filter(Boolean).join(" · ");
+    const seasons = new Map();
+    allFixtures().forEach(f => {
+      const s = seasonOf(f.dateKey);
+      let g = seasons.get(s.key);
+      if (!g) { g = { key: s.key, label: s.label, vor: [], rueck: [], teams: [], divisions: [] }; seasons.set(s.key, g); }
+      g[roundOf(f)].push(f);
+      const team = fixtureTeam(f), div = fixtureDivision(f);
+      if (team && g.teams.indexOf(team) < 0) g.teams.push(team);
+      if (div && g.divisions.indexOf(div) < 0) g.divisions.push(div);
+    });
+    const list = Array.from(seasons.values()).sort((a, b) => b.key.localeCompare(a.key));
+    const isOpen = g => Object.prototype.hasOwnProperty.call(state.lg.openSeasons, g.key) ? !!state.lg.openSeasons[g.key] : g.key === cur;
+    const roundBlock = (title, fx) => fx.length
+      ? '<div class="mt-field mt-trn-list-wrap">' +
+          '<span class="mt-label">' + esc(title) + "</span>" +
+          '<ul class="mt-trn-list">' + fx.sort(byStart).map(fixtureRowHtml).join("") + "</ul>" +
+        "</div>"
+      : "";
+    const seasonHtml = g =>
+      '<details class="mt-season"' + (isOpen(g) ? " open" : "") + ">" +
+        '<summary data-season="' + esc(g.key) + '">' +
+          '<span class="mt-season-title">' + esc(tt("Saison {0}", g.label)) + "</span>" +
+          '<span class="mt-season-meta">' + esc(g.divisions.concat(g.teams).join(" · ")) + "</span>" +
+          '<span class="mt-season-n">' + esc(tt("{0} Spiele", g.vor.length + g.rueck.length)) + "</span>" +
+        "</summary>" +
+        roundBlock(t("Vorrunde"), g.vor) +
+        roundBlock(t("Rückrunde"), g.rueck) +
+      "</details>";
     return '<section class="panel mt-session mt-trn-overview">' +
       '<div class="mt-trn-head"><h2>' + esc(t("Liga")) + "</h2></div>" +
-      (meta ? '<p class="mt-sess-meta">' + esc(meta) + "</p>" : "") +
-      block(t("Anstehende Spiele"), up, t("Kein Spiel geplant")) +
-      (past.length ? block(t("Gespielt"), past, "") : "") +
+      (list.length ? list.map(seasonHtml).join("") : '<p class="mt-muted">' + esc(t("Kein Spiel geplant")) + "</p>") +
     "</section>";
   }
 
@@ -2680,6 +2724,12 @@ Object.assign(EN, {
   /* ================= events ================= */
   function onClick(e) {
     if (!e.target || typeof e.target.closest !== "function") return;
+    /* a season heading: remember the toggle so a re-render keeps it (the browser flips `open` itself) */
+    const seasonSum = e.target.closest("summary[data-season]");
+    if (seasonSum && state.host && state.host.contains(seasonSum)) {
+      state.lg.openSeasons[seasonSum.dataset.season] = !seasonSum.parentNode.open;
+      return;
+    }
     const btn = e.target.closest("[data-act]");
     if (!btn || !state.host || !state.host.contains(btn)) return;
     const act = btn.dataset.act;
