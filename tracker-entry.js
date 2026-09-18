@@ -173,6 +173,8 @@ Object.assign(EN, {
   /* not "the last few days" — a row can be weeks old if that is when you last played */
   "Letzte Spieltage": "Last match days",
   "Noch kein Turnier erfasst": "No tournament logged yet",
+  "Frühere Turniere ({0})": "Earlier tournaments ({0})",
+  "noch ohne Spiele": "no matches yet",
   "Noch keine Spiele erfasst": "No matches logged yet",
   "Bilanz nicht ladbar": "Record could not be loaded",
   "{0} % ({1})": "{0}% ({1})",
@@ -724,17 +726,31 @@ Object.assign(EN, {
     try {
       const from = new Date();
       from.setDate(from.getDate() - ((wide ? SUMMARY_DAYS_TRN : SUMMARY_DAYS) - 1));
-      /* Turnier: the session documents name the days — the fallback for
-         matches written before the name was denormalised onto them. */
+      /* Turnier: every tournament session ever, not just the match window —
+         a tournament created for a past day has no matches yet and would
+         otherwise be unreachable. The session documents also name the days,
+         the fallback for matches written before the name was denormalised. */
       const [list, sessions] = await Promise.all([
         MT.repo.getMatches({ from: from, to: new Date(), limit: wide ? SUMMARY_LIMIT_TRN : 800 }),
-        trn ? MT.repo.listSessionsAround("tournament", SUMMARY_DAYS_TRN, 0).catch(() => []) : [],
+        trn ? MT.repo.listSessionsAround("tournament", null, 0).catch(() => []) : [],
       ]);
       if (state.type !== wanted) return;                 // mode switched meanwhile
       const rows = groupByDay(all ? list : list.filter(m => normType(m.type) === wanted));
       if (trn) {
         const names = new Map((sessions || []).map(x => [x.dateKey, String(x.tournamentName || "").trim()]));
         rows.forEach(r => { if (!r.name) r.name = names.get(r.dateKey) || ""; });
+        /* sessions without a row: a tournament day with no match in the window */
+        const seen = new Set(rows.map(r => r.dateKey));
+        const windowKey = MT.keys(from).dateKey;
+        (sessions || []).forEach(s => {
+          if (!s.dateKey || seen.has(s.dateKey)) return;
+          seen.add(s.dateKey);
+          const rec = blankRec(s.dateKey, MT.toDate(s.date) || MT.toDate(s.dateKey));
+          rec.name = String(s.tournamentName || "").trim();
+          rec.session = true;
+          rec.stale = s.dateKey < windowKey;         // older than the match read: count unknown
+          rows.push(rec);
+        });
       }
       state.summary = rows;
       state.summaryError = false;
@@ -855,7 +871,8 @@ Object.assign(EN, {
       /* the live row replaces the fetched one for the same day — or, in Liga,
          for the same fixture */
       const same = r => isLeague() ? (!!r.fixtureId && r.fixtureId === live.fixtureId) : r.dateKey === live.dateKey;
-      rows = state.summary.filter(r => !same(r) && r.n > 0);
+      /* a tournament day without matches is still a row — it must stay reachable */
+      rows = state.summary.filter(r => !same(r) && (r.n > 0 || r.session));
       if (live.n) {
         rows.push(live);                       // the open day, tallied live
       } else {
@@ -867,7 +884,9 @@ Object.assign(EN, {
     }
     /* the open day is not necessarily the newest one any more */
     rows.sort((a, b) => (a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0));
-    return rows.slice(0, SUMMARY_ROWS);
+    /* Turnier keeps every row: the first SUMMARY_ROWS show, the rest fold
+       away under "Frühere Turniere" (summaryHtml) */
+    return isTournament() ? rows : rows.slice(0, SUMMARY_ROWS);
   }
 
   /* ================= manual ordering =================
@@ -1329,7 +1348,7 @@ Object.assign(EN, {
       else attrs = 'data-act="openrecent" data-day="' + esc(r.dateKey) + '"';   // Training: that day's session
       return attrs ? ' role="button" tabindex="0" ' + attrs : "";
     };
-    return '<ul class="mt-days' + ((trn || lg || all) ? " trn" : "") + '">' + rows.map(r => {
+    const rowHtml = r => {
       const isToday = r.dateKey === todayK;
       const played = hasRecord(r);
       const showName = trn || lg || (all && r.name);
@@ -1343,7 +1362,11 @@ Object.assign(EN, {
         (showName ? '<span class="mt-day-name">' + esc(r.name || (trn ? t("Turnier") : "")) + "</span>" : "") +
         '<span class="mt-day-stats">' +
           (withScore ? '<span class="mt-lg-mini" title="' + esc(t("Mannschaftsspiel")) + '">' + esc(scoreText(r)) + "</span>" : "") +
-          '<span class="mt-day-n">' + esc(matchCountLabel(r.n)) + "</span>" +
+          /* a session row: "noch ohne Spiele", or nothing at all when the day
+             lies before the match read and the count is simply unknown */
+          (r.session && !r.n
+            ? (r.stale ? "" : '<span class="mt-day-n">' + esc(t("noch ohne Spiele")) + "</span>")
+            : '<span class="mt-day-n">' + esc(matchCountLabel(r.n)) + "</span>") +
           (r.sp ? '<span class="mt-day-n">' + esc(setCountLabel(r.sp)) + "</span>" : "") +
           (played
             ? '<span class="mt-day-wl" title="' + esc(tt("Spiele {0}–{1}", r.w, r.l)) + '">' +
@@ -1354,7 +1377,14 @@ Object.assign(EN, {
           pctHtml(r.w, r.w + r.l) +
         "</span>" +
       "</li>";
-    }).join("") + "</ul>";
+    };
+    const cls = 'class="mt-days' + ((trn || lg || all) ? " trn" : "") + '"';
+    const head = rows.slice(0, SUMMARY_ROWS), rest = rows.slice(SUMMARY_ROWS);
+    return "<ul " + cls + ">" + head.map(rowHtml).join("") + "</ul>" +
+      (rest.length
+        ? '<details class="mt-more-days"><summary>' + esc(tt("Frühere Turniere ({0})", rest.length)) + "</summary>" +
+          "<ul " + cls + ">" + rest.map(rowHtml).join("") + "</ul></details>"
+        : "");
   }
 
   /* Never a bare percentage: the sample size rides along, and a thin sample

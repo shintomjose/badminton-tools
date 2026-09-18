@@ -845,16 +845,19 @@ const MT = (function () {
      from now, newest first. Two range filters on one field stay on the
      automatic single-field index. Lets the entry view list planned and
      recent tournaments instead of asking for their date again. */
+  /* daysBack === null drops the lower bound: every session up to the end day
+     (tournaments are rare, so listing all of them stays a small read). */
   repo.listSessionsAround = async function (type, daysBack, daysAhead) {
     const db = await need();
     const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (Number(daysBack) || 0));
     const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + (Number(daysAhead) || 0));
     const wanted = normType(type);
-    const snap = await db.collection(COL.sessions)
-      .where("dateKey", ">=", keys(start).dateKey)
-      .where("dateKey", "<=", keys(end).dateKey)
-      .get();
+    let q = db.collection(COL.sessions);
+    if (daysBack !== null) {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (Number(daysBack) || 0));
+      q = q.where("dateKey", ">=", keys(start).dateKey);
+    }
+    const snap = await q.where("dateKey", "<=", keys(end).dateKey).get();
     const me = uid();
     return snap.docs.map(docData)
       .filter(s => s.type === wanted && (!s.ownerUid || s.ownerUid === me))

@@ -1654,6 +1654,10 @@
 
   /* --- Tagesbilanz: ein Blick am Spielfeldrand, keine Analyse --- */
   .mt-days { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  /* older tournaments fold away below the first rows */
+  .mt-more-days { margin-top: 8px; }
+  .mt-more-days summary { cursor: pointer; color: var(--text-muted); font-weight: 600; padding: 8px 10px; user-select: none; }
+  .mt-more-days[open] summary { margin-bottom: 4px; }
   /* flex + wrap, not a fixed grid: on a narrow phone the stats group drops to
      its own line instead of squeezing the date or clipping the percentage */
   .mt-day {
