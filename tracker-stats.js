@@ -24,7 +24,9 @@
       "Lade Statistik…": "Loading stats…",
       "Zeitraum": "Period",
       "Art": "Type",
-      "Dieses Jahr": "This year",
+      "Nach Jahr": "By year",
+      "{0} Spiele · {1}–{2}": "{0} matches · {1}–{2}",
+      "Keine Spiele in diesem Jahr": "No matches this year",
       "Letzte 12 Wochen": "Last 12 weeks",
       "Gesamt": "All time",
       "Training": "Training",   /* identical in EN, but mapped explicitly so the
@@ -567,18 +569,18 @@
       H(t("Siegquote")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></div>";
   }
 
-  function renderBuckets(agg) {
+  function renderBuckets(agg, noYear) {
     return '<section class="mts-card mts-card-wide">' +
-      '<h3 class="mts-h">' + H(t("Tag / Woche / Jahr")) + "</h3>" +
+      '<h3 class="mts-h">' + H(t(noYear ? "Tag / Woche" : "Tag / Woche / Jahr")) + "</h3>" +
       bucketTable("Tag", "Tag", bucketRows(agg.day, fmtDayLabel, MAX_DAYS)) +
       bucketTable("Woche", "Woche", bucketRows(agg.week, fmtWeekLabel, MAX_WEEKS)) +
-      bucketTable("Jahr", "Jahr", bucketRows(agg.year, function (k) { return k; }, 0)) +
+      (noYear ? "" : bucketTable("Jahr", "Jahr", bucketRows(agg.year, function (k) { return k; }, 0))) +
     "</section>";
   }
 
   /* ---------- view state ---------------------------------------------- */
   var PERIODS = [
-    { id: "year", labelKey: "Dieses Jahr" },
+    { id: "year", labelKey: "Nach Jahr" },
     { id: "12w", labelKey: "Letzte 12 Wochen" },
     { id: "all", labelKey: "Gesamt" }
   ];
@@ -588,7 +590,7 @@
     { id: "league", labelKey: "Liga" }
   ];
 
-  var state = { period: "year", type: "training" };
+  var state = { period: "year", type: "training", openYears: {} };   // openYears: year -> user toggled
   var cache = new Map();        // period id -> match[]  (mount lifetime only)
   var meId = null;
   var meName = "";
@@ -602,12 +604,14 @@
     if (id === "12w") {
       return { from: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 83), to: to };
     }
-    if (id === "all") return { from: new Date(ALL_TIME_FROM.getTime()), to: to };
-    return { from: new Date(now.getFullYear(), 0, 1), to: to };
+    /* "year" renders one block per year, so it needs everything, like "all" */
+    return { from: new Date(ALL_TIME_FROM.getTime()), to: to };
   }
 
-  /* One getMatches call per period; cached for the lifetime of the mount. */
+  /* One getMatches call per period; cached for the lifetime of the mount.
+     "year" and "all" share the all-time read. */
   function fetchPeriod(id) {
+    if (id === "year") id = "all";
     if (cache.has(id)) return Promise.resolve(cache.get(id));
     var r = periodRange(id);
     return MT.repo.getMatches({ from: r.from, to: r.to }).then(function (rows) {
@@ -645,21 +649,24 @@
 
     fetchPeriod(state.period).then(function (matches) {
       if (my !== token || !rootEl) return;                 // a newer request won
+      var who = meName ? '<p class="mts-who">' + H(tt("Statistik für {0}", meName)) + "</p>" : "";
+      if (state.period === "year") {
+        var body = renderYears(matches);
+        if (!body) {
+          paint('<p class="empty-note mts-empty">' +
+            H(t("Noch keine abgeschlossenen Spiele in diesem Zeitraum.")) + "</p>");
+          return;
+        }
+        paint(who + body);
+        return;
+      }
       var agg = aggregate(matches, meId, state.type);
       if (!agg.n) {
         paint('<p class="empty-note mts-empty">' +
           H(t("Noch keine abgeschlossenen Spiele in diesem Zeitraum.")) + "</p>");
         return;
       }
-      paint(
-        (meName ? '<p class="mts-who">' + H(tt("Statistik für {0}", meName)) + "</p>" : "") +
-        renderTotals(agg) +
-        renderForm(agg) +
-        renderTrend(agg.week) +
-        renderPartners(agg) +
-        renderOpponents(agg) +
-        renderBuckets(agg)
-      );
+      paint(who + cardsHtml(agg, false));
     }).catch(function (err) {
       if (my !== token || !rootEl) return;
       cache.delete(state.period);
@@ -669,7 +676,57 @@
     });
   }
 
+  /* the cards of one aggregate — the whole view for a period, or one year's block */
+  function cardsHtml(agg, noYear) {
+    return renderTotals(agg) +
+      renderForm(agg) +
+      renderTrend(agg.week) +
+      renderPartners(agg) +
+      renderOpponents(agg) +
+      renderBuckets(agg, noYear);
+  }
+
+  /* "Nach Jahr": one collapsible block per calendar year, newest first, only
+     the current year open unless toggled — the same shape as the entry lists
+     and the Verlauf. Each block holds the full set of cards for that year;
+     the heading carries the year's record. Returns "" when no year has a
+     counted match of the chosen type. */
+  function renderYears(matches) {
+    var byYear = Object.create(null), years = [];
+    (matches || []).forEach(function (m) {
+      var y = m.yearKey || String(m.dateKey || "").slice(0, 4);
+      if (!y) return;
+      if (!byYear[y]) { byYear[y] = []; years.push(y); }
+      byYear[y].push(m);
+    });
+    years.sort().reverse();
+    var cur = String(new Date().getFullYear());
+    var blocks = years.map(function (y) {
+      var agg = aggregate(byYear[y], meId, state.type);
+      if (!agg.n) return "";
+      var n = agg.total.w + agg.total.l;
+      var open = Object.prototype.hasOwnProperty.call(state.openYears, y) ? !!state.openYears[y] : y === cur;
+      return '<details class="mt-season mts-year"' + (open ? " open" : "") + ">" +
+        '<summary data-year="' + H(y) + '">' +
+          '<span class="mt-season-title">' + H(y) + "</span>" +
+          '<span class="mt-season-meta">' + H(tt("{0} Spiele · {1}–{2}", n, agg.total.w, agg.total.l)) +
+            " · " + pctHtml(agg.total.w, n) + "</span>" +
+        "</summary>" +
+        '<div class="mts-year-body">' + cardsHtml(agg, true) + "</div>" +
+      "</details>";
+    }).filter(Boolean);
+    if (!blocks.length) return "";
+    /* no block for the current year: open the newest one instead of a blank view */
+    if (years.indexOf(cur) < 0 && !Object.keys(state.openYears).length) {
+      blocks[0] = blocks[0].replace('<details class="mt-season mts-year">', '<details class="mt-season mts-year" open>');
+    }
+    return blocks.join("");
+  }
+
   function onClick(ev) {
+    /* a year heading: remember the toggle (the browser flips `open` itself) */
+    var ySum = ev.target.closest("summary[data-year]");
+    if (ySum) { state.openYears[ySum.getAttribute("data-year")] = !ySum.parentNode.open; return; }
     var tab = ev.target.closest(".mts-tab");
     if (tab) {
       var g = tab.getAttribute("data-group"), v = tab.getAttribute("data-val");

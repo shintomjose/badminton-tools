@@ -310,6 +310,10 @@
   margin: 0;
   padding: 0;
 }
+/* Spielverlauf: one collapsible block per year */
+.mtp-year { margin-top: 8px; }
+.mtp-year:first-of-type { margin-top: 0; }
+.mtp-year .mtp-matches { padding-top: 4px; }
 .mtp-match {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

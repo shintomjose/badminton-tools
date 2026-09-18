@@ -52,6 +52,12 @@
   gap: 16px;
   align-items: start;
 }
+/* "Nach Jahr": one collapsible block per year, the cards inside */
+.mts-year { margin-top: 10px; }
+.mts-year:first-of-type { margin-top: 0; }
+.mts-year-body { padding-top: 4px; }
+.mts-year-body .mts-card { margin-left: 0; margin-right: 0; }
+
 .mts-card {
   background: var(--surface-1);
   border: 1px solid var(--border);

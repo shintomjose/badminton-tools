@@ -43,6 +43,7 @@
     "Spiele konnten nicht geladen werden": "Matches could not be loaded",
     "Erneut versuchen": "Try again",
     "Keine Spiele mit diesem Spieler": "No matches with this player",
+    "1 Spiel": "1 match",
     "Spieler nicht gefunden": "Player not found",
     "Unbekannter Spieler": "Unknown player",
     "Nicht angemeldet — Profil nicht verfügbar": "Not signed in — profile unavailable",
@@ -130,6 +131,7 @@
   var matchCache = new Map();   // playerId -> Promise<match[]>
   var playersPromise = null;    // Promise<player[]>
   var currentPlayers = [];      // the list behind the open profile, for live names
+  var openYears = {};           // Spielverlauf: year -> the user toggled that block
 
   function getPlayers(force) {
     if (force || !playersPromise) {
@@ -218,6 +220,9 @@
       close();
       return;
     }
+    /* a year heading of the Spielverlauf: remember the toggle (the browser flips `open` itself) */
+    var ySum = ev.target.closest ? ev.target.closest("summary[data-year]") : null;
+    if (ySum && root.contains(ySum)) { openYears[ySum.getAttribute("data-year")] = !ySum.parentNode.open; return; }
     var el = ev.target.closest ? ev.target.closest("[data-pid],[data-mtp-act]") : null;
     if (!el || !root.contains(el)) return;
 
@@ -693,11 +698,30 @@
       }
     }
 
-    /* 4. match history */
+    /* 4. match history — one collapsible block per calendar year, newest
+       first, only the current year open unless toggled (the same shape as
+       the Verlauf); the heading carries the match count of that year */
+    var byYear = Object.create(null), years = [];
+    d.matches.forEach(function (m) {
+      var y = m.yearKey || String(m.dateKey || "").slice(0, 4) || "?";
+      if (!byYear[y]) { byYear[y] = []; years.push(y); }
+      byYear[y].push(m);
+    });
+    var cur = String(new Date().getFullYear());
+    var dflt = years.indexOf(cur) >= 0 ? cur : years[0];
     html += '<section class="mtp-sec"><h3 class="mtp-sec-h">' + E(T("Spielverlauf")) + "</h3>" +
-      '<ul class="mtp-matches">' +
-      d.matches.map(function (m) { return matchRowHtml(m, d.playerId); }).join("") +
-      "</ul></section>";
+      years.map(function (y) {
+        var open = Object.prototype.hasOwnProperty.call(openYears, y) ? !!openYears[y] : y === dflt;
+        var n = byYear[y].length;
+        return '<details class="mt-season mtp-year"' + (open ? " open" : "") + ">" +
+          '<summary data-year="' + E(y) + '">' +
+            '<span class="mt-season-title">' + E(y) + "</span>" +
+            '<span class="mt-season-meta">' + E(n === 1 ? T("1 Spiel") : TT("{0} Spiele", n)) + "</span>" +
+          "</summary>" +
+          '<ul class="mtp-matches">' + byYear[y].map(function (m) { return matchRowHtml(m, d.playerId); }).join("") + "</ul>" +
+        "</details>";
+      }).join("") +
+      "</section>";
 
     bodyEl.innerHTML = html;
     bodyEl.scrollTop = 0;
