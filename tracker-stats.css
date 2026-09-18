@@ -52,11 +52,16 @@
   gap: 16px;
   align-items: start;
 }
-/* "Nach Jahr": one collapsible block per year, the cards inside */
-.mts-year { margin-top: 10px; }
-.mts-year:first-of-type { margin-top: 0; }
-.mts-year-body { padding-top: 4px; }
-.mts-year-body .mts-card { margin-left: 0; margin-right: 0; }
+/* "Nach Jahr": one collapsible block per year spanning the body grid; the
+   cards inside sit on the same grid as the flat view */
+.mts-year { grid-column: 1 / -1; margin-top: 0; }
+.mts-year-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding-top: 6px;
+}
 
 .mts-card {
   background: var(--surface-1);
@@ -370,6 +375,9 @@
 /* ---------- wider screens --------------------------------------------- */
 @media (min-width: 760px) {
   .mts-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .mts-year-body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   /* the trend chart and the day/week/year tables want the full width */
