@@ -321,7 +321,13 @@ Object.assign(EN, {
   /* ---- Liga: fixtures ----
      The season schedule lives in app.js (Termine tab) and is read lazily;
      the tracker works without it, then only logged fixtures are listed. */
-  function leagueTeam() { return String(window.LEAGUE_TEAM || "").trim() || t("Unser Team"); }
+  /* Our team: the open session's own (an imported match of another season or
+     team keeps its name), otherwise the schedule's team from app.js. */
+  function leagueTeam() {
+    const lg = state.session && state.session.league;
+    if (lg && String(lg.team || "").trim()) return String(lg.team).trim();
+    return String(window.LEAGUE_TEAM || "").trim() || t("Unser Team");
+  }
   function fixtureFromId(id, f) {
     const m = /^(\d{4}-\d{2}-\d{2})-(\d{2})(\d{2})$/.exec(String(id || ""));
     if (!m) return null;
@@ -1073,7 +1079,8 @@ Object.assign(EN, {
   /* Every league session ever logged — the fixture list and the scores on it. */
   function loadLeagueSessions() {
     const wanted = state.type;
-    MT.repo.listSessionsAround("league", LG_LIST_DAYS, LG_LIST_DAYS)
+    /* every past team match (earlier seasons included), the season ahead */
+    MT.repo.listSessionsAround("league", null, LG_LIST_DAYS)
       .then(list => {
         if (state.type !== wanted) return;
         state.lg.sessions = list || [];
@@ -1090,6 +1097,9 @@ Object.assign(EN, {
   function syncLeagueScore() {
     const sess = state.session;
     if (!isLeague() || !sess || !sess.league || state.lgScoreBusy) return;
+    /* an imported team match carries the official result, which only my own
+       logged matches could never reproduce — leave it alone */
+    if (sess.league.scoreFixed) return;
     const sc = teamScore(state.matches);
     const old = sess.league.score || null;
     if (old ? (old.us === sc.us && old.them === sc.them) : (!sc.us && !sc.them)) return;
@@ -1692,7 +1702,9 @@ Object.assign(EN, {
 
   function leagueHeadHtml() {
     const f = currentFixture();
-    const sc = teamScore(state.matches);
+    /* an imported team match shows its official result, not the tally of my matches */
+    const lg = state.session && state.session.league;
+    const sc = lg && lg.scoreFixed && lg.score ? { us: Number(lg.score.us) || 0, them: Number(lg.score.them) || 0 } : teamScore(state.matches);
     const decided = sc.us + sc.them;
     const tone = !decided ? "" : sc.us > sc.them ? " win" : sc.us < sc.them ? " loss" : " draw";
     return '<div class="mt-trn-head">' +
