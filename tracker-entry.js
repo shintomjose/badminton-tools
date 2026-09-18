@@ -179,7 +179,8 @@ Object.assign(EN, {
   "Ort hinzufügen": "Add venue",
   "Ort hinzugefügt": "Venue added",
   "Ort eingeben": "Enter a venue",
-  "Frühere Turniere ({0})": "Earlier tournaments ({0})",
+  "1 Turnier": "1 tournament",
+  "{0} Turniere": "{0} tournaments",
   "noch ohne Spiele": "no matches yet",
   "Noch keine Spiele erfasst": "No matches logged yet",
   "Bilanz nicht ladbar": "Record could not be loaded",
@@ -221,10 +222,11 @@ Object.assign(EN, {
   /* Current form is "the last days I actually played", not "the days I played
      inside the last fortnight" — a fortnight off would empty the panel. */
   const SUMMARY_DAYS = 90;   // look-back window for the day-wise totals (training)
-  /* Tournaments are rare — a 90-day window would usually be empty. A year
-     back, and a limit that comfortably covers a year of everything (the
-     read cannot filter by type without another composite index). */
-  const SUMMARY_DAYS_TRN = 365;
+  /* Tournaments are rare — a 90-day window would usually be empty. Ten years
+     back, so the year blocks of Letzte Turniere carry every record, and a
+     limit that comfortably covers that (the read cannot filter by type
+     without another composite index). */
+  const SUMMARY_DAYS_TRN = 3650;
   const SUMMARY_LIMIT_TRN = 1500;
   const SUMMARY_ROWS = 5;    // how many play days to show
   const SMALL_N = 5;         // below this a percentage is flagged as thin evidence
@@ -277,7 +279,8 @@ Object.assign(EN, {
     trnCreate: false,      // "+ Turnier" opened the creation card
     /* Liga: the fixture on screen and every league session ever logged
        (the fixture list is the season schedule plus these) */
-    lg: { fixtureId: null, sessions: [], openSeasons: {} },   // openSeasons: season key -> user toggled open/closed
+    lg: { fixtureId: null, sessions: [] },
+    openGroups: {},        // "lg:2026" / "trn:2026" -> the user toggled that block open/closed
     lgScoreBusy: false,    // a team-score write is in flight
     allToday: [],          // Alle: today's matches of every type
     pendingEdit: null,     // match id to open in the editor once its day is on screen
@@ -908,8 +911,7 @@ Object.assign(EN, {
     }
     /* the open day is not necessarily the newest one any more */
     rows.sort((a, b) => (a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0));
-    /* Turnier keeps every row: the first SUMMARY_ROWS show, the rest fold
-       away under "Frühere Turniere" (summaryHtml) */
+    /* Turnier keeps every row — summaryHtml groups them by year */
     return isTournament() ? rows : rows.slice(0, SUMMARY_ROWS);
   }
 
@@ -1438,12 +1440,27 @@ Object.assign(EN, {
       "</li>";
     };
     const cls = 'class="mt-days' + ((trn || lg || all) ? " trn" : "") + '"';
-    const head = rows.slice(0, SUMMARY_ROWS), rest = rows.slice(SUMMARY_ROWS);
-    return "<ul " + cls + ">" + head.map(rowHtml).join("") + "</ul>" +
-      (rest.length
-        ? '<details class="mt-more-days"><summary>' + esc(tt("Frühere Turniere ({0})", rest.length)) + "</summary>" +
-          "<ul " + cls + ">" + rest.map(rowHtml).join("") + "</ul></details>"
-        : "");
+    if (!trn) return "<ul " + cls + ">" + rows.map(rowHtml).join("") + "</ul>";
+    /* Turnier: one collapsible block per calendar year, newest first, only the
+       current year open unless toggled; the heading carries count and my W–L */
+    const curYear = todayK.slice(0, 4);
+    const years = new Map();
+    rows.forEach(r => {
+      const y = String(r.dateKey || "").slice(0, 4);
+      if (!years.has(y)) years.set(y, []);
+      years.get(y).push(r);
+    });
+    return Array.from(years.entries()).sort((a, b) => b[0].localeCompare(a[0])).map(([y, list]) => {
+      const w = list.reduce((a, r) => a + r.w, 0), l = list.reduce((a, r) => a + r.l, 0);
+      return '<details class="mt-season"' + (groupOpen("trn:" + y, y === curYear) ? " open" : "") + ">" +
+        '<summary data-group="trn:' + esc(y) + '">' +
+          '<span class="mt-season-title">' + esc(y) + "</span>" +
+          '<span class="mt-season-meta">' + esc(list.length === 1 ? t("1 Turnier") : tt("{0} Turniere", list.length)) +
+            (w + l ? " · " + esc(tt("Spiele {0}–{1}", w, l)) : "") + "</span>" +
+        "</summary>" +
+        "<ul " + cls + ">" + list.map(rowHtml).join("") + "</ul>" +
+      "</details>";
+    }).join("");
   }
 
   /* Never a bare percentage: the sample size rides along, and a thin sample
@@ -1674,6 +1691,11 @@ Object.assign(EN, {
     "</li>";
   }
 
+  /* open state of a collapsible block: the user's toggle, else the default */
+  function groupOpen(key, dflt) {
+    return Object.prototype.hasOwnProperty.call(state.openGroups, key) ? !!state.openGroups[key] : !!dflt;
+  }
+
   /* ---- seasons: July to June, labelled "2025/26"; Vorrunde until December,
      Rückrunde from January (the schedule's own round wins where it has one) ---- */
   function seasonOf(dateKey) {
@@ -1716,7 +1738,7 @@ Object.assign(EN, {
       if (div && g.divisions.indexOf(div) < 0) g.divisions.push(div);
     });
     const list = Array.from(seasons.values()).sort((a, b) => b.key.localeCompare(a.key));
-    const isOpen = g => Object.prototype.hasOwnProperty.call(state.lg.openSeasons, g.key) ? !!state.lg.openSeasons[g.key] : g.key === cur;
+    const isOpen = g => groupOpen("lg:" + g.key, g.key === cur);
     const roundBlock = (title, fx) => fx.length
       ? '<div class="mt-field mt-trn-list-wrap">' +
           '<span class="mt-label">' + esc(title) + "</span>" +
@@ -1725,7 +1747,7 @@ Object.assign(EN, {
       : "";
     const seasonHtml = g =>
       '<details class="mt-season"' + (isOpen(g) ? " open" : "") + ">" +
-        '<summary data-season="' + esc(g.key) + '">' +
+        '<summary data-group="lg:' + esc(g.key) + '">' +
           '<span class="mt-season-title">' + esc(tt("Saison {0}", g.label)) + "</span>" +
           '<span class="mt-season-meta">' + esc(g.divisions.concat(g.teams).join(" · ")) + "</span>" +
           '<span class="mt-season-n">' + esc(tt("{0} Spiele", g.vor.length + g.rueck.length)) + "</span>" +
@@ -2724,10 +2746,10 @@ Object.assign(EN, {
   /* ================= events ================= */
   function onClick(e) {
     if (!e.target || typeof e.target.closest !== "function") return;
-    /* a season heading: remember the toggle so a re-render keeps it (the browser flips `open` itself) */
-    const seasonSum = e.target.closest("summary[data-season]");
-    if (seasonSum && state.host && state.host.contains(seasonSum)) {
-      state.lg.openSeasons[seasonSum.dataset.season] = !seasonSum.parentNode.open;
+    /* a season / year heading: remember the toggle so a re-render keeps it (the browser flips `open` itself) */
+    const groupSum = e.target.closest("summary[data-group]");
+    if (groupSum && state.host && state.host.contains(groupSum)) {
+      state.openGroups[groupSum.dataset.group] = !groupSum.parentNode.open;
       return;
     }
     const btn = e.target.closest("[data-act]");
