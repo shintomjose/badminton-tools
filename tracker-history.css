@@ -80,6 +80,10 @@ button.mth-reset { flex: 0 0 auto; }
 /* ---------------- flat collapsible groups ---------------- */
 .mth-list { display: block; }
 .mth-group { margin-bottom: 8px; }
+/* year blocks around the month / week groups */
+.mth-year { margin-bottom: 10px; }
+.mth-year > .mth-gh .mth-gt { font-weight: 700; color: var(--text-strong); }
+.mth-ybody { margin-top: 6px; padding: 0 0 2px 10px; border-left: 2px solid var(--border); }
 
 .mth-gh {
   display: flex; align-items: center; flex-wrap: wrap;

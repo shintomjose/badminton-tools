@@ -522,6 +522,14 @@
    * Range mode opens every day, since the user explicitly asked for that window.
    */
   function applyDefaultExpansion(mode, groups) {
+    /* Month and week groups sit inside year blocks: the current year opens,
+       or the newest one with matches — decided once, shared by both modes. */
+    if ((mode === "month" || mode === "week") && groups.length && !state.defaultsDone.has("yr")) {
+      state.defaultsDone.add("yr");
+      var curY = String(new Date().getFullYear());
+      var years = groups.map(function (g) { return g.key.slice(0, 4); });
+      state.expanded.add(gid("yr", years.indexOf(curY) >= 0 ? curY : years[0]));
+    }
     if (state.defaultsDone.has(mode)) return;
     state.defaultsDone.add(mode);
     if (!groups.length) return;
@@ -934,7 +942,7 @@
     // Range mode already groups by day; the other modes get a day banner per run.
     var byDay = !isRange;
     var out = [];
-    groupFlat(visible, mode).forEach(function (g) {
+    function renderGroup(g) {
       var id = gid(mode, g.key);
       out.push('<section class="mth-group">');
       out.push(groupHeader(id, groupLabel(g.key, mode), g.matches));
@@ -945,6 +953,32 @@
         } else {
           g.matches.forEach(function (m) { out.push(renderMatch(m)); });
         }
+        out.push("</div>");
+      }
+      out.push("</section>");
+    }
+    var groups = groupFlat(visible, mode);
+    if (mode !== "month" && mode !== "week") {
+      groups.forEach(renderGroup);
+      return out.join("");
+    }
+    // Month and week: the groups nest inside one block per calendar year, newest
+    // first, only the current year open by default — its header carries the
+    // year's record like any other group header.
+    var years = [], byYear = Object.create(null);
+    groups.forEach(function (g) {
+      var y = g.key.slice(0, 4);
+      if (!byYear[y]) { byYear[y] = { key: y, groups: [], matches: [] }; years.push(byYear[y]); }
+      byYear[y].groups.push(g);
+      byYear[y].matches = byYear[y].matches.concat(g.matches);
+    });
+    years.forEach(function (y) {
+      var yid = gid("yr", y.key);
+      out.push('<section class="mth-group mth-year">');
+      out.push(groupHeader(yid, y.key, y.matches));
+      if (isOpen(yid)) {
+        out.push('<div class="mth-ybody">');
+        y.groups.forEach(renderGroup);
         out.push("</div>");
       }
       out.push("</section>");
