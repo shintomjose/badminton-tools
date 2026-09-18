@@ -744,10 +744,21 @@ Object.assign(EN, {
          the fallback for matches written before the name was denormalised. */
       const [list, sessions] = await Promise.all([
         MT.repo.getMatches({ from: from, to: new Date(), limit: wide ? SUMMARY_LIMIT_TRN : 800 }),
-        trn ? MT.repo.listSessionsAround("tournament", null, 0).catch(() => []) : [],
+        trn ? MT.repo.listSessionsAround("tournament", null, 0).catch(() => [])
+          : (lg || all) ? MT.repo.listSessionsAround("league", null, 0).catch(() => []) : [],
       ]);
       if (state.type !== wanted) return;                 // mode switched meanwhile
       const rows = groupByDay(all ? list : list.filter(m => normType(m.type) === wanted));
+      if (lg || all) {
+        /* an imported team match: the official result beats the tally of my matches */
+        const fixed = new Map((sessions || [])
+          .filter(s => s.league && s.league.scoreFixed && s.league.score)
+          .map(s => [s.fixtureId || s.league.fixtureId, s.league.score]));
+        rows.forEach(r => {
+          const sc = r.fixtureId ? fixed.get(r.fixtureId) : null;
+          if (sc) { r.us = Number(sc.us) || 0; r.them = Number(sc.them) || 0; }
+        });
+      }
       if (trn) {
         const names = new Map((sessions || []).map(x => [x.dateKey, String(x.tournamentName || "").trim()]));
         rows.forEach(r => { if (!r.name) r.name = names.get(r.dateKey) || ""; });
