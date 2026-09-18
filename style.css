@@ -1557,6 +1557,9 @@
   .mt-trn-overview .mt-trn-list-wrap { margin-top: 12px; }
   .mt-trn-overview .mt-trn-list-wrap:last-child { margin-bottom: 0; }
   .mt-venue { max-width: 420px; }
+  /* inline "Neuer Ort" row under the venue dropdown */
+  .mt-venue-new { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; max-width: 420px; margin-top: 8px; }
+  .mt-venue-new input { flex: 1 1 12em; min-width: 0; min-height: 44px; }
 
   /* settings view: venue rows with star / rename / delete */
   .mtv-list { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 6px; }

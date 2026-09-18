@@ -173,6 +173,11 @@ Object.assign(EN, {
   /* not "the last few days" — a row can be weeks old if that is when you last played */
   "Letzte Spieltage": "Last match days",
   "Noch kein Turnier erfasst": "No tournament logged yet",
+  "+ Neuer Ort …": "+ New venue …",
+  "Neuer Ort": "New venue",
+  "Ort hinzufügen": "Add venue",
+  "Ort hinzugefügt": "Venue added",
+  "Ort eingeben": "Enter a venue",
   "Frühere Turniere ({0})": "Earlier tournaments ({0})",
   "noch ohne Spiele": "no matches yet",
   "Noch keine Spiele erfasst": "No matches logged yet",
@@ -281,6 +286,7 @@ Object.assign(EN, {
     locations: [],
     recent: {},            // playerId -> ms of most recent match
     locationId: null,
+    venueAdd: false,       // the inline "Neuer Ort" row under the venue dropdown
     locationName: MT.DEFAULT_LOCATION,
     loaded: false,
     loadError: null,
@@ -1153,17 +1159,48 @@ Object.assign(EN, {
 
   /* Venue picker — identical for both modes. The quick-add input hides behind
      a "+" toggle (same pattern as the Rangliste tab) so it costs no space. */
-  /* Venue as a dropdown, default preselected. Adding, renaming, deleting and
-     the default flag live in the settings view behind the header gear (Orte). */
+  /* Venue as a dropdown, default preselected. Its last option, "+ Neuer Ort …",
+     opens an inline row that creates the venue and selects it — the same
+     one-step quick-add a slot offers for an unknown player. Renaming, deleting
+     and the default flag stay in the settings view behind the header gear. */
   function venueSelectHtml() {
+    const NEW = "__new";
     return '<label class="mt-field mt-venue">' +
       '<span class="mt-label">' + esc(t("Ort")) + "</span>" +
       '<select class="mt-venue-select" aria-label="' + esc(t("Ort")) + '">' +
         state.locations.map(l =>
           '<option value="' + esc(l.id) + '"' + (l.id === state.locationId ? " selected" : "") + ">" + esc(l.name) + "</option>"
         ).join("") +
+        '<option value="' + NEW + '"' + (state.venueAdd ? " selected" : "") + ">" + esc(t("+ Neuer Ort …")) + "</option>" +
       "</select>" +
-    "</label>";
+    "</label>" +
+    (state.venueAdd
+      ? '<div class="mt-venue-new">' +
+          '<input type="text" class="mt-venue-name" placeholder="' + esc(t("Neuer Ort")) + '"' +
+            ' aria-label="' + esc(t("Neuer Ort")) + '" autocomplete="off" enterkeyhint="done">' +
+          '<button type="button" class="btn primary" data-act="venueadd">' + esc(t("Ort hinzufügen")) + "</button>" +
+          '<button type="button" class="btn" data-act="venuecancel">' + esc(t("Abbrechen")) + "</button>" +
+        "</div>"
+      : "");
+  }
+
+  /* Create the venue typed into the inline row, then select it like any other. */
+  async function addVenue() {
+    const inp = state.host && state.host.querySelector(".mt-venue-name");
+    const name = String(inp && inp.value || "").trim();
+    if (!name) { toast(t("Ort eingeben")); if (inp) inp.focus(); return; }
+    const dupe = state.locations.find(l => String(l.name || "").trim().toLowerCase() === name.toLowerCase());
+    state.venueAdd = false;
+    if (dupe) { selectLocation(dupe.id); return; }
+    try {
+      const id = await MT.repo.addLocation(name, { isDefault: !state.locations.length });
+      state.locations = state.locations.concat([{ id: id, name: name, isDefault: !state.locations.length }]);
+      toast(t("Ort hinzugefügt"));
+      selectLocation(id);
+    } catch (e) {
+      MT.toastError(e, "Speichern fehlgeschlagen");
+      renderSession();
+    }
   }
 
   /* Re-read the venues after the settings view may have changed them. */
@@ -2646,6 +2683,8 @@ Object.assign(EN, {
       return;
     }
     if (act === "trnback") { switchDay(todayKey()); return; }
+    if (act === "venueadd") { addVenue(); return; }
+    if (act === "venuecancel") { state.venueAdd = false; renderSession(); return; }
     if (act === "trncancel") {
       state.trnEdit = false;
       state.trnCreate = false;
@@ -2752,7 +2791,18 @@ Object.assign(EN, {
     if (!el2 || !el2.classList || !state.host || !state.host.contains(el2)) return;
     if (el2.classList.contains("mt-trn-name")) { state.trn.name = el2.value; return; }
     if (el2.classList.contains("mt-trn-date")) { state.dayKey = el2.value; return; }
-    if (el2.classList.contains("mt-venue-select")) { selectLocation(el2.value); return; }
+    if (el2.classList.contains("mt-venue-select")) {
+      if (el2.value === "__new") {
+        state.venueAdd = true;
+        renderSession();
+        const inp = state.host && state.host.querySelector(".mt-venue-name");
+        if (inp) inp.focus();
+        return;
+      }
+      state.venueAdd = false;
+      selectLocation(el2.value);
+      return;
+    }
     if (el2.classList.contains("mt-trn-note")) { state.trn.note = el2.value; return; }
     if (el2.classList.contains("mt-day-input")) { switchDay(el2.value); return; }
     if (el2.classList.contains("mt-slot-input")) {
@@ -2889,6 +2939,12 @@ Object.assign(EN, {
     if (el2.classList.contains("mt-row-link") && (e.key === "Enter" || e.key === " ")) {
       e.preventDefault();
       el2.click();
+      return;
+    }
+    /* the inline venue row: Enter adds, Escape closes it */
+    if (el2.classList.contains("mt-venue-name")) {
+      if (e.key === "Enter") { e.preventDefault(); addVenue(); }
+      else if (e.key === "Escape") { e.preventDefault(); state.venueAdd = false; renderSession(); }
       return;
     }
     if (!el2.classList.contains("mt-slot-input")) return;
