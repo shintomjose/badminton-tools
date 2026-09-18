@@ -173,6 +173,8 @@ Object.assign(EN, {
   /* not "the last few days" — a row can be weeks old if that is when you last played */
   "Letzte Spieltage": "Last match days",
   "Noch kein Turnier erfasst": "No tournament logged yet",
+  "1 Spieltag": "1 play day",
+  "{0} Spieltage": "{0} play days",
   "Saison {0}": "Season {0}",
   "+ Neuer Ort …": "+ New venue …",
   "Neuer Ort": "New venue",
@@ -221,7 +223,11 @@ Object.assign(EN, {
   const SUGGEST_MAX = 8;     // rows in the type-ahead dropdown
   /* Current form is "the last days I actually played", not "the days I played
      inside the last fortnight" — a fortnight off would empty the panel. */
-  const SUMMARY_DAYS = 90;   // look-back window for the day-wise totals (training)
+  const SUMMARY_DAYS = 90;   // look-back window for the day-wise totals (Alle)
+  /* Training: the year blocks of Letzte Spieltage show every year, so the read
+     goes ten years back with a limit that covers a few evenings a week */
+  const SUMMARY_DAYS_TRAIN = 3650;
+  const SUMMARY_LIMIT_TRAIN = 5000;
   /* Tournaments are rare — a 90-day window would usually be empty. Ten years
      back, so the year blocks of Letzte Turniere carry every record, and a
      limit that comfortably covers that (the read cannot filter by type
@@ -314,6 +320,7 @@ Object.assign(EN, {
 
   /* ================= helpers ================= */
   function isTournament() { return state.type === "tournament"; }
+  function isTraining() { return state.type === "training"; }
   function isLeague() { return state.type === "league"; }
   function isAll() { return state.type === "all"; }
   function normType(v) { return TYPES.indexOf(v) >= 0 ? v : "training"; }
@@ -738,16 +745,19 @@ Object.assign(EN, {
   async function loadSummary() {
     const wanted = state.type;
     const trn = wanted === "tournament", lg = wanted === "league", all = wanted === "all";
-    const wide = trn || lg;                           // rare events: a year back
+    const wide = trn || lg;                           // rare events: years back
+    const train = wanted === "training";
+    const days = wide ? SUMMARY_DAYS_TRN : train ? SUMMARY_DAYS_TRAIN : SUMMARY_DAYS;
+    const limit = wide ? SUMMARY_LIMIT_TRN : train ? SUMMARY_LIMIT_TRAIN : 800;
     try {
       const from = new Date();
-      from.setDate(from.getDate() - ((wide ? SUMMARY_DAYS_TRN : SUMMARY_DAYS) - 1));
+      from.setDate(from.getDate() - (days - 1));
       /* Turnier: every tournament session ever, not just the match window —
          a tournament created for a past day has no matches yet and would
          otherwise be unreachable. The session documents also name the days,
          the fallback for matches written before the name was denormalised. */
       const [list, sessions] = await Promise.all([
-        MT.repo.getMatches({ from: from, to: new Date(), limit: wide ? SUMMARY_LIMIT_TRN : 800 }),
+        MT.repo.getMatches({ from: from, to: new Date(), limit: limit }),
         trn ? MT.repo.listSessionsAround("tournament", null, 0).catch(() => [])
           : (lg || all) ? MT.repo.listSessionsAround("league", null, 0).catch(() => []) : [],
       ]);
@@ -911,8 +921,8 @@ Object.assign(EN, {
     }
     /* the open day is not necessarily the newest one any more */
     rows.sort((a, b) => (a.dateKey < b.dateKey ? 1 : a.dateKey > b.dateKey ? -1 : 0));
-    /* Turnier keeps every row — summaryHtml groups them by year */
-    return isTournament() ? rows : rows.slice(0, SUMMARY_ROWS);
+    /* Turnier and Training keep every row — summaryHtml groups them by year */
+    return (isTournament() || isTraining()) ? rows : rows.slice(0, SUMMARY_ROWS);
   }
 
   /* ================= manual ordering =================
@@ -1440,25 +1450,48 @@ Object.assign(EN, {
       "</li>";
     };
     const cls = 'class="mt-days' + ((trn || lg || all) ? " trn" : "") + '"';
-    if (!trn) return "<ul " + cls + ">" + rows.map(rowHtml).join("") + "</ul>";
-    /* Turnier: one collapsible block per calendar year, newest first, only the
-       current year open unless toggled; the heading carries count and my W–L */
+    const train = isTraining();
+    if (!trn && !train) return "<ul " + cls + ">" + rows.map(rowHtml).join("") + "</ul>";
+    /* Turnier and Training: one collapsible block per calendar year, newest
+       first, only the current year open unless toggled; the heading carries
+       the count and my W–L. A training year has many days, so its rows sit
+       under month labels. */
     const curYear = todayK.slice(0, 4);
+    const prefix = train ? "train:" : "trn:";
     const years = new Map();
     rows.forEach(r => {
       const y = String(r.dateKey || "").slice(0, 4);
       if (!years.has(y)) years.set(y, []);
       years.get(y).push(r);
     });
+    const countLabel = n => train
+      ? (n === 1 ? t("1 Spieltag") : tt("{0} Spieltage", n))
+      : (n === 1 ? t("1 Turnier") : tt("{0} Turniere", n));
+    const monthLabel = r => MT.fmtDate(r.date || new Date(), { month: "long", year: "numeric" });
+    const body = list => {
+      if (!train) return "<ul " + cls + ">" + list.map(rowHtml).join("") + "</ul>";
+      const months = [];
+      list.forEach(r => {
+        const key = String(r.dateKey || "").slice(0, 7);
+        const last = months[months.length - 1];
+        if (last && last.key === key) last.rows.push(r);
+        else months.push({ key: key, label: monthLabel(r), rows: [r] });
+      });
+      return months.map(m =>
+        '<div class="mt-field mt-trn-list-wrap">' +
+          '<span class="mt-label">' + esc(m.label) + "</span>" +
+          "<ul " + cls + ">" + m.rows.map(rowHtml).join("") + "</ul>" +
+        "</div>").join("");
+    };
     return Array.from(years.entries()).sort((a, b) => b[0].localeCompare(a[0])).map(([y, list]) => {
       const w = list.reduce((a, r) => a + r.w, 0), l = list.reduce((a, r) => a + r.l, 0);
-      return '<details class="mt-season"' + (groupOpen("trn:" + y, y === curYear) ? " open" : "") + ">" +
-        '<summary data-group="trn:' + esc(y) + '">' +
+      return '<details class="mt-season"' + (groupOpen(prefix + y, y === curYear) ? " open" : "") + ">" +
+        '<summary data-group="' + prefix + esc(y) + '">' +
           '<span class="mt-season-title">' + esc(y) + "</span>" +
-          '<span class="mt-season-meta">' + esc(list.length === 1 ? t("1 Turnier") : tt("{0} Turniere", list.length)) +
+          '<span class="mt-season-meta">' + esc(countLabel(list.length)) +
             (w + l ? " · " + esc(tt("Spiele {0}–{1}", w, l)) : "") + "</span>" +
         "</summary>" +
-        "<ul " + cls + ">" + list.map(rowHtml).join("") + "</ul>" +
+        body(list) +
       "</details>";
     }).join("");
   }
