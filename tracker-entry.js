@@ -138,6 +138,7 @@ Object.assign(EN, {
   "HF": "HF",
   "Platz 3": "3rd place",
   "Finale": "Final",
+  "Platz 5–8": "5th–8th",
 
   /* --- type-ahead player slots, final-score entry --- */
   "Name tippen…": "Type a name…",
@@ -202,8 +203,11 @@ Object.assign(EN, {
   "Viertelfinale": "Quarter-final",
   "Halbfinale": "Semi-final",
   "Spiel um Platz 3": "3rd-place match",
+  "Spiel um Platz 5–8": "5th–8th place match",
   "3. Platz": "3rd place",
   "4. Platz": "4th place",
+  "5.–6. Platz": "5th–6th place",
+  "7.–8. Platz": "7th–8th place",
   "Sieger": "Winner",
   "Finalist": "Finalist",
   "Aus im {0}": "Out in {0}",
@@ -239,9 +243,11 @@ Object.assign(EN, {
   /* Stored verbatim on the match — the codes are the data, t() only labels them. */
   /* In draw order — the index is the rank a KO result is judged by. The
      3rd-place match ranks above the HF that led to it and below the Finale. */
-  const ROUNDS = ["Gruppe", "R32", "R16", "VF", "HF", "Platz 3", "Finale"];
+  /* "Platz 5–8" is the placement round for the group runners-up (turnier.de
+     "Pos 05-08"); it ranks last so it outranks the group stage in the outcome. */
+  const ROUNDS = ["Gruppe", "R32", "R16", "VF", "HF", "Platz 3", "Finale", "Platz 5–8"];
   /* Long round names for the outcome chip — the codes stay on the cards. */
-  const ROUND_LONG = { Gruppe: "Gruppenphase", R32: "R32", R16: "Achtelfinale", VF: "Viertelfinale", HF: "Halbfinale", "Platz 3": "Spiel um Platz 3", Finale: "Finale" };
+  const ROUND_LONG = { Gruppe: "Gruppenphase", R32: "R32", R16: "Achtelfinale", VF: "Viertelfinale", HF: "Halbfinale", "Platz 3": "Spiel um Platz 3", Finale: "Finale", "Platz 5–8": "Spiel um Platz 5–8" };
   /* Which phase a round code belongs to: the group stage, the knock-out
      draw, or none (round not entered). Drives the card pill and dividers. */
   function phaseOf(round) {
@@ -1365,6 +1371,10 @@ Object.assign(EN, {
       if (o.best.round === "Platz 3") return o.best.res === "win"
         ? { cls: "bronze", text: "🥉 " + t("3. Platz") }
         : { cls: "reached", text: t("4. Platz") };
+      /* placement round: a win puts me in the match for 5th, a loss in the one for 7th */
+      if (o.best.round === "Platz 5–8") return o.best.res === "win"
+        ? { cls: "reached", text: t("5.–6. Platz") }
+        : { cls: "reached", text: t("7.–8. Platz") };
       if (o.best.res === "win") return fin
         ? { cls: "champ", text: "🏆 " + t("Sieger") }
         : { cls: "reached", text: roundLong(o.best.round) };
