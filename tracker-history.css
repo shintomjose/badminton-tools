@@ -144,6 +144,38 @@ button.mth-step[disabled] { opacity: 0.35; cursor: default; }
 /* rows carry their own hairline separators, so no gap between them */
 .mth-days { display: block; padding: 2px 0 12px; }
 
+/* ---------------- month rail ----------------
+   Only when the list spans more than one month: each month's days sit to the
+   right of a narrow rail that carries the month name bottom-to-top. The name
+   is sticky inside its rail, so it stays readable while a long month scrolls. */
+.mth-month {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 0 6px;
+  margin-bottom: 14px;
+}
+.mth-month:last-child { margin-bottom: 0; }
+.mth-mrail {
+  position: relative;
+  border-right: 2px solid color-mix(in srgb, var(--brand-teal) 45%, var(--border));
+  background: var(--team-band);
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+.mth-mlabel {
+  position: sticky; top: 8px;
+  display: block;
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  margin: 0 auto;
+  padding: 10px 0;
+  max-height: calc(100vh - 16px);
+  font-family: var(--font-disp);
+  font-size: 0.8rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--teal-ink);
+  white-space: nowrap;
+}
+.mth-mdays { min-width: 0; }
+
 /* ---------------- day block inside a period ----------------
    The rows do not print their own date; every playing day is one block under
    a date banner. The 2px teal-tinted frame is distinct from the 1px hairlines

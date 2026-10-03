@@ -136,6 +136,7 @@
     weekday: "short", day: "2-digit", month: "2-digit", year: "2-digit", timeZone: "UTC"
   });
   var FMT_MONTH = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric", timeZone: "UTC" });
+  var FMT_MONTHNAME = new Intl.DateTimeFormat(LOCALE, { month: "long", timeZone: "UTC" });
   var DAY_MS = 86400000;
 
   var MODES = ["year", "month", "week", "range"];
@@ -212,6 +213,13 @@
     var m = /^(\d{4})-(\d{2})$/.exec(String(monthKey || ""));
     if (!m) return String(monthKey || "?");
     return FMT_MONTH.format(new Date(Date.UTC(+m[1], +m[2] - 1, 1)));
+  }
+
+  /** Month name alone — for the rail inside a list that stays within one year. */
+  function monthName(monthKey) {
+    var m = /^(\d{4})-(\d{2})$/.exec(String(monthKey || ""));
+    if (!m) return String(monthKey || "?");
+    return FMT_MONTHNAME.format(new Date(Date.UTC(+m[1], +m[2] - 1, 1)));
   }
 
   function dayLabel(dateKey) {
@@ -963,9 +971,31 @@
       shown = sel.matches;
     }
     out.push('<div class="mth-days">');
-    dayRuns(shown).forEach(function (run) { out.push(renderDayRun(run)); });
+    out.push(renderDays(shown));
     out.push("</div>");
     return out.join("");
+  }
+
+  /**
+   * The day blocks of whatever is on screen. A list that spans more than one
+   * month (Jahr, a long Zeitraum) gets a vertical month rail down the left of
+   * each month's days, so a scroll through a year never loses the month. The
+   * rail names the year too when the list crosses a year boundary.
+   */
+  function renderDays(list) {
+    var months = groupFlat(list, "month");
+    if (months.length < 2) return dayRuns(list).map(renderDayRun).join("");
+    var years = Object.create(null);
+    months.forEach(function (g) { years[g.key.slice(0, 4)] = true; });
+    var withYear = Object.keys(years).length > 1;
+    return months.map(function (g) {
+      var label = withYear ? monthLabel(g.key) : monthName(g.key);
+      return '<section class="mth-month">' +
+        '<div class="mth-mrail" aria-hidden="true"><span class="mth-mlabel">' + ESC(label) + "</span></div>" +
+        '<h3 class="mth-sr">' + ESC(monthLabel(g.key)) + "</h3>" +
+        '<div class="mth-mdays">' + dayRuns(g.matches).map(renderDayRun).join("") + "</div>" +
+      "</section>";
+    }).join("");
   }
 
   function renderMore() {
