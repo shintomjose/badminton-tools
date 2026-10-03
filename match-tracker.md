@@ -117,10 +117,12 @@ The part to over-invest in:
 - One-handed operation; every match editable and deletable after saving
 
 ### 6. Lists & grouping
-Chronological history, grouped and collapsible, driven by the precomputed keys:
-- **Year → Week (ISO week, with date range) → Day**
-- Each group header shows matches played, W–L, win %
-- Default: current week expanded, everything else collapsed
+Chronological history, one period at a time, driven by the precomputed keys:
+- Mode switch picks the granularity: **Year | Month | Week (ISO, with date range) | custom range**
+- A ‹ select › stepper picks which period; only periods with matches are offered
+- The chosen period is a flat, scrolling list with one banner per playing day — nothing nests or collapses
+- The period bar and every day banner show matches played, W–L, win %
+- Default: the current period, else the newest one with matches
 - Filters: discipline, location, player, training/tournament
 
 ### 7. Stats & progress

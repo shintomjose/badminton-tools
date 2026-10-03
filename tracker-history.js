@@ -2,9 +2,12 @@
    Registers the "history" sub-view on the MT core (tracker-core.js).
    Owns exactly this file + tracker-history.css.
 
-   Grouping is FLAT and switchable: Jahr | Monat | Woche | Zeitraum.
-   One level of collapsible groups at the chosen granularity — no nesting.
-   Group keys come from the precomputed keys written at match-creation time
+   The mode switch picks a granularity: Jahr | Monat | Woche | Zeitraum.
+   Exactly ONE period of that granularity is shown at a time — chosen with a
+   ‹ select › stepper — as a flat, scrolling list whose only subdivision is a
+   banner per playing day. Nothing collapses, nothing nests. Zeitraum shows
+   the custom window the same way, just without the stepper.
+   Period keys come from the precomputed keys written at match-creation time
    (yearKey / weekKey / dateKey); month is dateKey.slice(0,7). Dates are parsed
    from those keys for *display formatting* only, never to re-derive grouping.
 ========================================================================= */
@@ -27,6 +30,11 @@
       "Woche": "Week",
       "Zeitraum": "Period",
       "Ansicht": "View",
+      /* period stepper */
+      "Zeitraum wählen": "Choose period",
+      "Früher": "Earlier",
+      "Später": "Later",
+      "Früheres Jahr laden ({0})": "Load earlier year ({0})",
       /* custom range */
       "von": "from",
       "bis": "to",
@@ -98,7 +106,6 @@
       "Letzten Satz entfernen": "Remove last game",
       "Sieg": "Win",
       "Spieler & Details": "Players & details",
-      "Gruppe auf- oder zuklappen": "Expand or collapse group",
       "Profil von {0} öffnen": "Open profile of {0}",
       "Kein Ergebnis": "No result",
       "Keine Sätze": "No games"
@@ -136,7 +143,13 @@
 
   /* ================= module state (in memory only, per page lifetime) ================= */
   var state = {
-    mode: "week",         // selected grouping; survives unmount, never persisted
+    mode: "month",        // selected granularity; survives unmount, never persisted
+    /* The period the user picked per mode ("2026-09", "2026-W40", "2026"), or
+       null until they step. A pick that the current filters hide is kept, not
+       overwritten — the view falls back for display and returns to it once
+       the filter is lifted. */
+    period: { year: null, month: null, week: null },
+    stepBack: null,       // { mode, key } — "‹" pressed at the oldest cached period; resolved after the load
     matches: [],          // year-cache, flat, sorted dateKey desc
     players: [],
     locations: [],
@@ -146,9 +159,7 @@
     loading: false,
     loadingMore: false,
     filters: { discipline: "all", type: "all", locationId: "all", playerId: "all" },
-    range: { from: "", to: "", matches: null, loading: false },
-    expanded: new Set(),  // group ids, namespaced per mode: "week:2026-W36"
-    defaultsDone: new Set()
+    range: { from: "", to: "", matches: null, loading: false }
   };
 
   var root = null;
@@ -222,7 +233,7 @@
     return FMT_ROW.format(new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])));
   }
 
-  /** Current ISO week key — used ONLY to pick the default-expanded group. */
+  /** Current ISO week key — used ONLY to pick the default period. */
   function currentWeekKey() {
     var now = new Date();
     var d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
@@ -461,9 +472,9 @@
     return f.discipline !== "all" || f.type !== "all" || f.locationId !== "all" || f.playerId !== "all";
   }
 
-  /* ================= flat grouping ================= */
+  /* ================= periods ================= */
 
-  /** Group key for one match at the active granularity. Range mode groups by day. */
+  /** Period key for one match at the active granularity. Range mode keys by day. */
   function groupKeyOf(m, mode) {
     var dk = m.dateKey || "";
     if (mode === "year") return m.yearKey || (dk.length >= 4 ? dk.slice(0, 4) : "?");
@@ -479,7 +490,8 @@
     return dayLabel(key);
   }
 
-  /** Ordered (desc) list of { key, matches }. All key formats sort desc lexicographically. */
+  /** Ordered (desc) list of { key, matches } — the periods that have matches.
+   *  All key formats sort desc lexicographically. */
   function groupFlat(list, mode) {
     var map = Object.create(null), keys = [];
     for (var i = 0; i < list.length; i++) {
@@ -492,7 +504,7 @@
   }
 
   /**
-   * Consecutive same-day runs inside one group body. The list is already day-sorted,
+   * Consecutive same-day runs inside one period. The list is already day-sorted,
    * so a run break is simply a change of dateKey — no second pass over the data.
    */
   function dayRuns(list) {
@@ -513,37 +525,26 @@
     return localKey(now);
   }
 
-  function gid(mode, key) { return mode + ":" + key; }
-
   /**
-   * Default expansion, applied once per mode: the current period only.
-   * If nothing was played in the current period, open the most recent group that
-   * has matches — a blank screen after a successful load reads like a bug.
-   * Range mode opens every day, since the user explicitly asked for that window.
+   * The period on screen for a mode: the user's pick if the (filtered) list
+   * still has it, else the current period, else the newest one with matches.
+   * Pure — the fallback is never written back, so a pick survives a filter.
    */
-  function applyDefaultExpansion(mode, groups) {
-    /* Month and week groups sit inside year blocks: the current year opens,
-       or the newest one with matches — decided once, shared by both modes. */
-    if ((mode === "month" || mode === "week") && groups.length && !state.defaultsDone.has("yr")) {
-      state.defaultsDone.add("yr");
-      var curY = String(new Date().getFullYear());
-      var years = groups.map(function (g) { return g.key.slice(0, 4); });
-      state.expanded.add(gid("yr", years.indexOf(curY) >= 0 ? curY : years[0]));
-    }
-    if (state.defaultsDone.has(mode)) return;
-    state.defaultsDone.add(mode);
-    if (!groups.length) return;
-
-    if (mode === "range") {
-      groups.forEach(function (g) { state.expanded.add(gid(mode, g.key)); });
-      return;
-    }
+  function effectivePeriod(mode, groups) {
+    if (!groups.length) return null;
+    var want = state.period[mode];
+    var i;
+    if (want) for (i = 0; i < groups.length; i++) if (groups[i].key === want) return groups[i];
     var cur = currentGroupKey(mode);
-    var hit = groups.some(function (g) { return g.key === cur; });
-    state.expanded.add(gid(mode, hit ? cur : groups[0].key));
+    for (i = 0; i < groups.length; i++) if (groups[i].key === cur) return groups[i];
+    return groups[0];
   }
 
-  function isOpen(id) { return state.expanded.has(id); }
+  /** Newest period strictly older than `key`, or null. Groups are sorted desc. */
+  function olderThan(groups, key) {
+    for (var i = 0; i < groups.length; i++) if (groups[i].key < key) return groups[i];
+    return null;
+  }
 
   /* ================= rendering ================= */
 
@@ -886,23 +887,41 @@
     "</article>";
   }
 
-  function groupHeader(id, title, list) {
-    var open = isOpen(id);
-    return '<button type="button" class="mth-gh" data-act="toggle" data-gid="' + ESC(id) + '"' +
-      ' aria-expanded="' + (open ? "true" : "false") + '"' +
-      ' title="' + ESC(T("Gruppe auf- oder zuklappen")) + '">' +
-      '<span class="mth-caret" aria-hidden="true">' + (open ? "▾" : "▸") + "</span>" +
-      '<span class="mth-gt">' + ESC(title) + "</span>" +
-      '<span class="mth-gs">' + statsLine(list) + "</span>" +
-    "</button>";
+  /**
+   * ‹ [period ▾] › — one period of the active granularity on screen at a time.
+   * The select lists only periods that have (visible) matches, newest first, so
+   * stepping never lands on an empty screen. "‹" at the oldest cached period
+   * fetches the previous year and then jumps there once it has arrived. The
+   * record line under the stepper is the shown period's own — matches, sets,
+   * my W–L, my S W–L, win % — the same line a day banner carries.
+   */
+  function renderPeriodBar(mode, groups, sel) {
+    var idx = groups.indexOf(sel);
+    var newer = idx > 0 ? groups[idx - 1] : null;
+    var older = idx >= 0 && idx + 1 < groups.length ? groups[idx + 1] : null;
+    var canFetch = !older && state.oldestYear !== null;      // "‹" turns into "load earlier year"
+    var prevTitle = older ? T("Früher") : TT("Früheres Jahr laden ({0})", state.oldestYear - 1);
+    var opts = groups.map(function (g) { return opt(g.key, groupLabel(g.key, mode), sel.key); }).join("");
+    return '<div class="mth-period">' +
+      '<button type="button" class="mth-step" data-act="prev"' +
+        ((older || canFetch) && !state.loadingMore ? "" : " disabled") +
+        ' aria-label="' + ESC(prevTitle) + '" title="' + ESC(prevTitle) + '">' +
+        '<span aria-hidden="true">' + (state.loadingMore ? "…" : "‹") + "</span></button>" +
+      '<select class="mth-psel" data-act="period" aria-label="' + ESC(T("Zeitraum wählen")) + '">' +
+        opts + "</select>" +
+      '<button type="button" class="mth-step" data-act="next"' + (newer ? "" : " disabled") +
+        ' aria-label="' + ESC(T("Später")) + '" title="' + ESC(T("Später")) + '">' +
+        '<span aria-hidden="true">›</span></button>' +
+      '<div class="mth-pstats mth-gs">' + statsLine(sel.matches) + "</div>" +
+    "</div>";
   }
 
-  /** Day banner + its matches, banded so neighbouring days read apart at a
-   *  glance. The banner carries the same record line as a group header —
-   *  matches, sets, my W–L, my S W–L, win % — so a single day answers
-   *  "how did it go" without expanding anything. */
-  function renderDayRun(run, alt) {
-    var out = ['<div class="mth-day' + (alt ? " mth-day-alt" : "") + '">'];
+  /** Day banner + its matches: the only subdivision inside a period. The banner
+   *  carries the same record line as the period bar — matches, sets, my W–L,
+   *  my S W–L, win % — so a single day answers "how did it go" at a glance.
+   *  It sticks to the top while its day scrolls past. */
+  function renderDayRun(run) {
+    var out = ['<div class="mth-day">'];
     out.push('<div class="mth-dayhead">' +
       '<span class="mth-daylabel">' + ESC(dayHeadLabel(run.key)) + "</span>" +
       '<span class="mth-daycount mth-gs">' + statsLine(run.matches) + "</span>" +
@@ -931,58 +950,21 @@
     var visible = source.filter(passesFilters);
     if (!visible.length) return note(T("Keine Spiele für diese Filter"));
 
-    // Defaults are decided on the unfiltered set so filtering never silently
-    // reopens or recloses a group the user has already toggled.
-    applyDefaultExpansion(mode, groupFlat(source, mode));
-
     // Positions come from the UNFILTERED pool so "first/last of the day" — and
     // therefore the disabled nudges — reflect the real day, not the view.
     dayPos = buildDayPos(source);
 
-    // Range mode already groups by day; the other modes get a day banner per run.
-    var byDay = !isRange;
     var out = [];
-    function renderGroup(g) {
-      var id = gid(mode, g.key);
-      out.push('<section class="mth-group">');
-      out.push(groupHeader(id, groupLabel(g.key, mode), g.matches));
-      if (isOpen(id)) {
-        out.push('<div class="mth-gbody">');
-        if (byDay) {
-          dayRuns(g.matches).forEach(function (run, i) { out.push(renderDayRun(run, i % 2 === 1)); });
-        } else {
-          g.matches.forEach(function (m) { out.push(renderMatch(m)); });
-        }
-        out.push("</div>");
-      }
-      out.push("</section>");
+    var shown = visible;
+    if (!isRange) {
+      var groups = groupFlat(visible, mode);
+      var sel = effectivePeriod(mode, groups);
+      out.push(renderPeriodBar(mode, groups, sel));
+      shown = sel.matches;
     }
-    var groups = groupFlat(visible, mode);
-    if (mode !== "month" && mode !== "week") {
-      groups.forEach(renderGroup);
-      return out.join("");
-    }
-    // Month and week: the groups nest inside one block per calendar year, newest
-    // first, only the current year open by default — its header carries the
-    // year's record like any other group header.
-    var years = [], byYear = Object.create(null);
-    groups.forEach(function (g) {
-      var y = g.key.slice(0, 4);
-      if (!byYear[y]) { byYear[y] = { key: y, groups: [], matches: [] }; years.push(byYear[y]); }
-      byYear[y].groups.push(g);
-      byYear[y].matches = byYear[y].matches.concat(g.matches);
-    });
-    years.forEach(function (y) {
-      var yid = gid("yr", y.key);
-      out.push('<section class="mth-group mth-year">');
-      out.push(groupHeader(yid, y.key, y.matches));
-      if (isOpen(yid)) {
-        out.push('<div class="mth-ybody">');
-        y.groups.forEach(renderGroup);
-        out.push("</div>");
-      }
-      out.push("</section>");
-    });
+    out.push('<div class="mth-days">');
+    dayRuns(shown).forEach(function (run) { out.push(renderDayRun(run)); });
+    out.push("</div>");
     return out.join("");
   }
 
@@ -1131,12 +1113,45 @@
     return null;
   }
 
+  /**
+   * Move one period older (+1) or newer (-1) within the periods that have
+   * visible matches. Older than the oldest cached one: fetch the previous
+   * year, remember where we were, and jump once it has arrived.
+   */
+  function stepPeriod(dir) {
+    var mode = state.mode;
+    if (mode === "range") return;
+    var groups = groupFlat(state.matches.filter(passesFilters), mode);
+    var sel = effectivePeriod(mode, groups);
+    if (!sel) return;
+    var idx = groups.indexOf(sel) + dir;
+    syncEditFromDom();
+    syncRangeFromDom();
+    editing = null;
+    if (idx >= 0 && idx < groups.length) {
+      state.period[mode] = groups[idx].key;
+      render();
+      return;
+    }
+    if (dir > 0 && state.oldestYear !== null) {
+      state.stepBack = { mode: mode, key: sel.key };
+      loadEarlier();
+    }
+  }
+
   function onChange(e) {
-    var el = e.target.closest ? e.target.closest('select[data-act="sel"], input[data-r]') : null;
+    var el = e.target.closest
+      ? e.target.closest('select[data-act="sel"], select[data-act="period"], input[data-r]') : null;
     if (!el) return;
     if (el.tagName === "SELECT") {
+      syncEditFromDom();
       syncRangeFromDom();            // re-render redraws the range bar; keep typed dates
-      state.filters[el.dataset.f] = el.value;
+      if (el.dataset.act === "period") {
+        if (state.mode !== "range") state.period[state.mode] = el.value;
+        editing = null;              // the edited row is no longer on screen
+      } else {
+        state.filters[el.dataset.f] = el.value;
+      }
       render();
       return;
     }
@@ -1166,12 +1181,8 @@
       return;
     }
 
-    if (act === "toggle") {
-      var g = btn.dataset.gid;
-      if (state.expanded.has(g)) state.expanded.delete(g); else state.expanded.add(g);
-      syncEditFromDom();
-      syncRangeFromDom();
-      render();
+    if (act === "prev" || act === "next") {
+      stepPeriod(act === "prev" ? 1 : -1);
       return;
     }
 
@@ -1479,12 +1490,25 @@
       var add = (Array.isArray(older) ? older : []).filter(function (m) { return !seen[m.id]; });
       state.matches = sortDesc(state.matches.concat(add));
       state.oldestYear = year;
+      resolveStepBack();
     }).catch(function (err) {
       MT.toastError(err, "Spiele konnten nicht geladen werden");
     }).then(function () {
       state.loadingMore = false;
+      state.stepBack = null;
       if (token === mountToken) render();
     });
+  }
+
+  /** "‹" was pressed at the oldest cached period: land on the newest period the
+   *  fresh year added. If it brought nothing visible, the view stays put and the
+   *  button offers the year before — nothing jumps for no reason. */
+  function resolveStepBack() {
+    var sb = state.stepBack;
+    if (!sb) return;
+    var groups = groupFlat(state.matches.filter(passesFilters), sb.mode);
+    var hit = olderThan(groups, sb.key);
+    if (hit) state.period[sb.mode] = hit.key;
   }
 
   function showRange() {
@@ -1494,7 +1518,6 @@
     if (!from || !to) { TOAST(T("Kein Zeitraum gewählt")); return; }
     if (fromKey > toKey) { TOAST(T("Von-Datum muss vor Bis-Datum liegen")); return; }
 
-    state.defaultsDone.delete("range");        // a new window re-opens its days
     editing = null;
 
     // Cheap cache hit: the whole window already sits in the year-cache.
@@ -1567,7 +1590,7 @@
       root = null;
       listEl = null;
       moreEl = null;
-      // mode / filters / expanded / matches deliberately survive: in-memory session state.
+      // mode / filters / period / matches deliberately survive: in-memory session state.
     }
   });
 })();

@@ -1,7 +1,8 @@
 /* ================= Match Tracker — match history =================
    Prefix: .mth-*  ·  tokens only, no literal colours → both themes work for free.
    Mobile first: single column, no horizontal scroll, 44px touch targets.
-   Grouping is flat (one collapsible level), so there is no nesting to indent.
+   One period at a time (‹ select ›), flat list, a banner per playing day —
+   nothing collapses, so there is no nesting to indent.
 ================================================================= */
 
 .mth { display: block; }
@@ -77,37 +78,52 @@ button.mth-show { flex: 0 0 auto; }
 button.mth-btn { min-height: 44px; padding: 8px 14px; font-size: 0.88em; }
 button.mth-reset { flex: 0 0 auto; }
 
-/* ---------------- flat collapsible groups ---------------- */
+/* ---------------- period stepper ----------------
+   ‹ [September 2026 ▾] ›  on one row, the period's record line underneath.
+   The select is the only period picker; the arrows are shortcuts to its
+   neighbours and, at the oldest cached period, to loading the year before. */
 .mth-list { display: block; }
-.mth-group { margin-bottom: 8px; }
-/* year blocks around the month / week groups */
-.mth-year { margin-bottom: 10px; }
-.mth-year > .mth-gh .mth-gt { font-weight: 700; color: var(--text-strong); }
-.mth-ybody { margin-top: 6px; padding: 0 0 2px 10px; border-left: 2px solid var(--border); }
-
-.mth-gh {
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: 4px 10px;
-  width: 100%;
-  font: inherit; text-align: left;
+.mth-period {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  grid-template-areas: "prev sel next" "stats stats stats";
+  align-items: center;
+  gap: 6px 8px;
   background: var(--team-band);
-  color: var(--text);
   border: 1px solid color-mix(in srgb, var(--brand-teal) 28%, var(--border));
   border-radius: var(--radius-sm);
-  padding: 11px 12px; min-height: 48px;
-  cursor: pointer;
-  transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease;
+  padding: 8px 8px 9px;
+  margin-bottom: 10px;
 }
-.mth-gh:hover { background: var(--row-hover); }
-.mth-gh:focus-visible { outline: none; box-shadow: var(--ring); }
-.mth-caret { color: var(--teal-ink); font-size: 0.9em; width: 1em; flex: 0 0 auto; }
-.mth-gt {
+button.mth-step {
+  grid-area: prev;
+  font: inherit; font-size: 1.5rem; line-height: 1;
+  width: 48px; min-height: 44px;
+  background: var(--surface-2); color: var(--teal-ink);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+button.mth-step[data-act="next"] { grid-area: next; }
+button.mth-step:hover:not([disabled]) { background: var(--row-hover); }
+button.mth-step:focus-visible { outline: none; box-shadow: var(--ring); }
+button.mth-step[disabled] { opacity: 0.35; cursor: default; }
+.mth-psel {
+  grid-area: sel;
+  font: inherit;
   font-family: var(--font-disp);
   font-size: 1.02rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.07em;
-  color: var(--text-strong);
-  flex: 1 1 auto; min-width: 0;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  text-align: center; text-align-last: center;
+  width: 100%; min-width: 0; min-height: 44px;
+  background: var(--surface-2); color: var(--text-strong);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  cursor: pointer;
 }
+.mth-psel:focus-visible { outline: none; box-shadow: var(--ring); }
+.mth-pstats { grid-area: stats; justify-content: center; }
+
 .mth-gs {
   display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
   font-size: 0.8em; color: var(--text-muted);
@@ -126,14 +142,12 @@ button.mth-reset { flex: 0 0 auto; }
 .mth-notme { color: var(--warn); }
 
 /* rows carry their own hairline separators, so no gap between them */
-.mth-gbody { display: block; padding: 2px 0 12px; }
+.mth-days { display: block; padding: 2px 0 12px; }
 
-/* ---------------- day band inside a group ----------------
-   The rows no longer print their own date; every day of a year/month/week group
-   is one banded block under a date banner. Every other block gets the faint
-   tint, so two adjacent days never blur into one another. */
-/* Each day is framed by a 2px teal-tinted border, distinct from the 1px
-   hairlines that separate rows within the day. */
+/* ---------------- day block inside a period ----------------
+   The rows do not print their own date; every playing day is one block under
+   a date banner. The 2px teal-tinted frame is distinct from the 1px hairlines
+   that separate rows within the day — and it is the only separation there is. */
 .mth-day {
   padding: 0 8px;
   border-radius: var(--radius-sm);
@@ -141,12 +155,15 @@ button.mth-reset { flex: 0 0 auto; }
   margin-bottom: 6px;
 }
 .mth-day:last-child { margin-bottom: 0; }
-.mth-day-alt { background: var(--row-hover); }
 
+/* The banner sticks to the top edge while its own day scrolls past, so a long
+   evening never loses its date. Opaque, or the rows would show through. */
 .mth-dayhead {
+  position: sticky; top: 0; z-index: 2;
   display: flex; align-items: baseline; justify-content: center; gap: 8px 12px;
   flex-wrap: wrap;               /* the record line drops under the date on a phone */
   padding: 8px 0 5px;
+  background: var(--surface-1);
   border-bottom: 1px solid var(--border);
 }
 .mth-daylabel {
@@ -419,11 +436,10 @@ button.mth-more-btn[disabled] { opacity: 0.5; cursor: progress; }
   .mth-fsel { font-size: 0.86em; padding: 8px 6px; }
   .mth-resetrow { justify-content: stretch; }
   .mth-resetrow button.mth-reset { flex: 1 1 100%; }
-  .mth-gh { padding: 10px 8px; gap: 4px 8px; }
+  .mth-period { grid-template-columns: 44px minmax(0, 1fr) 44px; padding: 6px 6px 8px; }
+  button.mth-step { width: 44px; }
+  .mth-psel { font-size: 0.94rem; letter-spacing: 0.04em; padding: 8px 6px; }
   .mth-day { padding: 0 5px; }
-  .mth-gs { flex-basis: 100%; padding-left: 1.6em; }
-  .mth-daycount.mth-gs { padding-left: 0; }   /* the day banner stays centred */
-  .mth-gt { font-size: 0.96rem; }
 
   /* ---- phone: the row becomes a card, results first ----
        [Sieg] [Turnier] [Klasse B] [KO - VF] [mit Jonas]      what happened
