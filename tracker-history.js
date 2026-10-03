@@ -991,7 +991,8 @@
     return months.map(function (g) {
       var label = withYear ? monthLabel(g.key) : monthName(g.key);
       return '<section class="mth-month">' +
-        '<div class="mth-mrail" aria-hidden="true"><span class="mth-mlabel">' + ESC(label) + "</span></div>" +
+        '<div class="mth-mrail" aria-hidden="true"><div class="mth-mstick">' +
+          '<span class="mth-mlabel">' + ESC(label) + "</span></div></div>" +
         '<h3 class="mth-sr">' + ESC(monthLabel(g.key)) + "</h3>" +
         '<div class="mth-mdays">' + dayRuns(g.matches).map(renderDayRun).join("") + "</div>" +
       "</section>";

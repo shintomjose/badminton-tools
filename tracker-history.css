@@ -147,7 +147,11 @@ button.mth-step[disabled] { opacity: 0.35; cursor: default; }
 /* ---------------- month rail ----------------
    Only when the list spans more than one month: each month's days sit to the
    right of a narrow rail that carries the month name bottom-to-top. The name
-   is sticky inside its rail, so it stays readable while a long month scrolls. */
+   rides the middle of the screen while a long month scrolls: a zero-height
+   sticky anchor is pinned at 50vh and the label hangs centred on it. Its
+   resting place is the month's own centre, and the rail's vertical padding
+   keeps the anchor far enough from either end that the label never leaves
+   its month. */
 .mth-month {
   display: grid;
   grid-template-columns: 24px minmax(0, 1fr);
@@ -156,18 +160,21 @@ button.mth-step[disabled] { opacity: 0.35; cursor: default; }
 }
 .mth-month:last-child { margin-bottom: 0; }
 .mth-mrail {
-  position: relative;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 64px 0;                 /* ≥ half the longest label ("Dezember 2025") */
   border-right: 2px solid color-mix(in srgb, var(--brand-teal) 45%, var(--border));
   background: var(--team-band);
   border-radius: var(--radius-sm) 0 0 var(--radius-sm);
 }
+.mth-mstick {
+  position: sticky; top: 50vh;
+  height: 0;
+  display: flex; justify-content: center; align-items: flex-start;   /* no stretch to 0 */
+}
 .mth-mlabel {
-  position: sticky; top: 8px;
   display: block;
-  writing-mode: vertical-rl; transform: rotate(180deg);
-  margin: 0 auto;
-  padding: 10px 0;
-  max-height: calc(100vh - 16px);
+  writing-mode: vertical-rl;
+  transform: translateY(-50%) rotate(180deg);
   font-family: var(--font-disp);
   font-size: 0.8rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.12em;
