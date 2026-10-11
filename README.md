@@ -254,3 +254,16 @@ match carries `type: "league"`, `slot` and a denormalised `league` object
 plus `opponentClub`. Verlauf filters on Liga and badges rows with the opponent
 and slot, Statistik has a Liga tab, and player profiles keep a Liga bucket —
 never merged with Training or Turnier.
+
+**Spielbericht einfügen** (under the slot list of an open fixture) imports a
+whole team match at once: paste the nuLiga report as text, tap *Prüfen*, and
+`tracker-league-import.js` turns it into the eight slots — our players, theirs,
+the sets from our side. Copy it from the report page on
+`bwbv-badminton.liga.nu` (the *Spielbericht* link of the fixture) for a clean
+parse; the PDF's text and a copy out of a browser PDF viewer parse too, with
+garbled rows flagged for correction in place. Every row shows its verdict
+(Sieg/Niederlage, names that would be created, what is missing); *Importieren*
+writes the complete rows, skips slots already entered, creates unknown players
+with the side's club like the slot editor does, and stores the report's total
+as the official result (`league.scoreFixed`). `node dev/league-import.test.js`
+runs the parser against the three copy formats.
