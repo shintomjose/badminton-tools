@@ -29,6 +29,7 @@ data sync between them in both directions.
 | --- | --- |
 | `index.html` | App shell, tab markup |
 | `app.js` | i18n (DE default / EN dictionary), theme, tabs, PIN, tabs 1–5 |
+| `results.js` / `scripts/update-results.mjs` | Team 4 league results (score pill next to Heim/Auswärts in Termine), rewritten from nuLiga by the "Update results" Action on Sunday + Monday mornings |
 | `tracker-core.js` | Match tracker: Firestore layer, Google owner auth, PIN gate, view registry (`MT`) |
 | `tracker-entry.js` | Match tracker: training and tournament entry flow |
 | `tracker-settings.js` | Match tracker: venue settings behind the header gear (Orte) |

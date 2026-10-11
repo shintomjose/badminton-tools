@@ -22,6 +22,10 @@ const EN = {
   "Damen": "Women",
   "Heim": "Home",
   "Auswärts": "Away",
+  "Sieg": "Win",
+  "Niederlage": "Loss",
+  "Unentschieden": "Draw",
+  "Spielbericht": "Match report",
   "Eintrag löschen": "Delete entry",
   "Sicher?": "Sure?",
   "Wirklich ALLE löschen?": "Really delete ALL?",
@@ -995,6 +999,20 @@ window.LEAGUE_TEAM = "SG Heilbronn/Leingarten IV";
 window.LEAGUE_NAME = "Bezirksliga Neckar-Odenwald 2026/27";
 window.LEAGUE_FIXTURES = MATCHES;
 
+/* Played matches get a score pill next to Heim/Auswärts: games from our side
+   (win/loss/draw colour), linked to the nuLiga match report. Data comes from
+   window.RESULTS in results.js (written by scripts/update-results.mjs). */
+function resultBadge(id) {
+  const r = (window.RESULTS || {})[id];
+  if (!r) return "";
+  const cls = r.own > r.opp ? "win" : r.own < r.opp ? "loss" : "draw";
+  const label = `${r.own}:${r.opp}`;
+  const title = t(cls === "win" ? "Sieg" : cls === "loss" ? "Niederlage" : "Unentschieden") + " — " + t("Spielbericht");
+  return r.report
+    ? ` <a class="badge-res ${cls}" href="${esc(r.report)}" target="_blank" rel="noopener" title="${esc(title)}">${label}</a>`
+    : ` <span class="badge-res ${cls}" title="${esc(title)}">${label}</span>`;
+}
+
 function renderMatches(tableId, round) {
   const list = MATCHES.filter(m => m.round === round);
   const rows = list.map((m, i) => {
@@ -1005,7 +1023,7 @@ function renderMatches(tableId, round) {
       ${sameAsPrev ? "" : `<td class="mdate" rowspan="${span}">${t(m.day)} ${m.date}</td>`}
       <td class="mtime">${m.time}</td>
       <td class="mopp">${esc(m.opp)}</td>
-      <td><span class="badge-ha ${m.home ? "h" : "a"}">${t(m.home ? "Heim" : "Auswärts")}</span></td>
+      <td class="mres"><span class="badge-ha ${m.home ? "h" : "a"}">${t(m.home ? "Heim" : "Auswärts")}</span>${resultBadge(m.id)}</td>
     </tr>`;
   }).join("");
   document.getElementById(tableId).innerHTML = `

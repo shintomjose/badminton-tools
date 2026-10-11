@@ -421,6 +421,18 @@
   }
   .badge-ha.h { background: color-mix(in srgb, var(--brand-teal) 22%, transparent); color: var(--teal-ink); }
   .badge-ha.a { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+  /* result pill next to Heim/Auswärts: games from our side, coloured by outcome */
+  .match-table td.mres { white-space: nowrap; }
+  .badge-res {
+    display: inline-block; margin-left: 6px;
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.78em;
+    padding: 1px 9px; border-radius: 999px; letter-spacing: 0.04em;
+    text-decoration: none; border: 1px solid transparent;
+  }
+  .badge-res.win  { background: color-mix(in srgb, var(--court-green) 22%, transparent); color: var(--court-green); border-color: color-mix(in srgb, var(--court-green) 45%, transparent); }
+  .badge-res.loss { background: color-mix(in srgb, var(--danger) 16%, transparent);      color: var(--danger);      border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+  .badge-res.draw { background: color-mix(in srgb, var(--warn) 18%, transparent);        color: var(--warn);        border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+  a.badge-res:hover { filter: brightness(1.1); text-decoration: underline; }
   /* panel heading with a pill or icon button on the right; the hint gets its
      own line below instead of wrapping around the pill */
   .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -647,6 +659,7 @@
     .match-table th, .match-table td { padding: 6px 4px; font-size: 0.8em; }
     .match-table td.mdate { white-space: normal; }
     .badge-ha { font-size: 0.68em; padding: 1px 6px; }
+    .badge-res { font-size: 0.68em; padding: 1px 6px; margin-left: 4px; }
     .panel { padding: 12px; }
     .tab-toolbar { gap: 8px; }
   }
