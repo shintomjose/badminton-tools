@@ -58,6 +58,9 @@
       "Filter": "Filters",
       "{0}: Alle": "{0}: All",
       "Filter zurücksetzen": "Reset filters",
+      "Liga: nur meine Spiele": "League: my matches only",
+      "Liga: alle Spiele der Mannschaft": "League: every match of the team",
+      "{0} ausgeblendet": "{0} hidden",
       /* states */
       "Verlauf wird geladen …": "Loading history …",
       "Noch keine Spiele aufgezeichnet": "No matches recorded yet",
@@ -160,6 +163,11 @@
     loading: false,
     loadingMore: false,
     filters: { discipline: "all", type: "all", locationId: "all", playerId: "all" },
+    /* A team match brings seven matches I was not on court for. They stay
+       out of the Verlauf until asked for — the ledger is mine first. Training
+       matches of others are different: those are logged on purpose, and the
+       "ohne mich" tally counts them. Session-only, like the mode. */
+    teamOthers: false,
     range: { from: "", to: "", matches: null, loading: false }
   };
 
@@ -472,7 +480,32 @@
       var ids = Array.isArray(m.playerIds) ? m.playerIds : [];
       if (ids.indexOf(f.playerId) === -1) return false;
     }
+    if (isTeamOther(m) && !state.teamOthers) return false;
     return true;
+  }
+
+  /* A league match I did not play — hidden by default. Asking for a player
+     by name means "show me their matches", so that filter overrides the default. */
+  function isTeamOther(m) {
+    if (m.type !== "league" || !state.meId) return false;
+    if (state.filters.playerId !== "all") return false;
+    return mySide(m) === null;
+  }
+
+  /* How many league matches the default is hiding right now, after the other
+     filters — so the toggle can say what it would reveal. */
+  function hiddenTeamCount(source) {
+    if (state.teamOthers) return 0;
+    var n = 0;
+    for (var i = 0; i < source.length; i++) {
+      var m = source[i];
+      if (!isTeamOther(m)) continue;
+      state.teamOthers = true;                 // test the other filters alone
+      var ok = passesFilters(m);
+      state.teamOthers = false;
+      if (ok) n++;
+    }
+    return n;
   }
 
   function filtersActive() {
@@ -588,6 +621,24 @@
     return String(a.name || "").localeCompare(String(b.name || ""), LOCALE);
   }
 
+  /* "Liga: nur meine Spiele · 7 ausgeblendet" ⇄ "Liga: alle Spiele der Mannschaft".
+     Shown only while there is something to toggle: a league match of the
+     team that I did not play, in the loaded data. */
+  function teamToggleHtml() {
+    var source = state.mode === "range" ? (state.range.matches || []) : state.matches;
+    var on = state.teamOthers;
+    var hidden = hiddenTeamCount(source);
+    if (!on && !hidden) return "";
+    if (on && !source.some(function (m) { return isTeamOther(m); })) return "";
+    return '<div class="mth-lgrow">' +
+      '<button type="button" class="mth-lgtoggle' + (on ? " on" : "") + '" data-act="team" aria-pressed="' + (on ? "true" : "false") + '">' +
+        '<span class="mth-lgtoggle-dot" aria-hidden="true"></span>' +
+        '<span class="mth-lgtoggle-txt">' + ESC(T(on ? "Liga: alle Spiele der Mannschaft" : "Liga: nur meine Spiele")) + "</span>" +
+        (hidden ? '<span class="mth-lgtoggle-n">' + ESC(TT("{0} ausgeblendet", hidden)) + "</span>" : "") +
+      "</button>" +
+    "</div>";
+  }
+
   function renderFilters() {
     var f = state.filters;
 
@@ -615,6 +666,7 @@
           fsel("locationId", T("Ort"), loc) +
           fsel("playerId", T("Spieler"), pl) +
         "</div>" +
+        teamToggleHtml() +
         (filtersActive()
           ? '<div class="mth-resetrow">' +
               '<button type="button" class="btn mth-btn mth-reset" data-act="reset">' +
@@ -1220,6 +1272,14 @@
     if (act === "reset") {
       syncRangeFromDom();
       state.filters = { discipline: "all", type: "all", locationId: "all", playerId: "all" };
+      render();
+      return;
+    }
+
+    if (act === "team") {
+      syncEditFromDom();
+      syncRangeFromDom();
+      state.teamOthers = !state.teamOthers;
       render();
       return;
     }

@@ -71,6 +71,24 @@ button.mth-show { flex: 0 0 auto; }
 .mth-fsel.on { border-color: var(--brand-teal); color: var(--teal-ink); font-weight: 600; }
 .mth-resetrow { display: flex; justify-content: flex-end; }
 
+/* the Liga toggle: a pill that names the current rule and what it hides */
+.mth-lgrow { display: flex; }
+button.mth-lgtoggle {
+  display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font: inherit; font-size: 0.88em;
+  min-height: 40px; padding: 6px 14px 6px 10px;
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 999px;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
+}
+button.mth-lgtoggle:hover { background: var(--row-hover); }
+button.mth-lgtoggle:focus-visible { outline: none; box-shadow: var(--ring); }
+button.mth-lgtoggle.on { border-color: var(--brand-teal); color: var(--teal-ink); font-weight: 600; }
+.mth-lgtoggle-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); flex: none; }
+button.mth-lgtoggle.on .mth-lgtoggle-dot { background: var(--brand-teal); }
+.mth-lgtoggle-n { color: var(--text-muted); font-size: 0.92em; font-variant-numeric: tabular-nums; }
+
 /* label + control pairs, used by the Zeitraum bar */
 .mth-sel { display: flex; align-items: center; gap: 8px; flex: 1 1 220px; min-width: 0; }
 
