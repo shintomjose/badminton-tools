@@ -29,6 +29,7 @@ data sync between them in both directions.
 | --- | --- |
 | `index.html` | App shell, tab markup |
 | `app.js` | i18n (DE default / EN dictionary), theme, tabs, PIN, tabs 1–5 |
+| `results.js` / `scripts/update-results.mjs` | Team 4 league results (score pill next to Heim/Auswärts in Termine), rewritten from nuLiga by the "Update results" Action on Sunday + Monday mornings |
 | `tracker-core.js` | Match tracker: Firestore layer, Google owner auth, PIN gate, view registry (`MT`) |
 | `tracker-entry.js` | Match tracker: training and tournament entry flow |
 | `tracker-settings.js` | Match tracker: venue settings behind the header gear (Orte) |
@@ -254,6 +255,19 @@ match carries `type: "league"`, `slot` and a denormalised `league` object
 plus `opponentClub`. Verlauf filters on Liga and badges rows with the opponent
 and slot, Statistik has a Liga tab, and player profiles keep a Liga bucket —
 never merged with Training or Turnier.
+
+**Spielbericht einfügen** (under the slot list of an open fixture) imports a
+whole team match at once: paste the nuLiga report as text, tap *Prüfen*, and
+`tracker-league-import.js` turns it into the eight slots — our players, theirs,
+the sets from our side. Copy it from the report page on
+`bwbv-badminton.liga.nu` (the *Spielbericht* link of the fixture) for a clean
+parse; the PDF's text and a copy out of a browser PDF viewer parse too, with
+garbled rows flagged for correction in place. Every row shows its verdict
+(Sieg/Niederlage, names that would be created, what is missing); *Importieren*
+writes the complete rows, skips slots already entered, creates unknown players
+with the side's club like the slot editor does, and stores the report's total
+as the official result (`league.scoreFixed`). `node dev/league-import.test.js`
+runs the parser against the three copy formats.
 
 Results come from badhub: `node dev/liga-import.js` (after `npm install` in
 `dev/`, with the service-account key in the repo root) previews my matches of

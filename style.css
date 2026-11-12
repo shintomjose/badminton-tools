@@ -421,6 +421,18 @@
   }
   .badge-ha.h { background: color-mix(in srgb, var(--brand-teal) 22%, transparent); color: var(--teal-ink); }
   .badge-ha.a { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+  /* result pill next to Heim/Auswärts: games from our side, coloured by outcome */
+  .match-table td.mres { white-space: nowrap; }
+  .badge-res {
+    display: inline-block; margin-left: 6px;
+    font-family: var(--font-disp); font-weight: 700; font-size: 0.78em;
+    padding: 1px 9px; border-radius: 999px; letter-spacing: 0.04em;
+    text-decoration: none; border: 1px solid transparent;
+  }
+  .badge-res.win  { background: color-mix(in srgb, var(--court-green) 22%, transparent); color: var(--court-green); border-color: color-mix(in srgb, var(--court-green) 45%, transparent); }
+  .badge-res.loss { background: color-mix(in srgb, var(--danger) 16%, transparent);      color: var(--danger);      border-color: color-mix(in srgb, var(--danger) 45%, transparent); }
+  .badge-res.draw { background: color-mix(in srgb, var(--warn) 18%, transparent);        color: var(--warn);        border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+  a.badge-res:hover { filter: brightness(1.1); text-decoration: underline; }
   /* panel heading with a pill or icon button on the right; the hint gets its
      own line below instead of wrapping around the pill */
   .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -647,6 +659,7 @@
     .match-table th, .match-table td { padding: 6px 4px; font-size: 0.8em; }
     .match-table td.mdate { white-space: normal; }
     .badge-ha { font-size: 0.68em; padding: 1px 6px; }
+    .badge-res { font-size: 0.68em; padding: 1px 6px; margin-left: 4px; }
     .panel { padding: 12px; }
     .tab-toolbar { gap: 8px; }
   }
@@ -1898,3 +1911,34 @@
   }
   .mt-trn-list .mt-lg-mini { margin-left: auto; }
   .mt-trn-list .mt-lg-mini + .btn, .mt-trn-list .mt-badge + .btn { margin-left: 0; }
+
+  /* --- Liga: Spielbericht import ---
+     Closed: one button and a hint under the slot list. Open: the textarea,
+     then one card per slot — our names, theirs, the sets — each with its
+     verdict, so a garbled copy is corrected in place before anything is written. */
+  .mt-imp-offer { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; }
+  .mt-imp-offer .mt-muted { flex: 1 1 14em; font-size: 0.9em; }
+  .mt-imp .mt-trn-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 8px; }
+  .mt-imp .mt-trn-actions .mt-big { flex: 1 1 100%; }
+  .mt-imp-text { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.82em; white-space: pre; overflow-x: auto; }
+  .mt-imp-rows { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+  .mt-imp-row {
+    background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 10px 12px;
+  }
+  .mt-imp-head { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .mt-imp-status { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; min-width: 0; font-size: 0.88em; }
+  .mt-imp-prob { color: var(--danger); font-weight: 600; }
+  .mt-imp-new { color: var(--warn); font-weight: 600; }
+  .mt-imp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(14em, 1fr)); gap: 8px 12px; }
+  .mt-imp-side { display: grid; gap: 6px; min-width: 0; }
+  .mt-imp-side .mt-label { font-size: 0.82em; color: var(--text-muted); overflow-wrap: anywhere; }
+  .mt-imp-sets { max-width: 14em; }
+  .mt-imp-in {
+    width: 100%; min-width: 0; font: inherit;
+    background: var(--surface-1); color: var(--text-strong);
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 8px 10px; min-height: 44px;
+  }
+  .mt-imp-in:focus-visible { outline: none; box-shadow: var(--ring); }
+  .mt-imp-sets .mt-imp-in { font-variant-numeric: tabular-nums; }

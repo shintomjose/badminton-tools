@@ -214,6 +214,34 @@ Object.assign(EN, {
   "Aus in der {0}": "Out in {0}",
   "läuft": "live",
   "Mein Turnierergebnis": "My tournament result",
+  /* Liga: Spielbericht import */
+  "Spielbericht einfügen": "Paste match report",
+  "Von nuLiga kopieren — alle acht Spiele auf einmal.": "Copy it from nuLiga — all eight matches at once.",
+  "Spielbericht-Text": "Match report text",
+  "Hier den kopierten Spielbericht einfügen …": "Paste the copied match report here …",
+  "Prüfen": "Check",
+  "Erst den Spielbericht einfügen": "Paste the match report first",
+  "Wir": "Us",
+  "Importieren ({0})": "Import ({0})",
+  "Nichts zu importieren": "Nothing to import",
+  "{0} Spiele importiert": "{0} matches imported",
+  "Import fehlgeschlagen": "Import failed",
+  "Spieler fehlen": "Players missing",
+  "Sätze fehlen": "Sets missing",
+  "Sätze": "Sets",
+  "Lade …": "Loading …",
+  "Nachname, Vorname": "Last name, first name",
+  "Kein Sieger erkennbar": "No winner derivable",
+  "nur ein Satz": "only one set",
+  "kampflos — wird nicht gespeichert": "walkover — not stored",
+  "schon eingetragen — wird übersprungen": "already entered — skipped",
+  "neu: {0}": "new: {0}",
+  "Bericht: {0} gegen {1}": "Report: {0} vs {1}",
+  "Offizielles Ergebnis {0}": "Official result {0}",
+  "Gegner passt nicht zum Spielplan": "Opponent does not match the schedule",
+  "Datum weicht vom Spielplan ab": "Date differs from the schedule",
+  "Namen und Sätze prüfen, dann importieren. Sätze aus unserer Sicht, z. B. 21:12 21:11.":
+    "Check names and sets, then import. Sets from our side, e.g. 21:12 21:11.",
 });
 
 (function () {
@@ -294,6 +322,8 @@ Object.assign(EN, {
     lg: { fixtureId: null, sessions: [] },
     openGroups: {},        // "lg:2026" / "trn:2026" -> the user toggled that block open/closed
     lgScoreBusy: false,    // a team-score write is in flight
+    /* Liga: the pasted Spielbericht and its checked rows, until imported */
+    lgImport: { open: false, text: "", rows: null, head: null, busy: false },
     allToday: [],          // Alle: today's matches of every type
     pendingEdit: null,     // match id to open in the editor once its day is on screen
     session: null,
@@ -1147,6 +1177,7 @@ Object.assign(EN, {
     state.session = null;
     state.matches = [];
     state.lg.fixtureId = f.id;
+    state.lgImport = blankImport();
     state.dayKey = f.dateKey === todayKey() ? "" : f.dateKey;
     pickDefaultLocation();
     renderAll();
@@ -1159,6 +1190,7 @@ Object.assign(EN, {
     state.session = null;
     state.matches = [];
     state.lg.fixtureId = null;
+    state.lgImport = blankImport();
     state.dayKey = "";
     renderAll();
     loadLeagueSessions();
@@ -1861,6 +1893,267 @@ Object.assign(EN, {
     "</section>";
   }
 
+  /* ---- Liga: import a whole Spielbericht ----
+     The nuLiga report pasted as text (tracker-league-import.js parses it)
+     becomes eight checked rows — our players, theirs, the sets from our
+     side — that the user corrects where the copy was garbled, then imports
+     in one go. Side A is always our team, like the slot editor. The report's
+     total is stored as the official result (league.scoreFixed), so the team
+     score never depends on how many slots were imported. */
+  function blankImport() { return { open: false, text: "", rows: null, head: null, busy: false }; }
+
+  /* names the parser may trust: every player on record plus the club roster */
+  function importKnownNames() {
+    const seen = {};
+    return state.players.map(p => p.name).concat(clubRoster()).filter(n => {
+      const k = fold(n);
+      if (!n || seen[k]) return false;
+      seen[k] = true;
+      return true;
+    });
+  }
+
+  /* Which column of the report is ours: the team named in app.js, otherwise
+     the fixture's Heim/Auswärts flag. */
+  function importOurSide(parsed, f) {
+    const us = fold(leagueTeam());
+    if (parsed.home && fold(parsed.home) === us) return "home";
+    if (parsed.away && fold(parsed.away) === us) return "away";
+    return f && f.home ? "home" : "away";
+  }
+
+  function importParse() {
+    const f = currentFixture(), imp = state.lgImport;
+    if (!f || typeof MT.parseSpielbericht !== "function") return;
+    const text = String(imp.text || "").trim();
+    if (!text) { toast(t("Erst den Spielbericht einfügen")); focusIn(".mt-imp-text", true); return; }
+    const parsed = MT.parseSpielbericht(text, { known: importKnownNames() });
+    const flip = importOurSide(parsed, f) === "away";
+    const total = parsed.total
+      ? (flip ? { us: parsed.total.away, them: parsed.total.home } : { us: parsed.total.home, them: parsed.total.away })
+      : null;
+    const them = flip ? parsed.home : parsed.away;
+    imp.head = {
+      us: flip ? parsed.away : parsed.home, them: them,
+      date: parsed.date, time: parsed.time, total: total,
+      opponentOk: them ? fold(them) === fold(f.opponent || "") : null,
+      dateOk: parsed.date ? parsed.date === f.dateKey : null,
+    };
+    imp.rows = parsed.slots.map(s => {
+      const n = slotDiscipline(s.slot) === "singles" ? 1 : 2;
+      const us = (flip ? s.away : s.home).slice(0, n), op = (flip ? s.home : s.away).slice(0, n);
+      while (us.length < n) us.push("");
+      while (op.length < n) op.push("");
+      return {
+        slot: s.slot, n: n, us: us, them: op,
+        sets: s.sets.map(g => (flip ? g.a + ":" + g.h : g.h + ":" + g.a)).join(" "),
+        walkover: s.walkover ? ((s.walkover === "home") !== flip ? "us" : "them") : null,
+      };
+    });
+    renderList();
+  }
+
+  /* "21:12 21:11" → [{a, b}], a = us. Tolerates dashes and loose spacing. */
+  function importSets(str) {
+    const out = [];
+    String(str || "").replace(/(\d{1,2})\s*[:\-–]\s*(\d{1,2})/g, (_, a, b) => { out.push({ a: Number(a), b: Number(b) }); return ""; });
+    return out.slice(0, 3);
+  }
+
+  /* One row's verdict: what blocks it, what it would create, who wins. */
+  function importRowCheck(r) {
+    const c = { problems: [], warnings: [], newNames: [], games: [], us: [], them: [], winner: null };
+    if (r.walkover) { c.problems.push(t("kampflos — wird nicht gespeichert")); return c; }
+    c.us = r.us.map(x => String(x || "").trim()).filter(Boolean);
+    c.them = r.them.map(x => String(x || "").trim()).filter(Boolean);
+    if (c.us.length !== r.n || c.them.length !== r.n) c.problems.push(t("Spieler fehlen"));
+    c.games = importSets(r.sets);
+    if (!c.games.length) c.problems.push(t("Sätze fehlen"));
+    else {
+      c.winner = MT.deriveWinner(c.games, LEAGUE_TARGET);
+      if (!c.winner) c.problems.push(t("Kein Sieger erkennbar"));
+      /* a copy that lost a set still imports — but says so */
+      else if (c.games.length < 2) c.warnings.push(t("nur ein Satz"));
+    }
+    if (slotMatch(r.slot)) c.problems.push(t("schon eingetragen — wird übersprungen"));
+    const seen = {};
+    c.us.concat(c.them).forEach(n => { const k = fold(n); if (!seen[k] && !playerByName(n)) { seen[k] = true; c.newNames.push(n); } });
+    return c;
+  }
+
+  function importStatusHtml(r) {
+    const c = importRowCheck(r);
+    const bits = [];
+    if (c.problems.length) bits.push('<span class="mt-imp-prob">' + c.problems.map(esc).join(" · ") + "</span>");
+    else if (c.winner) {
+      bits.push('<span class="mt-outcome ' + (c.winner === "A" ? "champ" : "out") + '">' +
+        '<span class="mt-outcome-text">' + esc(t(c.winner === "A" ? "Sieg" : "Niederlage")) + "</span></span>");
+    }
+    c.warnings.forEach(w => bits.push('<span class="mt-imp-new">' + esc(w) + "</span>"));
+    if (c.newNames.length) bits.push('<span class="mt-imp-new">' + esc(tt("neu: {0}", c.newNames.join(", "))) + "</span>");
+    return bits.join("");
+  }
+
+  function patchImportStatus(row) {
+    const el2 = state.host && state.host.querySelector('.mt-imp-status[data-slot="' + row.slot + '"]');
+    if (el2) el2.innerHTML = importStatusHtml(row);
+    const btn = state.host && state.host.querySelector('[data-act="lgimpsave"]');
+    if (btn) { const n = importReadyCount(); btn.textContent = tt("Importieren ({0})", n); btn.disabled = !n || state.lgImport.busy; }
+  }
+
+  function importReadyCount() {
+    return (state.lgImport.rows || []).filter(r => !importRowCheck(r).problems.length).length;
+  }
+
+  function importInput(r, side, i) {
+    return '<input type="text" class="mt-imp-in" list="mtImpNames" autocomplete="off" autocapitalize="words"' +
+      ' data-imp="name" data-slot="' + esc(r.slot) + '" data-side="' + side + '" data-i="' + i + '"' +
+      ' value="' + esc(r[side][i] || "") + '" placeholder="' + esc(t("Nachname, Vorname")) + '"' +
+      ' aria-label="' + esc(t(side === "us" ? "Wir" : "Gegner") + " " + (i + 1)) + '">';
+  }
+
+  function leagueImportHtml() {
+    const imp = state.lgImport, f = currentFixture();
+    if (!f) return "";
+    if (!imp.open) {
+      return '<section class="panel mt-imp">' +
+        '<div class="mt-imp-offer">' +
+          '<button type="button" class="btn" data-act="lgimp">' + esc(t("Spielbericht einfügen")) + "</button>" +
+          '<span class="mt-muted">' + esc(t("Von nuLiga kopieren — alle acht Spiele auf einmal.")) + "</span>" +
+        "</div>" +
+      "</section>";
+    }
+    let out = '<section class="panel mt-imp">' +
+      "<h2>" + esc(t("Spielbericht einfügen")) + "</h2>" +
+      '<label class="mt-field">' +
+        '<span class="mt-label">' + esc(t("Spielbericht-Text")) + "</span>" +
+        '<textarea class="mt-imp-text" rows="5" autocomplete="off" spellcheck="false"' +
+          ' placeholder="' + esc(t("Hier den kopierten Spielbericht einfügen …")) + '">' + esc(imp.text || "") + "</textarea>" +
+      "</label>" +
+      '<div class="mt-trn-actions">' +
+        '<button type="button" class="btn" data-act="lgimpcancel">' + esc(t("Abbrechen")) + "</button>" +
+        '<button type="button" class="btn primary" data-act="lgimpparse">' + esc(t("Prüfen")) + "</button>" +
+      "</div>";
+    if (imp.rows) {
+      const h = imp.head || {};
+      const notes = [];
+      if (h.us || h.them) notes.push(esc(tt("Bericht: {0} gegen {1}", h.us || "?", h.them || "?")));
+      if (h.total) notes.push(esc(tt("Offizielles Ergebnis {0}", scoreText(h.total))));
+      if (h.opponentOk === false) notes.push('<span class="mt-imp-prob">' + esc(t("Gegner passt nicht zum Spielplan")) + "</span>");
+      if (h.dateOk === false) notes.push('<span class="mt-imp-prob">' + esc(t("Datum weicht vom Spielplan ab")) + "</span>");
+      const known = importKnownNames();
+      out += '<p class="mt-sess-meta">' + notes.join(" · ") + "</p>" +
+        '<p class="mt-muted">' + esc(t("Namen und Sätze prüfen, dann importieren. Sätze aus unserer Sicht, z. B. 21:12 21:11.")) + "</p>" +
+        '<datalist id="mtImpNames">' + known.map(n => '<option value="' + esc(n) + '">').join("") + "</datalist>" +
+        '<ul class="mt-imp-rows">' +
+        imp.rows.map(r =>
+          '<li class="mt-imp-row">' +
+            '<div class="mt-imp-head"><span class="mt-no">' + esc(t(r.slot)) + "</span>" +
+              '<span class="mt-imp-status" data-slot="' + esc(r.slot) + '">' + importStatusHtml(r) + "</span></div>" +
+            '<div class="mt-imp-grid">' +
+              '<div class="mt-imp-side"><span class="mt-label">' + esc(leagueTeam()) + "</span>" +
+                Array.from({ length: r.n }, (_, i) => importInput(r, "us", i)).join("") + "</div>" +
+              '<div class="mt-imp-side"><span class="mt-label">' + esc(f.opponent || t("Gegner")) + "</span>" +
+                Array.from({ length: r.n }, (_, i) => importInput(r, "them", i)).join("") + "</div>" +
+              '<label class="mt-imp-side mt-imp-sets"><span class="mt-label">' + esc(t("Sätze")) + "</span>" +
+                '<input type="text" class="mt-imp-in" inputmode="numeric" autocomplete="off" data-imp="sets"' +
+                ' data-slot="' + esc(r.slot) + '" value="' + esc(r.sets) + '" placeholder="21:12 21:11">' +
+              "</label>" +
+            "</div>" +
+          "</li>").join("") +
+        "</ul>" +
+        '<div class="mt-trn-actions">' +
+          '<button type="button" class="btn primary mt-big" data-act="lgimpsave"' + (importReadyCount() && !imp.busy ? "" : " disabled") + ">" +
+            esc(imp.busy ? t("Lade …") : tt("Importieren ({0})", importReadyCount())) + "</button>" +
+        "</div>";
+    }
+    return out + "</section>";
+  }
+
+  /* The report's own date and time when it has them, else the fixture's. */
+  function importWhen(f, head) {
+    const d = /^(\d{4})-(\d{2})-(\d{2})$/.exec((head && head.date) || "");
+    if (!d) return fixtureDate(f);
+    const tm = /^(\d{1,2}):(\d{2})$/.exec((head && head.time) || f.time || "");
+    return new Date(+d[1], +d[2] - 1, +d[3], tm ? +tm[1] : 0, tm ? +tm[2] : 0, 0, 0);
+  }
+
+  async function importSave() {
+    const f = currentFixture(), imp = state.lgImport;
+    if (!f || !imp.rows || imp.busy) return;
+    const todo = [];
+    imp.rows.forEach(r => { const c = importRowCheck(r); if (!c.problems.length) todo.push({ r: r, c: c }); });
+    if (!todo.length) { toast(t("Nichts zu importieren")); return; }
+    imp.busy = true;
+    renderList();
+    try {
+      /* players first: known by name, otherwise created with the side's club,
+         exactly as a name typed into the slot editor would be */
+      const ids = {};
+      for (const item of todo) {
+        for (const side of ["us", "them"]) {
+          for (const name of item.c[side]) {
+            const k = fold(name);
+            if (ids[k]) continue;
+            const ex = playerByName(name);
+            if (ex) { ids[k] = ex.id; continue; }
+            const club = side === "us" ? MT.DEFAULT_CLUB : (f.opponent || MT.DEFAULT_CLUB);
+            const id = await MT.repo.addPlayer(name, club);
+            state.players = state.players.concat([{ id: id, name: name, club: club, active: true, isMe: false }]);
+            ids[k] = id;
+          }
+        }
+      }
+      const me = meePlayer();
+      let seq = nextSeq();
+      const payloads = todo.map(item => {
+        const idsA = item.c.us.map(n => ids[fold(n)]), idsB = item.c.them.map(n => ids[fold(n)]);
+        const clubs = {};
+        idsA.concat(idsB).forEach(id => { const p = playerById(id); if (p) clubs[id] = p.club || MT.DEFAULT_CLUB; });
+        return {
+          discipline: slotDiscipline(item.r.slot), targetScore: LEAGUE_TARGET,
+          sideA: { playerIds: idsA, playerNames: namesOf(idsA) },
+          sideB: { playerIds: idsB, playerNames: namesOf(idsB) },
+          playerIds: idsA.concat(idsB), playerClubs: clubs,
+          games: item.c.games, resultType: "normal", retiredSide: null,
+          involvesMe: me ? idsA.concat(idsB).indexOf(me.id) >= 0 : null,
+          note: "", slot: item.r.slot, opponentClub: f.opponent || null,
+          league: { fixtureId: f.id, opponent: f.opponent, home: !!f.home, team: leagueTeam() },
+          status: "finished", seq: seq++,
+        };
+      });
+      const score = imp.head && imp.head.total ? imp.head.total : null;
+      const league = {
+        fixtureId: f.id, opponent: f.opponent, home: !!f.home, round: f.round || "",
+        time: (imp.head && imp.head.time) || f.time || "", team: leagueTeam(),
+        score: score, scoreFixed: !!score,
+      };
+      let session = state.session, first = 0;
+      if (!session) {
+        const res = await MT.repo.createSessionWithMatch({
+          type: "league", date: importWhen(f, imp.head),
+          locationId: state.locationId, locationName: state.locationName,
+          tournamentName: null, fixtureId: f.id, league: league,
+        }, payloads[0]);
+        session = res.session;
+        first = 1;
+        startWatch(res.session);
+      } else if (score) {
+        await MT.repo.updateSession(session.id, { league: Object.assign({}, session.league || {}, league) });
+      }
+      for (let i = first; i < payloads.length; i++) await MT.repo.addMatch(session.id, payloads[i], session);
+      toast(tt("{0} Spiele importiert", payloads.length));
+      state.lgImport = blankImport();
+      loadLeagueSessions();
+      loadSummary();                       // Letzte Spiele reads the official score from the sessions
+    } catch (e) {
+      MT.toastError(e, "Import fehlgeschlagen");
+    } finally {
+      imp.busy = false;
+      renderList();
+    }
+  }
+
   /* opts.readOnly — the Alle overview: no controls, a type badge, one Öffnen;
      opts.league  — a slot card: the slot as its number, no drag, no nudges */
   function matchLine(m, idx, total, opts) {
@@ -1996,7 +2289,7 @@ Object.assign(EN, {
       return;
     }
     if (isAll()) { host.innerHTML = allListHtml(); return; }
-    if (isLeague()) { host.innerHTML = currentFixture() ? leagueSlotsHtml() : ""; return; }
+    if (isLeague()) { host.innerHTML = currentFixture() ? leagueSlotsHtml() + leagueImportHtml() : ""; return; }
     const list = orderedMatches();
     const addLabel = state.justSaved && list.length ? t("Noch ein Spiel") : t("+ Spiel");
     host.innerHTML =
@@ -2811,6 +3104,10 @@ Object.assign(EN, {
     if (act === "lgopen") { openFixture(btn.dataset.fixture); return; }
     if (act === "lgback") { closeFixture(); return; }
     if (act === "lgslot") { newLeagueDraft(btn.dataset.slot); return; }
+    if (act === "lgimp") { state.lgImport.open = true; renderList(); focusIn(".mt-imp-text", true); return; }
+    if (act === "lgimpcancel") { state.lgImport = blankImport(); renderList(); return; }
+    if (act === "lgimpparse") { importParse(); return; }
+    if (act === "lgimpsave") { importSave(); return; }
     if (act === "openday") { jumpTo(btn.dataset.type, btn.dataset.day, btn.dataset.fixture); return; }
     if (act === "trndelete") { removeTournament(); return; }
     if (act === "trnnew") {
@@ -2942,6 +3239,16 @@ Object.assign(EN, {
       return;
     }
     if (el2.classList.contains("mt-trn-note")) { state.trn.note = el2.value; return; }
+    if (el2.classList.contains("mt-imp-text")) { state.lgImport.text = el2.value; return; }
+    if (el2.classList.contains("mt-imp-in")) {
+      /* a corrected name or set line: kept in the row, the status redraws on its own */
+      const row = (state.lgImport.rows || []).find(r => r.slot === el2.dataset.slot);
+      if (!row) return;
+      if (el2.dataset.imp === "sets") row.sets = el2.value;
+      else row[el2.dataset.side][Number(el2.dataset.i)] = el2.value;
+      patchImportStatus(row);
+      return;
+    }
     if (el2.classList.contains("mt-day-input")) { switchDay(el2.value); return; }
     if (el2.classList.contains("mt-slot-input")) {
       state.pickQuery = el2.value;

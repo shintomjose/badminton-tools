@@ -8,7 +8,7 @@
  */
 "use strict";
 
-const VERSION = "v41";
+const VERSION = "v45";
 const SHELL_CACHE = `shell-${VERSION}`;
 const IMG_CACHE = `img-${VERSION}`;
 const CDN_CACHE = `cdn-${VERSION}`;
@@ -20,9 +20,11 @@ const PRECACHE = [
   "./",
   "./index.html",
   "./style.css",
+  "./results.js",
   "./app.js",
   "./tracker-core.js",
   "./tracker-demo.js",
+  "./tracker-league-import.js",
   "./tracker-entry.js",
   "./tracker-settings.js",
   "./tracker-history.js",
