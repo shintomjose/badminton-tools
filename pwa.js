@@ -4,8 +4,16 @@
 "use strict";
 
 (function () {
-  /* ---- Head-Tags injizieren ---- */
+  /* ---- Head-Tags injizieren (skip if already present) ---- */
   function addTag(tag, attrs) {
+    if (tag === "meta") {
+      const existing = document.querySelector('meta[name="' + attrs.name + '"]');
+      if (existing) return existing;
+    }
+    if (tag === "link") {
+      const existing = document.querySelector('link[rel="' + attrs.rel + '"]');
+      if (existing) return existing;
+    }
     const el = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
     document.head.appendChild(el);

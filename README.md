@@ -254,3 +254,11 @@ match carries `type: "league"`, `slot` and a denormalised `league` object
 plus `opponentClub`. Verlauf filters on Liga and badges rows with the opponent
 and slot, Statistik has a Liga tab, and player profiles keep a Liga bucket —
 never merged with Training or Turnier.
+
+Results come from badhub: `node dev/liga-import.js` (after `npm install` in
+`dev/`, with the service-account key in the repo root) previews my matches of
+every played fixture, matched to the existing players; `--apply` writes them
+with the official team score as `league.score` + `scoreFixed`. Slots already
+entered are skipped. A name it cannot place stops the write until it is given
+with `--map "Badhub Name=App Name"` or `--new "Badhub Name"`. The badhub group
+is the `BADHUB` constant at the top of the script — change it with the season.

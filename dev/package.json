@@ -1,0 +1,8 @@
+{
+  "name": "badminton-tools-dev",
+  "private": true,
+  "description": "Local maintenance scripts (never deployed)",
+  "dependencies": {
+    "firebase-admin": "^13.10.0"
+  }
+}

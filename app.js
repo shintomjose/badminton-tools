@@ -1340,6 +1340,15 @@ function notifyNewEntries(items) {
   const newest = items[0]._k;
   const last = localStorage.getItem(NOTIF_LAST_KEY);
   localStorage.setItem(NOTIF_LAST_KEY, newest);
+  /* On first load (no last key) show summary of unseen changes */
+  if (!last && whoami() && !window.__availNotifShown) {
+    window.__availNotifShown = true;
+    const unseen = items.length;
+    if (unseen > 0) {
+      setTimeout(() => toast(tt("\xe2\x80\xa6 und {0} neue \xc3\x84nderung(en)"), unseen), 1500);
+    }
+    return;
+  }
   if (!last || !notifEnabled()) return;
   const me = whoami();
   const fresh = items.filter(it => it._k > last && it.by && it.by !== me);
