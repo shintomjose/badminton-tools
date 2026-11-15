@@ -12,7 +12,6 @@
    https://bwbv-badminton.liga.nu/cgi-bin/WebObjects/nuLigaBADDE.woa/wa/groupPage?championship=NB+26%2F27&group=40186
    ========================================================================== */
 window.RESULTS = {
-  "2026-10-10-1400": { own: 8, opp: 0, report: "https://bwbv-badminton.liga.nu/cgi-bin/WebObjects/nuLigaBADDE.woa/wa/groupMeetingReport?meeting=398232&championship=NB+26%2F27&group=40186" },
-  "2026-10-17-1400": { own: 4, opp: 4, report: "https://bwbv-badminton.liga.nu/cgi-bin/WebObjects/nuLigaBADDE.woa/wa/groupMeetingReport?meeting=398241&championship=NB+26%2F27&group=40186" },
-  "2026-10-17-1800": { own: 7, opp: 1, report: "https://bwbv-badminton.liga.nu/cgi-bin/WebObjects/nuLigaBADDE.woa/wa/groupMeetingReport?meeting=398244&championship=NB+26%2F27&group=40186" },
+  "2026-11-14-1400": { own: 4, opp: 4, report: "https://bwbv-badminton.liga.nu/cgi-bin/WebObjects/nuLigaBADDE.woa/wa/groupMeetingReport?meeting=398229&championship=NB+26%2F27&group=40186" },
+  "2026-11-14-1800": { own: 6, opp: 2, report: "https://bwbv-badminton.liga.nu/cgi-bin/WebObjects/nuLigaBADDE.woa/wa/groupMeetingReport?meeting=398227&championship=NB+26%2F27&group=40186" },
 };
